@@ -1,0 +1,21 @@
+# Name,   Type, SubType, Offset,   Size,      Flags
+# ============================================================================
+# BLUE_LONG_MESH V5.4 — OTA 三分区方案
+# Flash: 4MB (ESP32-C6-MINI-1-N4)
+# Offset 0x000000-0x007FFF: Bootloader (reserved, not in partition table)
+# ============================================================================
+
+nvs,       data, nvs,      0x9000,   0x6000,
+otadata,   data, ota,      ,         0x2000,
+phy_init,  data, phy,      ,         0x1000,
+factory,   app,  factory,  ,         0x130000,
+ota_0,     app,  ota_0,    ,         0x130000,
+ota_1,     app,  ota_1,    ,         0x130000,
+nvs_sec,   data, nvs,      ,         0x6000,
+
+# 分区大小计算:
+#   factory: 0x130000 = 1,245,184 bytes ≈ 1.19 MB (当前固件 ~720KB, 余量 ~60%)
+#   ota_0:   0x130000 = 1.19 MB
+#   ota_1:   0x130000 = 1.19 MB
+#   nvs:     0x6000   = 24 KB (配置 + OTA 状态)
+#   nvs_sec: 0x6000   = 24 KB (NVS 备份)

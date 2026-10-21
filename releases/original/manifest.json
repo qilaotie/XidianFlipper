@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "id": "V1.0",
+  "version": "1.0.0-noautosleep",
+  "created_utc": "2026-09-15T14:47:41Z",
+  "source": "source",
+  "source_kind": "git-tag",
+  "base_ref": "v1.0.0-noautosleep",
+  "base_commit": "4c7f204f5aa9290c303f20f3d262f4cf6774d5f8",
+  "original_v1_tag": "v1.0.0",
+  "original_v1_commit": "e04d4d2e4d90c62affe412ffcaa0d83e1d268f51",
+  "predecessor": null,
+  "source_note": "Exact firmware source from v1.0.0-noautosleep; original v1.0.0 releases remain untouched.",
+  "components": [
+    {
+      "path": "components/u8g2",
+      "repository": "https://github.com/olikraus/u8g2.git",
+      "commit": "cbceaa1cab22ad63e41c2df684e173cd5433766e",
+      "included": [
+        "CMakeLists.txt",
+        "LICENSE",
+        "csrc"
+      ],
+      "note": "All ESP-IDF consumer source and license included; upstream examples and host tools omitted."
+    }
+  ],
+  "web": {
+    "shared_project": "../../../BLUE_LONG_MESH_WEB",
+    "versioned": false
+  },
+  "build": {
+    "status": "passed",
+    "sdk": "ESP-IDF 5.5.4",
+    "sdk_revision": "v5.5.4",
+    "target": "esp32c6",
+    "mirror": true,
+    "dev_mode": false,
+    "secure_chat": false,
+    "oled_force_off": false,
+    "sdkconfig_sha256": "59d692711f6743a24571b01a2e2be1e1ed48f1f8ecacca2228a8998afa1a23a4",
+    "report": "validation/build-report.json",
+    "slot_bytes": 1245184,
+    "slot_free_bytes": 477168
+  },
+  "hardware_tested": false,
+  "source_sha256": "303203b70ea8db83749c8b022c343924d0d66c55412972fe35cc041a5bd904f8",
+  "source_files": 261,
+  "source_hash_algorithm": "sha256(canonical compact ASCII JSON of ordered path,size,sha256 records)",
+  "application": {
+    "offset": "0x20000",
+    "path": "firmware/app.bin",
+    "size": 768016,
+    "sha256": "5e74ac99f0a94aa36448a636557754772e2d0d7ff28c9d0f68c4375f01f62c89"
+  },
+  "images": [
+    {
+      "offset": "0x0",
+      "path": "firmware/bootloader.bin",
+      "size": 24224,
+      "sha256": "f141ff67b5eb9f2a64cc43068fef2d5821f98e45e7bd5d3f67ae12ed822f210e"
+    },
+    {
+      "offset": "0x8000",
+      "path": "firmware/partition-table.bin",
+      "size": 3072,
+      "sha256": "7470fa9ddada9ee3691d12951c93fbbcf20d0169c09dd9abd2f9ae14ac60c01c"
+    },
+    {
+      "offset": "0xf000",
+      "path": "firmware/ota_data_initial.bin",
+      "size": 8192,
+      "sha256": "7d2c7ac4888bfd75cd5f56e8d61f69595121183afc81556c876732fd3782c62f"
+    },
+    {
+      "offset": "0x20000",
+      "path": "firmware/app.bin",
+      "size": 768016,
+      "sha256": "5e74ac99f0a94aa36448a636557754772e2d0d7ff28c9d0f68c4375f01f62c89"
+    }
+  ],
+  "bootstrap": null,
+  "security_epoch": 0,
+  "ota_protocol": 0,
+  "compatibility_note": "Legacy V1.0 has no V1.5 OTA metadata/protocol. Use mirror/control only; installing V1.5 requires the preserving bootstrap package."
+}

@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "id": "V1.0",
+  "source": "../..",
+  "source_roots": [
+    "CMakeLists.txt",
+    "sdkconfig.defaults",
+    "partitions_ota.csv",
+    "firmware",
+    "components",
+    "main"
+  ],
+  "source_kind": "independent-workspace",
+  "source_sha256": "7fff32057dc4654596ec34863a575069d8778000fef80bb66ac9d8d2a2ade6cb",
+  "source_files": 304,
+  "ota_protocol": 0,
+  "hardware_tested": false,
+  "original_source_sha256": "303203b70ea8db83749c8b022c343924d0d66c55412972fe35cc041a5bd904f8",
+  "build": {
+    "status": "passed",
+    "sdk": "ESP-IDF 5.5.4",
+    "sdk_revision": "v5.5.4",
+    "target": "esp32c6",
+    "mirror": true,
+    "dev_mode": false,
+    "secure_chat": false,
+    "oled_force_off": false,
+    "sdkconfig_sha256": "90a309bdff6c72415f0888d5e47cddd6191b5c7a43d45c2d70bf7a6245e0c8b7",
+    "report": "validation/build-report.json",
+    "slot_bytes": 1245184,
+    "slot_free_bytes": 6384
+  },
+  "version": "1.0.0-noautosleep",
+  "application": {
+    "offset": "0x20000",
+    "path": "firmware/app.bin",
+    "size": 1238800,
+    "sha256": "b0e2cb23354e88d5b2dde47f66113245a1c013d8a9c3dd6d157d08bfd5bbf33d"
+  },
+  "images": [
+    {
+      "offset": "0x0",
+      "path": "firmware/bootloader.bin",
+      "size": 24224,
+      "sha256": "7136b218840368ed29ba80d750aabd0388cdfa3392eb45faab9fa63534a013d6"
+    },
+    {
+      "offset": "0x8000",
+      "path": "firmware/partition-table.bin",
+      "size": 3072,
+      "sha256": "7470fa9ddada9ee3691d12951c93fbbcf20d0169c09dd9abd2f9ae14ac60c01c"
+    },
+    {
+      "offset": "0xf000",
+      "path": "firmware/ota_data_initial.bin",
+      "size": 8192,
+      "sha256": "7d2c7ac4888bfd75cd5f56e8d61f69595121183afc81556c876732fd3782c62f"
+    },
+    {
+      "offset": "0x20000",
+      "path": "firmware/app.bin",
+      "size": 1238800,
+      "sha256": "b0e2cb23354e88d5b2dde47f66113245a1c013d8a9c3dd6d157d08bfd5bbf33d"
+    }
+  ],
+  "security_epoch": 0,
+  "bootstrap": null
+}

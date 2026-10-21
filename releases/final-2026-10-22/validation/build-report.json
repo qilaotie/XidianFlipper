@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "command": [
+    "C:\\Espressif\\tools\\python\\v5.5.4\\venv\\Scripts\\python.exe",
+    "C:\\esp\\v5.5.4\\esp-idf\\tools\\idf.py",
+    "-B",
+    "C:\\Users\\31038\\Documents\\halfstep\\V1.0\\build",
+    "-D",
+    "SDKCONFIG=C:\\Users\\31038\\Documents\\halfstep\\V1.0\\build\\sdkconfig",
+    "-D",
+    "IDF_TARGET=esp32c6",
+    "-D",
+    "BLUE_LONG_ENABLE_MIRROR=ON",
+    "build"
+  ],
+  "cwd": "C:\\Users\\31038\\Documents\\halfstep\\V1.0",
+  "source_sha256": "7fff32057dc4654596ec34863a575069d8778000fef80bb66ac9d8d2a2ade6cb",
+  "hardware_tested": false,
+  "exit_code": 0,
+  "application_bytes": 1238800,
+  "application_sha256": "b0e2cb23354e88d5b2dde47f66113245a1c013d8a9c3dd6d157d08bfd5bbf33d",
+  "slot_free_bytes": 6384,
+  "seconds": 18.91,
+  "completed_utc": "2026-10-21T16:31:39Z"
+}

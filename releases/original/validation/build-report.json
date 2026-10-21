@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "exit_code": 0,
+  "seconds": 82.67,
+  "command": [
+    "C:\\Espressif\\tools\\python\\v5.5.4\\venv\\Scripts\\python.exe",
+    "C:\\.espressif\\v5.5.4\\esp-idf\\tools\\idf.py",
+    "-B",
+    "G:\\newWS\\BLUE_LONG_MESH\\versions\\V1.0\\build",
+    "-D",
+    "SDKCONFIG=G:\\newWS\\BLUE_LONG_MESH\\versions\\V1.0\\build\\sdkconfig",
+    "-D",
+    "IDF_TARGET=esp32c6",
+    "-D",
+    "BLUE_LONG_ENABLE_MIRROR=ON",
+    "build"
+  ],
+  "cwd": "G:\\newWS\\BLUE_LONG_MESH\\versions\\V1.0\\source",
+  "source_sha256": "303203b70ea8db83749c8b022c343924d0d66c55412972fe35cc041a5bd904f8",
+  "completed_utc": "2026-09-15T14:49:32Z",
+  "hardware_tested": false,
+  "application_bytes": 768016,
+  "slot_bytes": 1245184,
+  "slot_free_bytes": 477168,
+  "application_sha256": "5e74ac99f0a94aa36448a636557754772e2d0d7ff28c9d0f68c4375f01f62c89"
+}

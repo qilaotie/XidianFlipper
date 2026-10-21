@@ -1,0 +1,13 @@
+/build/
+/build.*/
+/.vscode/
+/sdkconfig
+/sdkconfig.old
+__pycache__/
+*.pyc
+/.env
+/.env.*
+*.log
+*.dmp
+/dist/
+/.publish/

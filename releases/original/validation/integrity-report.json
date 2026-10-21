@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "source_sha256": "303203b70ea8db83749c8b022c343924d0d66c55412972fe35cc041a5bd904f8",
+  "source_files": 261,
+  "images_checked": [
+    "firmware/bootloader.bin",
+    "firmware/partition-table.bin",
+    "firmware/ota_data_initial.bin",
+    "firmware/app.bin"
+  ],
+  "hardware_tested": false
+}
