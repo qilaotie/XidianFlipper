@@ -1,0 +1,29 @@
+name = "xidianflipper-community"
+main = "backend/worker.mjs"
+account_id = "780be54db33802367aa8689c311d19c9"
+compatibility_date = "2026-10-01"
+workers_dev = true
+preview_urls = false
+
+[vars]
+PUBLIC_ORIGIN = "https://qilaotie.github.io"
+MAX_DEVICES = "2000"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "xidianflipper-community"
+database_id = "ef55f5be-0192-4557-9317-6f29bddaf7c4"
+migrations_dir = "backend/migrations"
+
+[[ratelimits]]
+name = "WRITE_LIMIT"
+namespace_id = "1001001"
+simple = { limit = 10, period = 60 }
+
+[[ratelimits]]
+name = "READ_LIMIT"
+namespace_id = "1001002"
+simple = { limit = 120, period = 60 }
+
+[observability]
+enabled = false

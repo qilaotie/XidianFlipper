@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#254d3b">
+  <meta name="description" content="半步电台 XidianFlipper 设备社区：游戏排行榜、电子宠物展示柜与联网同步说明。">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://xidianflipper-community.xidianflipper-community.workers.dev; base-uri 'none'; object-src 'none'; form-action 'none'">
+  <title>半步小岛 · XidianFlipper</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">跳转到主要内容</a>
+  <header class="nav shell">
+    <a class="brand" href="./" aria-label="半步小岛首页"><span class="brand-icon" aria-hidden="true">▦</span> 半步小岛 <small>XIDIANFLIPPER</small></a>
+    <nav aria-label="主导航"><a href="#arcade">排行榜</a><a href="#pets">宠物展示柜</a><a href="#connect">连接指南</a><a href="https://github.com/qilaotie/XidianFlipper" target="_blank" rel="noopener noreferrer">GitHub ↗</a></nav>
+  </header>
+  <main id="main">
+    <section class="hero shell">
+      <div><p class="eyebrow"><span class="dot"></span> 小设备，大世界</p><h1>把口袋里的快乐，<br>带到<span>小岛上。</span></h1><p class="intro">给你的新纪录留个位置，<br>也让大家认识一下你养大的小家伙。</p><div class="hero-actions"><a class="button" href="#arcade">去看排行榜 <span>↗</span></a><a class="text-link" href="#pets">逛逛宠物展示柜 →</a></div><p class="hero-note">开源设备社区 · 真实上传 · 自愿分享</p></div>
+      <div class="island" aria-label="像素宠物小岛插画"><div class="lcd"><span class="lcd-label">HALFSTEP / PET ISLAND</span><div class="pixel-scene" id="hero-pets" aria-hidden="true"></div><div class="lcd-ground"></div><span class="lcd-footer">HELLO, LITTLE WORLD.</span></div><span class="island-tag">每个小家伙，都有自己的故事。</span></div>
+    </section>
+    <div class="status-strip"><div class="shell"><span><span id="api-dot" class="dot"></span> <span id="api-status" role="status">正在连接小岛…</span></span><span>不比谁更强，只记录每一次进步。</span></div></div>
+    <section class="section shell" id="arcade" aria-labelledby="arcade-title">
+      <div class="section-heading"><div><p class="eyebrow">01 / POCKET ARCADE</p><h2 id="arcade-title">口袋游乐场</h2><p>一局比一局，离自己的新纪录更近一点。</p></div><button id="refresh" class="outline" type="button">↻ 刷新数据</button></div>
+      <div class="tabs" role="tablist" aria-label="游戏排行榜"><button role="tab" id="snake-tab" aria-controls="board" aria-selected="true" data-game="snake">▰ 贪吃蛇</button><button role="tab" id="tetris-tab" aria-controls="board" aria-selected="false" tabindex="-1" data-game="tetris">▧ 俄罗斯方块</button></div>
+      <div class="board" id="board" role="tabpanel" aria-labelledby="snake-tab" tabindex="0"><div class="board-caption"><span id="game-caption">贪吃蛇 · 吃到的食物数</span><span>个人最高 / TOP 100</span></div><div class="table-scroll"><table><thead><tr><th scope="col">排名</th><th scope="col">玩家</th><th scope="col" id="score-heading">食物</th><th scope="col">更新时间</th></tr></thead><tbody id="scores"></tbody></table></div><div id="score-state" class="empty" role="status">正在寻找新纪录…</div></div>
+      <p class="fine">成绩由设备自报，仅作交流展示，非严格防作弊竞赛。同分时较早达成者优先；新数据可能延迟约 30 秒显示。</p>
+    </section>
+    <section class="pet-section" id="pets" aria-labelledby="pets-title"><div class="shell section"><div class="section-heading"><div><p class="eyebrow">02 / LITTLE COMPANIONS</p><h2 id="pets-title">小家伙展示柜</h2><p>从一颗蛋开始，把悉心照料的日子攒成成长。</p></div><span class="pill">最近更新的 100 位伙伴</span></div><div id="pet-grid" class="pet-grid"></div><div id="pet-state" class="empty" role="status">正在迎接小伙伴…</div><p class="fine">展示的是上次上传的状态，不代表宠物实时在线。插画为网站示意，形态以设备记录为准。</p></div></section>
+    <section class="section shell" id="connect" aria-labelledby="connect-title"><div class="section-heading"><div><p class="eyebrow">03 / COME ABOARD</p><h2 id="connect-title">下一站，联网见</h2><p>离线照常玩，想分享的时候再上岛。</p></div></div><div class="steps"><article><span class="step-number">01</span><h3>更新支持同步的固件</h3><p>旧版只有 Wi-Fi 连接能力，不会自动上传。设备端同步固件完成验证后，将在这里更新使用说明。</p></article><article><span class="step-number">02</span><h3>连上 2.4 GHz Wi-Fi</h3><p>在设备 Wi-Fi 功能中连接网络。Wi-Fi 密码只用于设备连接，不会上传到展示柜。</p></article><article><span class="step-number">03</span><h3>主动开启分享</h3><p>计划由设备上传昵称、宠物状态和游戏最高分。不分享也不影响本地存档与游戏。</p></article></div><aside class="notice"><strong>当前状态：网站与接口建设中，设备同步尚未开放。</strong><p>未接入的设备不会出现在排行榜里。这里不收集手机号、邮箱或地理位置，也不展示硬件 MAC 地址。</p></aside></section>
+  </main>
+  <footer class="shell"><div><strong>半步小岛</strong><p>给小小的设备，留一个相遇的地方。</p></div><div><a href="https://github.com/qilaotie/XidianFlipper" target="_blank" rel="noopener noreferrer">开源项目 ↗</a><p>GitHub Pages + Cloudflare Workers / D1</p></div></footer>
+</body>
+</html>
