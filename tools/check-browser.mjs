@@ -7,7 +7,7 @@ let browser;try{browser=await chromium.launch({headless:true});}catch{browser=aw
 try{
   const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('http://127.0.0.1:8080',{waitUntil:'networkidle'});
+  await page.goto(process.env.PREVIEW_URL||'http://127.0.0.1:8080',{waitUntil:'networkidle'});
   await page.getByText(/已连接小岛/).waitFor({timeout:20000});
   await page.screenshot({path:'test-results/desktop.png',fullPage:true});
   await page.getByRole('tab',{name:/俄罗斯方块/}).click();
