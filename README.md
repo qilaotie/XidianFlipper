@@ -1,4 +1,4 @@
-# 半步电台 · V1.0 功能扩展版
+# 半部电台 · V1.0 功能扩展版
 
 当前源码：补齐消息 / 频道 / 好友 / 学习 / 宠物及游戏子菜单汉化；“趣玩 → 玩法说明 → 电子宠物”可查看十三类宠物说明。修复宠物说明目录切换堆叠，经典皮肤新增工具箱图标。主菜单按“消息 → 摩斯电台（频道）→ 学习 → 好友 → 趣玩 → 工具 → 设置 → 关于”排列。详见[本轮更新与验证](docs/current-source.md)及[双语说明](docs/zh_ui.md)。
 
@@ -14,7 +14,7 @@
 
 独立固件工程，目标 **ESP-IDF 5.5.4 / ESP32-C6 / 4 MiB Flash / 128×32 OLED**。整理日期：2026-10-23。维护版固件字符串仍为 `1.0.0-noautosleep`；区分构建请看发行清单与 SHA-256，不把本扩展版误称为 V1.5。
 
-项目仓库：[qilaotie/XidianFlipper](https://github.com/qilaotie/XidianFlipper)。当前镜像见 [releases/final-2026-10-23](releases/final-2026-10-23/README.md)；[10 月 22 日旧包](releases/final-2026-10-22/README.md)仅作历史快照。在线社区：[半步小岛](https://qilaotie.github.io/XidianFlipper/)。
+项目仓库：[qilaotie/XidianFlipper](https://github.com/qilaotie/XidianFlipper)。当前镜像见 [releases/final-2026-10-23](releases/final-2026-10-23/README.md)；[10 月 22 日旧包](releases/final-2026-10-22/README.md)仅作历史快照。在线社区：[半部小岛](https://qilaotie.github.io/XidianFlipper/)。
 
 ## 功能概览
 
@@ -41,7 +41,7 @@
 | [发布与构建](docs/发布与构建.md) | 编译、核验、烧录和数据保护 |
 | [最终版发布说明](docs/最终版发布说明.md) | 镜像指纹、空间和验证范围 |
 | [2 MiB 分区迁移](docs/partition_migration.md) | 私有整片备份、USB 迁移、数据保护与恢复边界 |
-| [半步小岛](docs/cloud_community.md) | 网页排行榜、宠物展示柜与设备接入进度 |
+| [半部小岛](docs/cloud_community.md) | 网页排行榜、宠物展示柜与设备接入进度 |
 
 专题：[菜单](docs/menu_navigation.md) · [编辑器](docs/message_compose.md) · [方块](docs/tetris.md) · [蛇](docs/snake.md) · [多人游戏](docs/party_extra_games.md) · [工具](docs/wireless_tools.md) · [拍照](docs/camera_remote.md) · [Wi-Fi](docs/wifi_connect.md) · [宠物联机](docs/pet_connection_games.md)。专题中的旧构建数据保留为历史验收，最终构建以当前清单为准。
 
