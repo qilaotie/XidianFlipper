@@ -18,6 +18,7 @@
  X("- Media remote",M_HID_MEDIA) \
  X("- Camera remote",M_HID_CAMERA) \
  X("- Wi-Fi connect",M_WIFI_CONNECT) \
+ X("- Cloud sync",M_CLOUD_SYNC) \
  X("- Wi-Fi scanner",M_WIFI_SCAN) \
  X("- BLE scanner / RSSI",M_BLE_SCAN) \
  X("- Memory status",M_TOOL_MEMORY)

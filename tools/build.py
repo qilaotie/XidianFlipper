@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import time
+from flash_layout import capacity, profile
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOTS = ["CMakeLists.txt", "sdkconfig.defaults", "partitions_ota.csv", "firmware", "components", "main"]
@@ -101,8 +102,11 @@ def build(idf, dev_mode=False, secure_chat=False, oled_force_off=False):
             images.append({"offset": hex(int(offset, 0)), "path": "firmware/" + target.name,
                            "size": len(data), "sha256": digest(data)})
         app = next(image for image in images if image["offset"] == "0x20000")
-        if app["size"] > 0x130000:
-            raise ValueError("Application exceeds the existing OTA slot")
+        partition_data = (firmware / 'partition-table.bin').read_bytes()
+        layout_name, _ = profile(partition_data)
+        slot_bytes = capacity(partition_data)
+        if app["size"] > slot_bytes:
+            raise ValueError("Application exceeds the compiled factory partition")
         settings["flash_files"] = {image["offset"]: Path(image["path"]).name for image in images}
         for item in settings.values():
             if isinstance(item, dict) and "offset" in item and "file" in item:
@@ -122,8 +126,9 @@ def build(idf, dev_mode=False, secure_chat=False, oled_force_off=False):
                                "target": project["target"], "mirror": True, "dev_mode": dev_mode,
                                "secure_chat": secure_chat, "oled_force_off": oled_force_off,
                                "sdkconfig_sha256": digest((ROOT / "build/sdkconfig").read_bytes()),
-                               "report": "validation/build-report.json", "slot_bytes": 0x130000,
-                               "slot_free_bytes": 0x130000 - app["size"]})
+                               "report": "validation/build-report.json", "slot_bytes": slot_bytes,
+                               "layout": layout_name, "usb_layout_migration_required": layout_name != 'legacy-three-slot',
+                               "slot_free_bytes": slot_bytes - app["size"]})
         if protocol:
             bootstrap = json.loads((ROOT / "releases/original/firmware/bootstrap.json").read_text(encoding="utf-8"))
             bootstrap.update(version=manifest["version"], images=[{"offset": image["offset"],
@@ -133,7 +138,7 @@ def build(idf, dev_mode=False, secure_chat=False, oled_force_off=False):
                             bootstrap={"path": "firmware/bootstrap.json", "sha256": digest((firmware / "bootstrap.json").read_bytes()),
                                        "validated": False})
         report.update(passed=True, application_bytes=app["size"], application_sha256=app["sha256"],
-                      slot_free_bytes=0x130000 - app["size"])
+                      slot_free_bytes=slot_bytes - app["size"], layout=layout_name)
     except Exception as error:
         manifest["build"]["status"] = "failed"
         report["error"] = str(error)

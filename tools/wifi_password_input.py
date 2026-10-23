@@ -53,8 +53,8 @@ def main():
             target = Path('build/wifi-input-target.png')
             target.write_bytes(png(d.frame))
             print('Verify first network now:', target.resolve(), flush=True)
-            confirmed = input('Read target image; type Xiaomi_6C64 only if it is the selected row: ')
-            if confirmed != 'Xiaomi_6C64':
+            confirmed = input('Inspect the selected SSID in the image; type YES only if it is your intended network: ')
+            if confirmed != 'YES':
                 raise SystemExit('Target not verified; no credentials submitted')
             pump(.3)
             click()

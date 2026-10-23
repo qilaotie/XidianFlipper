@@ -27,6 +27,7 @@ static bool ble_radio_get_my_mac(uint8_t *m){memcpy(m,mymac,6);return true;}
 static bool ble_radio_is_ready(void){return radio;}
 bool mesh_packet_is_broadcast(const uint8_t *mac){for(unsigned i=0;i<6;i++)if(mac[i]!=255)return false;return true;}
 static const pet_t *pet_service_state(void){return &pet;}
+static const char *pet_service_name(void){return "Mochi";}
 static const char *nvs_config_get_device_name(void){return "TEST";}
 static bool pet_service_action(unsigned a){assert(a==PET_PLAY);if(can_pay)payments++;return can_pay;}
 static unsigned outcomes[4];
@@ -58,6 +59,7 @@ static void packet(unsigned op,unsigned score,bool final,bool ack){
 int main(void){
  pet_new(&pet);pet_advance(&pet,60);
  pet_link_enter(true);pet_link_proc(PG_NONE);assert(state==SEARCH && sends);
+ assert(!strcmp((char *)sent+25,"Mochi"));
  packet(HELLO,0,false,false);pet_link_proc(PG_TAP);assert(state==INVITING && !payments);
  packet(ACCEPT,0,false,false);assert(state==RUN && payments==1 && host);
  packet(ACCEPT,0,false,false);assert(payments==1);

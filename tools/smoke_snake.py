@@ -32,7 +32,7 @@ def main():
         for _ in range(5):back()
         capture('home',1);click();rotate(4);click();rotate(menu_index('FUN','M_SNAKE'));click();capture('start',60)
         click();rotate(1);capture('play_turn',60);click();capture('pause',60)
-        click(True);capture('restart',60);back();capture('fun_exit',23)
+        click(True);capture('map_select',60);click();capture('restart',60);back();capture('fun_exit',23)
         click();capture('reentry',60);back();back();back();capture('home_exit',1)
         assert not any(m in d.log for m in (b'Guru Meditation',b'assert failed',b'Stack canary'))
         (out/'serial.log').write_bytes(d.log)

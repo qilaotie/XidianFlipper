@@ -1,6 +1,7 @@
 #include "tetris_page.h"
 #include "tetris.h"
 #include "pet_service.h"
+#include "arcade_store.h"
 #include "wououi.h"
 #include "esp_timer.h"
 #include "esp_random.h"
@@ -11,7 +12,8 @@ static unsigned selection;
 static uint32_t last_tick;
 static uint32_t last_frame, clear_elapsed;
 static unsigned earned;
-static void new_game(void){tetris_init(&game,esp_random());pet_service_reward_begin(PET_REWARD_TETRIS);earned=0;}
+static bool active,restored,bad_save;
+static void new_game(void){tetris_init(&game,esp_random());arcade_new(ARCADE_TETRIS,&game);earned=0;restored=bad_save=false;}
 /* Portrait-local 32x128 coordinates; the shared u8g2 orientation never changes. */
 static void box(int x,int y,int w,int h){u8g2_DrawBox(&u8g2,128-y-h,x,h,w);}
 static const uint16_t letters[]={
@@ -37,11 +39,14 @@ static void piece(int x,int y,unsigned p,unsigned r,bool ghost){
     }
 }
 void tetris_page_enter(uint8_t page){
-    if(page!=M_TETRIS)return;
-    new_game();paused=true;selection=0;last_tick=(uint32_t)(esp_timer_get_time()/1000);
+    if(page!=M_TETRIS){if(active)arcade_flush();active=false;return;}
+    active=true;int found=arcade_load(ARCADE_TETRIS,&game);restored=found==1;bad_save=found<0;
+    if(!found)new_game();else if(found<0)tetris_init(&game,esp_random());
+    earned=0;paused=true;selection=bad_save?1:0;last_tick=(uint32_t)(esp_timer_get_time()/1000);
     last_frame=last_tick;clear_elapsed=0;
 }
 static void leave(void){
+    arcade_flush();
     pet_service_flush();
     btn.pressed=false;
     if(ui.layer){ui.index=ui.parent_index[ui.layer];ui.state=S_LAYER_OUT;}
@@ -61,6 +66,7 @@ void tetris_page_proc(void){
             if(key==BTN_ID_CC)selection=(selection+2)%3;
             if(key==BTN_ID_SP){
                 if(selection==2){leave();return;}
+                if(bad_save && selection==0)return;
                 if(selection==1 || game.over){new_game();clear_elapsed=0;}
                 paused=false;selection=0;last_tick=now;
             }
@@ -72,12 +78,12 @@ void tetris_page_proc(void){
         }
     }
     if(!paused && !game.over && !game.clear_mask && now-last_tick>=tetris_interval(&game)){tetris_step(&game);last_tick=now;}
-    earned+=pet_service_reward(PET_REWARD_TETRIS,game.lines);
+    earned=arcade_tick(ARCADE_TETRIS,&game,now);
     u8g2_SetDrawColor(&u8g2,1);
     char value[9];
-    text(2,1,"TETRIS");
-    snprintf(value,sizeof(value),"%lu",(unsigned long)(game.score%1000000));text(2,9,value);
-    snprintf(value,sizeof(value),"L%u",game.lines%10000);text(2,17,value);
+    text(2,1,paused?"BEST":"TETRIS");
+    snprintf(value,sizeof(value),"%lu",(unsigned long)((paused?arcade_best(ARCADE_TETRIS,false):game.score)%1000000));text(2,9,value);
+    snprintf(value,sizeof(value),"L%lu",(unsigned long)((paused?arcade_best(ARCADE_TETRIS,true):game.lines)%10000));text(2,17,value);
     text(2,25,"NEXT");
     snprintf(value,sizeof(value),"G%u",earned);text(2,33,value);
     uint16_t next=tetris_shape(game.next,0);
@@ -96,8 +102,8 @@ void tetris_page_proc(void){
     }
     if(paused || game.over){
         u8g2_SetDrawColor(&u8g2,0);box(1,49,30,77);u8g2_SetDrawColor(&u8g2,1);
-        text(2,51,game.over?"OVER":"PAUSED");
-        text(5,63,game.over?"NEW":"PLAY");text(5,75,"RESET");text(5,87,"EXIT");
+        text(2,51,arcade_error(ARCADE_TETRIS)?"SAVEERR":(game.over?"OVER":"PAUSED"));
+        text(5,63,game.over?"NEW":(restored?"CONT":"PLAY"));text(5,75,"NEW");text(5,87,"EXIT");
         box(1,64+(int)selection*12,2,3);
         text(2,99,"TURN LR");text(2,107,"TAP ROT");text(2,115,"HOLD DN");
     }

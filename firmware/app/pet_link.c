@@ -42,7 +42,7 @@ static bool send_op(unsigned op){
     b[20]=(uint8_t)game.score;b[21]=(uint8_t)(game.score>>8);b[22]=game.done;
     b[33]=remote_done;
     const pet_t *p=pet_service_state();b[23]=(uint8_t)pet_stage(p);b[24]=p->form;
-    const char *name=nvs_config_get_device_name();if(name)snprintf((char *)b+25,8,"%.7s",name);
+    const char *name=pet_service_name();if(!name[0])name=nvs_config_get_device_name();if(name)snprintf((char *)b+25,8,"%.7s",name);
     return message_service_send_control(MESH_TYPE_PET,op==HELLO?NULL:peer.mac,b,sizeof(b));
 }
 void pet_link_leave(void){

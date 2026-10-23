@@ -10,6 +10,7 @@ shim=r'''
 #include "pet_service.h"
 #include "pet_games.h"
 #include "pet_help.h"
+#include "message_draft.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -19,6 +20,8 @@ enum {ESP_OK=0,ESP_ERR_NVS_NOT_FOUND=1,NVS_READONLY=0,NVS_READWRITE=1};
 static pet_t stored,staged;
 static unsigned char stored_extra[20],staged_extra[20];
 static bool exists_extra,stage_pet,stage_extra;
+static unsigned char stored_name[14],staged_name[14];
+static bool exists_name,stage_name;
 static pet_v1_t legacy;
 static bool has_legacy;
 static bool exists,commit_fail,open_fail;
@@ -33,6 +36,7 @@ static int nvs_open(const char *name,int mode,nvs_handle_t *h){
 }
 static int nvs_get_blob(nvs_handle_t h,const char *key,void *data,size_t *size){
  (void)h;
+ if(!strcmp(key,"name_v1")){if(!exists_name)return ESP_ERR_NVS_NOT_FOUND;assert(*size==14);memcpy(data,stored_name,14);return ESP_OK;}
  if(!strcmp(key,"extra_v1")){if(!exists_extra)return ESP_ERR_NVS_NOT_FOUND;assert(*size==20);memcpy(data,stored_extra,20);return ESP_OK;}
  if(!strcmp(key,"state")){if(!has_legacy)return ESP_ERR_NVS_NOT_FOUND;assert(*size>=sizeof(legacy));memcpy(data,&legacy,sizeof(legacy));*size=sizeof(legacy);return ESP_OK;}
  assert(!strcmp(key,"state_v2"));if(!exists)return ESP_ERR_NVS_NOT_FOUND;
@@ -40,12 +44,14 @@ static int nvs_get_blob(nvs_handle_t h,const char *key,void *data,size_t *size){
 }
 static int nvs_set_blob(nvs_handle_t h,const char *key,const void *data,size_t size){
  (void)h;
+ if(!strcmp(key,"name_v1")){assert(size==14);memcpy(staged_name,data,14);stage_name=true;return ESP_OK;}
  if(!strcmp(key,"extra_v1")){assert(size==20);memcpy(staged_extra,data,20);stage_extra=true;return ESP_OK;}
  assert(!strcmp(key,"state_v2")&&size==sizeof(staged));memcpy(&staged,data,size);stage_pet=true;return ESP_OK;
 }
 static int nvs_commit(nvs_handle_t h){(void)h;if(commit_fail)return 9;
  if(stage_pet){stored=staged;exists=true;stage_pet=false;}
  if(stage_extra){memcpy(stored_extra,staged_extra,20);exists_extra=true;stage_extra=false;}
+ if(stage_name){memcpy(stored_name,staged_name,14);exists_name=true;stage_name=false;}
  writes++;return ESP_OK;}
 static void nvs_close(nvs_handle_t h){(void)h;}
 enum {M_PET=61,BTN_ID_BACK=1,BTN_ID_CW,BTN_ID_CC,BTN_ID_SP,BTN_ID_LP,S_LAYER_OUT,U8G2_DRAW_ALL=15};
@@ -100,6 +106,16 @@ int main(void){
  commit_fail=false;clock_us+=5000000;pet_service_tick();boot();
  assert(state.coins==old_gold-10&&state.items[0]==old_items+1&&!error);
  ui.layer=2;ui.parent_index[2]=23;ui.index=M_PET;
+ assert(!pet_service_name()[0]);
+ pet_page_enter(M_PET);assert(mode==NAME);key(BTN_ID_BACK);assert(mode==HOME);
+ assert(!pet_service_set_name("") && !pet_service_set_name("   ") && !pet_service_set_name("ABCDEFGHIJKLM"));
+ assert(pet_service_set_name("Mochi"));boot();assert(!strcmp(pet_service_name(),"Mochi"));
+ commit_fail=true;assert(!pet_service_set_name("FAILED"));assert(!strcmp(pet_service_name(),"Mochi"));commit_fail=false;stage_name=false;
+ assert(pet_service_set_name("ABCDEFGHIJKL"));boot();assert(!strcmp(pet_service_name(),"ABCDEFGHIJKL"));
+ stored_name[0]=99;boot();assert(name_blocked && !pet_service_set_name("REPLACE"));
+ stored_name[0]=1;boot();assert(!name_blocked);
+ pet_page_enter(M_PET);selected=11;key(BTN_ID_SP);assert(mode==NAME);
+ key(BTN_ID_CW);assert(name_selector.group==DRAFT_SEND_GROUP);key(BTN_ID_SP);assert(mode==HOME);
  pet_page_enter(M_PET);pet_page_proc();key(BTN_ID_LP);pet_page_proc();
  state.fullness=state.mood=state.energy=state.clean=100;pet_page_proc();
  selected=4;key(BTN_ID_SP);assert(mode==SHOP);state.coins=100;
@@ -131,6 +147,13 @@ int main(void){
  assert(pet_service_reward(PET_REWARD_SNAKE,3)==0);state.coins=9990;
  assert(!pet_service_reward(PET_REWARD_SNAKE,3));assert(pet_service_reward(PET_REWARD_SNAKE,4)==2);
  assert(pet_service_flush());balance=state.coins;boot();assert(state.coins==balance);
+ /* A resumed external round restores both watermark and threshold claim. */
+ state.energy=state.fullness=100;unsigned old_wins=state.games_won;
+ pet_service_reward_restore(PET_REWARD_TETRIS,4);balance=state.coins;
+ assert(!pet_service_reward(PET_REWARD_TETRIS,4));assert(pet_service_reward(PET_REWARD_TETRIS,5)==5);
+ assert(state.coins==balance+5 && state.games_won==old_wins);
+ pet_service_reward_restore(PET_REWARD_SNAKE,5);assert(!pet_service_reward(PET_REWARD_SNAKE,5));
+ assert(pet_service_reward(PET_REWARD_SNAKE,6)==2 && state.games_won==old_wins);
  for(unsigned kind=0;kind<PG_COUNT;kind++){
   state.energy=state.fullness=state.mood=state.clean=100;state.coins=100;
   mode=GAMES;cursor=kind;clock_us+=2500000;key(BTN_ID_SP);assert(mode==HELP && state.energy==100);key(BTN_ID_SP);assert(mode==MINIGAME && state.energy==92);
@@ -194,6 +217,6 @@ int main(void){
 '''
 with tempfile.TemporaryDirectory(prefix='halfstep-pet-') as temp:
     path=Path(temp);(path/'test.c').write_text(shim+source('firmware/app/pet_service.c')+source('firmware/ui/pet_page.c')+tests,encoding='utf-8')
-    subprocess.run(['gcc','-std=c11','-Wall','-Wextra','-Werror','-fno-stack-protector','-I',str(root/'firmware/app'),
+    subprocess.run(['gcc','-std=c11','-Wall','-Wextra','-Werror','-fno-stack-protector','-I',str(root/'firmware/app'),'-I',str(root/'firmware/ui'),
                     str(path/'test.c'),str(root/'firmware/app/pet.c'),str(root/'firmware/app/pet_games.c'),str(root/'firmware/app/pet_help.c'),'-o',str(path/'test.exe')],check=True)
     subprocess.run([str(path/'test.exe')],check=True)

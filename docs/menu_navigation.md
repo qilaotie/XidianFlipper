@@ -1,6 +1,6 @@
 # FUN / TOOLS 导航整理
 
-2026-10-21：菜单按用途排序，功能、页面 ID、分区和存档格式不变，没有删游戏。自动化脚本从 `firmware/ui/menu_layout.h` 读取顺序，避免继续使用旧下标点错功能。
+截至 2026-10-23：FUN 11 项、TOOLS 8 项，菜单按用途排序。自动化脚本从 `firmware/ui/menu_layout.h` 读取顺序，避免使用旧下标；历史验收在末尾单独标注。
 
 ## FUN：陪伴、单机、附近互动
 
@@ -22,9 +22,10 @@
 2. Media remote：媒体遥控。
 3. Camera remote：手机拍照适配。
 4. Wi-Fi connect：连接/管理热点。
-5. Wi-Fi scanner：附近热点扫描。
-6. BLE scanner / RSSI：蓝牙扫描与信号。
-7. Memory status：运行内存。
+5. Cloud sync：自愿云分享、立即同步与撤下。
+6. Wi-Fi scanner：附近热点扫描。
+7. BLE scanner / RSSI：蓝牙扫描与信号。
+8. Memory status：运行内存。
 
 ## 主菜单文字
 
@@ -36,8 +37,8 @@
 
 ## 验证
 
-- `python tools/test_menu_layout.py`：检查 11 个 FUN 和 7 个 TOOLS 映射完整、标签/路由来自同一配置、滚动暂停/折返/复位、裁切和禁用时短文案。这是生产代码宿主测试。
-- `python tools/smoke_menu_layout.py --port COM9`：逐项进入真实 18 个入口并返回，不在游戏/工具内提交动作，不配对/发送遥控按键、不连接陌生 Wi-Fi。扫描页仍会正常执行被动扫描，Pet 正常后台成长。保存真实屏幕与日志到 `build/menu-layout-smoke/`。
+- `python tools/test_menu_layout.py`：检查当前 11 个 FUN 和 8 个 TOOLS 映射、滚动/裁切等。这是生产代码宿主测试。
+- `python tools/smoke_menu_layout.py --port COM9`：真实 USB 导航脚本，当前 Pet 未命名会打开起名页，游戏续局/选图影响退出步骤；运行前阅读脚本并确认适用。历史 18 项检查不代表当前 19 项全量重验。扫描页会被动扫描，Pet 会正常后台成长，证据仅保存在 build/。
 
 ### 2026-10-21 COM9 记录
 

@@ -578,7 +578,7 @@ void local_pages_proc(void)
 {
     switch(ui.index) {
     case M_TOOLS:case M_BLE_SCAN:case M_HID_SLIDES:case M_HID_MEDIA:case M_HID_CAMERA:case M_WIFI_SCAN:case M_TOOL_MEMORY:
-    case M_WIFI_CONNECT:case M_WIFI_NETWORKS:case M_WIFI_PASSWORD:case M_WIFI_STATUS:case M_WIFI_FORGET:
+    case M_WIFI_CONNECT:case M_WIFI_NETWORKS:case M_WIFI_PASSWORD:case M_WIFI_STATUS:case M_WIFI_FORGET:case M_CLOUD_SYNC:
         wireless_tools_proc();break;
     case M_MESSAGES_HUB:messages_hub();break;
     case M_MESSAGE_COMPOSE:compose_page();break;

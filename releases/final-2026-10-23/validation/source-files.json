@@ -1,0 +1,1552 @@
+[
+  {
+    "path": "CMakeLists.txt",
+    "size": 1009,
+    "sha256": "f20757427990d814a8f2443cb94ae53d7cadcea45bbe7b6d8e7d999fa88bcdc1"
+  },
+  {
+    "path": "components/oled_mirror/CMakeLists.txt",
+    "size": 306,
+    "sha256": "49430cdb9b61aa1a211e20d86eae91f3e531232f4120d118338954a0476a3810"
+  },
+  {
+    "path": "components/oled_mirror/oled_mirror.c",
+    "size": 5762,
+    "sha256": "1c4b2545071bf2a756ce9ad1be1e884568d41d68b6673b18c7a7fc2fdffca055"
+  },
+  {
+    "path": "components/oled_mirror/oled_mirror.h",
+    "size": 3700,
+    "sha256": "30daaa558e268546d4f2a5c80ec32f12fbd86282078d7b7f1ba14f58fef4ec49"
+  },
+  {
+    "path": "components/u8g2-hal-esp-idf/.clang-format",
+    "size": 36,
+    "sha256": "6e303e1eee6746084557ad1e7ccbe30067ef9530dfb8fc5ebd3a8ae64dfc0718"
+  },
+  {
+    "path": "components/u8g2-hal-esp-idf/CMakeLists.txt",
+    "size": 173,
+    "sha256": "44eb043629613ff472af1e051f398cf1fd11be1d0b5e3d2cad9fe926d80f8a54"
+  },
+  {
+    "path": "components/u8g2-hal-esp-idf/LICENSE",
+    "size": 11573,
+    "sha256": "ac5ed3cc9002e144f09312b3ca746ee30b45dca7553dff4aa8ed8c04aae4abe3"
+  },
+  {
+    "path": "components/u8g2-hal-esp-idf/README.md",
+    "size": 3911,
+    "sha256": "b45808a68f5f3bc563c6e6c07790590df98676077a43b172ca521191473550aa"
+  },
+  {
+    "path": "components/u8g2-hal-esp-idf/UPSTREAM.md",
+    "size": 554,
+    "sha256": "39a3bfd23fb5febcc04aff03e138ae0da2561c29a720e4f58371b6152484e823"
+  },
+  {
+    "path": "components/u8g2-hal-esp-idf/component.mk",
+    "size": 58,
+    "sha256": "a4dea7dcbef0a7d489c2e8cff089bc0c4099e9f850844c208b502e2e04873b12"
+  },
+  {
+    "path": "components/u8g2-hal-esp-idf/examples/test_SSD1306.c",
+    "size": 1441,
+    "sha256": "8c40e510d9d3902e0ae6cf08cd87aab4bfe00e79f778e949f9eaacbf7bfa109f"
+  },
+  {
+    "path": "components/u8g2-hal-esp-idf/examples/test_SSD1306_i2c.c",
+    "size": 1591,
+    "sha256": "b124f86ea58040582b1a57728421a399b1c9609237c6598f0f9eea42e420aa9f"
+  },
+  {
+    "path": "components/u8g2-hal-esp-idf/include/u8g2_esp32_hal.h",
+    "size": 3368,
+    "sha256": "9603a58b55d23433e0d1f899bcaede69d6f2b15a86fddd2d0aac02bb1ffb3141"
+  },
+  {
+    "path": "components/u8g2-hal-esp-idf/src/u8g2_esp32_hal.c",
+    "size": 11304,
+    "sha256": "59cf25cf24f31c7173a6b2c7ec25b1478d922c8060da249bf3bb37ad5de261b2"
+  },
+  {
+    "path": "components/u8g2/CMakeLists.txt",
+    "size": 964,
+    "sha256": "2985c0f5d7de2250e906c2d830d45cffdf76cee66d678488ace260d7028f335a"
+  },
+  {
+    "path": "components/u8g2/LICENSE",
+    "size": 3833,
+    "sha256": "454bbe0f361e04804673045eda3fd2fc78d4997f239d33a9165a913e030d8231"
+  },
+  {
+    "path": "components/u8g2/csrc/mui.c",
+    "size": 30828,
+    "sha256": "d51bfea9bd1ca7cfc5e836dcafe9c7684b6962592ac12e07bf4239b6f2c9e0f1"
+  },
+  {
+    "path": "components/u8g2/csrc/mui.h",
+    "size": 19926,
+    "sha256": "73341551521480099db950f8ae2fb9f66ace9c3cbba277919341799825c3fb41"
+  },
+  {
+    "path": "components/u8g2/csrc/mui_u8g2.c",
+    "size": 90505,
+    "sha256": "c3e4590142bb00fadc2b31506c1280092a2c737541e50c0e83b310afc27c8944"
+  },
+  {
+    "path": "components/u8g2/csrc/mui_u8g2.h",
+    "size": 15681,
+    "sha256": "85a06e7fe033d4a6508bffe9b591d8d3e86413a0195ba3e113c1a058148759aa"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2.h",
+    "size": 385641,
+    "sha256": "1c27922e1de673507c41ff6b91f6758bd1227e259b8eef1a420e51e41c2573b6"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_arc.c",
+    "size": 4187,
+    "sha256": "adc6279f76d8e17098c1621870ed538a33cf4b940ae48f124cb000ef76433819"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_bitmap.c",
+    "size": 7062,
+    "sha256": "396b585cf7b9cf7d9b3ff7fb1a64dde7925fc6aaff45f56dbb12033313aa2b72"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_box.c",
+    "size": 4842,
+    "sha256": "fa2a530ad09697d0d7a30862a44135e1f0068edbe3453a10e3f0e85f64fee26d"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_buffer.c",
+    "size": 7043,
+    "sha256": "23e0e4021c40e010856ec3adf8b6d12af094063316be7fbb412b1efd6d945883"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_button.c",
+    "size": 8952,
+    "sha256": "e764550bd99dc049bcd3ed64bd5322ab2c4a2f9d1a3642027b4449d7d8652e0f"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_circle.c",
+    "size": 10983,
+    "sha256": "22e8767af2d0969cd89a56edfd2dc49480cc10c0c0185b985962f65859c07b27"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_cleardisplay.c",
+    "size": 2251,
+    "sha256": "75c5784912c4268884aed9ada3298302741af614fa2b309bfb8eaf7842954b0d"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_d_memory.c",
+    "size": 43736,
+    "sha256": "d3a12f81a17619024280ca8d760e0bf1ad2d1e84d92a173cd00b262982000405"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_d_setup.c",
+    "size": 473213,
+    "sha256": "aee4fdd997dba46ab5f12c73dddb4afee1559ef72ca0277470ec6f1b60f0d202"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_font.c",
+    "size": 44062,
+    "sha256": "0129458b54fe26aeb211a2653f5d8f3cd7e38dddb8105c6072bce9b1dacd3748"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_fonts.c",
+    "size": 40224726,
+    "sha256": "1f030e90806c22d70f76cffc6e44008662433bd7d57a4bb7252bcca7ec5b86c8"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_hvline.c",
+    "size": 7333,
+    "sha256": "cba10c5c271d7fbedf1d126d5505c96ce3fe3b8bfa27ee29a989ec0f3a68969e"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_input_value.c",
+    "size": 4305,
+    "sha256": "d3631256782ccdc78463c8fb5d0657fe1a8c7d2fff4ae0d1a3b8cc8231ed4f9a"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_intersection.c",
+    "size": 4422,
+    "sha256": "e9985c76b84c5e1667945aca812ea8c8b4cdde99eccb41a98a0a4a14543771bb"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_kerning.c",
+    "size": 2946,
+    "sha256": "94fe45bdf7b8d079a7a9cc8bbfd97d38a828127f56893f27bd38181846ece770"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_line.c",
+    "size": 2616,
+    "sha256": "7a8e660a84de90911fb66639fd674f5d3830ae15ced175731002d3b00cb39d18"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_ll_hvline.c",
+    "size": 9586,
+    "sha256": "ff7b42b6c49d4e087417e6cf07dd65499a60895037d27bf7d8d29f0065af1d8b"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_message.c",
+    "size": 5746,
+    "sha256": "1bb98b12786ca72863b64109e6493ea4fc1d62bb5910678060826e0dcbf87278"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_polygon.c",
+    "size": 7751,
+    "sha256": "08aceef3f2d800cd3bc44014aad037cb13d897a4474b4990be37dad0ce0a12c2"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_selection_list.c",
+    "size": 8118,
+    "sha256": "b02d0b1be0e9fd92e142b276d88d7b09ca58aaa22b4a9f9876ef78fa1103d546"
+  },
+  {
+    "path": "components/u8g2/csrc/u8g2_setup.c",
+    "size": 12183,
+    "sha256": "09db70606ed960d37abbcfd2118c25174437acf7156f98913bf48caf9113b056"
+  },
+  {
+    "path": "components/u8g2/csrc/u8log.c",
+    "size": 6923,
+    "sha256": "49ee46c937cdaa071cb1378cd33906598202400e8d0676af7dd1fb2dbfdccf51"
+  },
+  {
+    "path": "components/u8g2/csrc/u8log_u8g2.c",
+    "size": 3353,
+    "sha256": "f644fa5d38cc23983038459144404949fbbd5cdc010df8267f1540012840dbe3"
+  },
+  {
+    "path": "components/u8g2/csrc/u8log_u8x8.c",
+    "size": 2492,
+    "sha256": "e92cdc10375dca36b26bb9b92c1ca45cc84b6b2deb88e54efce1f3f3ed920ba0"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8.h",
+    "size": 73832,
+    "sha256": "e6817ce882e4b51e194f4536903fd8ab4c2140891b85f62ee37b7e1b5891c468"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_8x8.c",
+    "size": 12570,
+    "sha256": "5d6dd09d1272df297d204d0ea360873f5ed966ffde474bced17f8762a7532332"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_byte.c",
+    "size": 18539,
+    "sha256": "31f3af251c1b432707e31e1f6add41d86f2610ab9eecc5bcba4c60b3481b87c9"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_cad.c",
+    "size": 28013,
+    "sha256": "45ef045c452984bea229e8d47fc613058b231bb6634f78fa044f268c643531bc"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_capture.c",
+    "size": 6719,
+    "sha256": "270ca130301837ebec84dcae8dd24844848fdd2955ece3765d5ffb6c1b78645b"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_a2printer.c",
+    "size": 6662,
+    "sha256": "223cada6dc7560588fd636d8671d1b70ff6d991a1955b802d2a74d999ea220df"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ch1120.c",
+    "size": 11468,
+    "sha256": "f958898138a6c4f21fd296958f69e18c5a0c64a947cd2e38b9b135500752c9f1"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_gp1247ai.c",
+    "size": 7630,
+    "sha256": "9f5daa646d436d175afc426f3021f39576729acb014811422246c44de895b692"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_gp1287ai.c",
+    "size": 7863,
+    "sha256": "157f74a8c48d87cb27bc61bb7ddc161a157df63f9a337b91c17e83b003f81b29"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_gp1294ai.c",
+    "size": 6986,
+    "sha256": "12f0174ad9ad2fc9422bb632a88fc43c2ba6c95c067d9e654e96ab639c9b40ab"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_gu800.c",
+    "size": 10689,
+    "sha256": "3c5bce522548dc085b285af8a6cf3caec929deb7944ebff7120802eea36691ca"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_hd44102.c",
+    "size": 11112,
+    "sha256": "71cd3b0e2eebe15c02d382f0675142bece3e7c6bed2724935767f689f949ef3e"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_il3820_296x128.c",
+    "size": 17924,
+    "sha256": "5522ccb6d68eab845c6669ef1016917ffcc3975a101244a4ba27f5481c2e2de3"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ist3020.c",
+    "size": 7694,
+    "sha256": "65cf283f03a50c3f2ec47feed11c0450707e7d28509117945ff6a52af6e32eaf"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ist3088.c",
+    "size": 9919,
+    "sha256": "f50aecd48f2b8e8ded88a4bd41af50a434d50e963aa25088d54dd73cf4733bd7"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ist7920.c",
+    "size": 7346,
+    "sha256": "88747e1d24a58d8c102cab5d83abf0875ab97f6166fa95df890a27f625fe7d0c"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ks0108.c",
+    "size": 11752,
+    "sha256": "4775fc10680c2aadc45df06367d749e3903c09b4f9bd8c2c0dcd9deb2ee67948"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_lc7981.c",
+    "size": 19018,
+    "sha256": "5d9728d1845c1a148e31e879ec76cb90c836d80d71f3486c25121fafd7fcbd86"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ld7032_60x32.c",
+    "size": 17906,
+    "sha256": "88d97ae85ff3bab8b79e0a49553f2c6a46a3cfac55a3c483bcd63b19294ad877"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ls013b7dh03.c",
+    "size": 10134,
+    "sha256": "c3298203462135bb6407486d4f5c9291fc3df201e8de91e8d4566cab637c51df"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_max7219.c",
+    "size": 17004,
+    "sha256": "aabb365417ad46b579b98a3000f529dab973d02e0ca8a2c279441cebe66d5346"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_pcd8544_84x48.c",
+    "size": 6350,
+    "sha256": "e6c792c47a0139fc3f2de0ef05b684dab288604c4c2ddbacf96567fe0911cebe"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_pcf8812.c",
+    "size": 11099,
+    "sha256": "e38ae4a485b5be930f8d8886514cd74c79fd2b51629da5b4129bbc67c047e156"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_pcf8814_hx1230.c",
+    "size": 6976,
+    "sha256": "eeb5892cec4917025f8e0320423ad2fd1eb7637e46fb5b44b0ee3e16198362e6"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_s1d15300.c",
+    "size": 16677,
+    "sha256": "7626aafd1bc464ceae52acd1212e2f05b81416f10324c83efcab38f336b502c7"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_s1d15721.c",
+    "size": 8798,
+    "sha256": "298d811087e9ba458571817a99fa352f1c50794025175cef8fa4f9a99b1d34fc"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_s1d15e06.c",
+    "size": 9351,
+    "sha256": "6808aa2c4607e7270c09683f2f59d7b9f419bc95960f452d737b3f5462c94359"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_sbn1661.c",
+    "size": 10375,
+    "sha256": "709caafeb6c0aa17da872ff91419d33f136bd95b940d08306088562949e7c44e"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_sed1330.c",
+    "size": 28222,
+    "sha256": "9765d0c2c6a3b13a7ee4bfca8722c1454018a254bd7a11a55c3f6e6f6791dbf5"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_sh1106_64x32.c",
+    "size": 8581,
+    "sha256": "348f39e409b72bed522824093dc4f8dd288965f65fbf6fb6eff83d7437ad0c0f"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_sh1106_72x40.c",
+    "size": 8593,
+    "sha256": "8765fa656e04fa9bc5d21398ebe730ce7641dc064e0cc34b760f1e5b96a57a35"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_sh1107.c",
+    "size": 30407,
+    "sha256": "ffc2119588f39a95fe19cb0fc6c122b8cd339762495abf07c3638d2a8ec19bc5"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_sh1108.c",
+    "size": 11134,
+    "sha256": "864a03242be01c0bd1352ad992d516334cc46597657363689f2d79cc17afe7e2"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_sh1122.c",
+    "size": 9339,
+    "sha256": "7b8cd842c9e8be75b6b1aaec630b4692716d4609f1dd6280519c8d142954f400"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1305.c",
+    "size": 18742,
+    "sha256": "111573a3b748c82b0cc0ea9c124ff319db6b6541376df576564fb4f75381af61"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1306_128x32.c",
+    "size": 12301,
+    "sha256": "6f3879c335c566334b8bbad20f2d74d71a5ece0b8563f0f1752ba65aad73f35c"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1306_128x64_noname.c",
+    "size": 21725,
+    "sha256": "4aa719e2c1a6c437dc7a2d844eefd5d8ba517bee9bf0e51ebf0c43f95c63d3a4"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1306_2040x16.c",
+    "size": 8278,
+    "sha256": "5489b0e3a59f9c6292426d008fe9e3c09f804a192feae71b65d29e7cbd11fa59"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1306_48x64.c",
+    "size": 8302,
+    "sha256": "395fcd78304a450e02612debdb5b9da6431a8296495754e940b99bf7f575b3aa"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1306_64x32.c",
+    "size": 10290,
+    "sha256": "f1f901d0ff98a86f600ce52131a721af09819dc0efdbd522e10808e0f0f4e739"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1306_64x48.c",
+    "size": 8394,
+    "sha256": "d8660a8e8804b0c29f15a7e138f4eab93bca3593186a6324409dbe78c00a7eed"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1306_72x40.c",
+    "size": 9781,
+    "sha256": "eb653128d75ca5dbbd6df660234b5c51b15dc036c849f72d6884a19dc43192a2"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1306_96x16.c",
+    "size": 8362,
+    "sha256": "2387df45121846c0305a7da4a6ce50da8e73790381830cf0bde4b40fc69c4e68"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1306_96x40.c",
+    "size": 13021,
+    "sha256": "11bf712022d7232e1d663df719733095ef9afcb1e46d4f2c50c3308309fcf813"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1309.c",
+    "size": 18761,
+    "sha256": "0853e47a96ef00700840043c6119e01bc9a082d5a8ef135e529aff3f3fa3a77c"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1312.c",
+    "size": 13256,
+    "sha256": "6c309e505158944c5221ac9539d3d76e0ba85cc36a84da3e11f402ee76610993"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1315_128x64_noname.c",
+    "size": 8366,
+    "sha256": "679db931d092c6c41080e7a2399e5fcb53951058c0220784ffcfe45d5a3d9163"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1316.c",
+    "size": 12064,
+    "sha256": "832f3fbc1a618607dcfd5a8a9eb5d02bd78f8fda0405047faaa60fa7aa49f262"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1317.c",
+    "size": 8771,
+    "sha256": "dc42d1f9ecd0d4f7573e3b137d0224bc92d1276fec0474f1f03f5a68012abbd9"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1318.c",
+    "size": 11620,
+    "sha256": "8a98bb7b08246ceac8b28cf2597f49da1b99e78a4ae44843bb50030390dfb0d6"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1320.c",
+    "size": 33569,
+    "sha256": "4862037b907186208a965fea3e131bf396fab2bcbebbfd0b43d2aea43329c3ca"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1322.c",
+    "size": 31613,
+    "sha256": "16908835dfc6ffc6dd150efe4248d8397a9827bc5603ced13e8e950f79cf094b"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1325.c",
+    "size": 16677,
+    "sha256": "f75d2a19e66b20a75a8fa41f7f23d8d63b1a2fc59c513bbf4ad5c552ef3a22cb"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1326.c",
+    "size": 9626,
+    "sha256": "1fa7aa62eb3544c9fd50ea6d8e1d746937d7242863fa482b43c5ae5d8af6624e"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1327.c",
+    "size": 38653,
+    "sha256": "76bec51a644c9dcb8a3cab07dd2c9b7999235b7c1e50d25255bf5981069bbeee"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1329.c",
+    "size": 17998,
+    "sha256": "b24b967d538d32798356dce566d4dad95931b7af7841d6755a6ca7e94fa17e27"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1362.c",
+    "size": 17074,
+    "sha256": "19b051c018631fb24124af4ca2e26ff367f2bca599531a87741e1cbe2fa75891"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1362z.c",
+    "size": 9282,
+    "sha256": "7b86a4cbd6b6cc453516a0329d4738f6a4507f43890fd4d870ef1d63df73f596"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1363.c",
+    "size": 11130,
+    "sha256": "7ad5569a5197715232aa1a685232607f1a0d39527263a59c99b4c3d54cd401b8"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1606_172x72.c",
+    "size": 13595,
+    "sha256": "1aef83ba832cd20e280709f161b6b37907ebb2776cb8f2e479cfcbe5e2a555ad"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_ssd1607_200x200.c",
+    "size": 22627,
+    "sha256": "2dad365c421de7d5edd5e89d7d76d6742d1b1d0045aaedc28b9b282d8c4c8c8a"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7302.c",
+    "size": 15127,
+    "sha256": "b54ffb911832fd837999b438689b2fb15c54fcb6d02a7032ce57a5c3513a2a1b"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7305.c",
+    "size": 31534,
+    "sha256": "f3225c5f3c5f7d7b6d513ef20a97edf5d1f663aa5140ec5f216268a59f796aa8"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7511.c",
+    "size": 12577,
+    "sha256": "f11493e994dd5e2a6cbb9459ec3cea974437bf4ce3ad6fecd52a62244b505936"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st75160.c",
+    "size": 12685,
+    "sha256": "a0117c57d41348a5f46fc5db43efdd0365c35bb194c0dd10dae9c8cc1a1d0a50"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st75161.c",
+    "size": 15012,
+    "sha256": "c908cc972ecd70c669d54e440e89358580cd7654e025116246f2008ae40a11eb"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st75256.c",
+    "size": 71937,
+    "sha256": "c7f6ffb70852dcae2a971751bd602d853f5012288501096d60ac7443382ee815"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7528.c",
+    "size": 15134,
+    "sha256": "f7e8dc3602d8a3f6e26dcfc020e4693661f79684851d178e2a7b169f1dad0bfb"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st75320.c",
+    "size": 9614,
+    "sha256": "d28fdb76d615f138a725b3953498bef3cf3cf03e604774c89e8d249269d691d3"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7539.c",
+    "size": 6606,
+    "sha256": "86da086c4da2daa04a012c7da6fa4daa1f59f94d830fea04eb9c162c5b2d29d4"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7565.c",
+    "size": 49831,
+    "sha256": "c361eb0040d29135fe0ec2ffab07d1c11e4baeef95d3475e0ee88954656520fc"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7567.c",
+    "size": 62004,
+    "sha256": "cb167741fb889edd658e69953a89cb49bbb86e9880aec4489ab50a45190af2be"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7571.c",
+    "size": 14300,
+    "sha256": "9c9b61e53e51962080dc8a8b386a3160fa44878ed1cd4f5d9c482bc3269fa5c4"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7586s_erc240160.c",
+    "size": 9347,
+    "sha256": "adaff55f50fe6c78c285d1dc00e1f2c3fa54695e1d17a9f4cb8155c06bb9a6bf"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7586s_jlx320160.c",
+    "size": 8551,
+    "sha256": "f05775dede968d9f7d74d509e42b56329ee9a65e2f1b5836908c34fcf8b5983c"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7586s_jlx384160.c",
+    "size": 9213,
+    "sha256": "c85f94fe3370f6897e118fcb007622b777453b2cbebf191841704b79e915eafd"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7586s_md240128.c",
+    "size": 8565,
+    "sha256": "294fa3b0d0ce0b9f247526c7964326a1491bc3efb1a23f7b3d6e31f656dc65f1"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7586s_pe24064.c",
+    "size": 9546,
+    "sha256": "d72a079b93c7c816af3a135cc1eb98ba6c9e8b45b545535bcfe4d0cbbdf718d1"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7586s_s028hn118a.c",
+    "size": 9166,
+    "sha256": "2803a2543ed390b6deab5d08e96e9e713cc3e841a00569639a5ee971f9f84a73"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7586s_ymc240160.c",
+    "size": 8562,
+    "sha256": "bcb0e3847fca6c1a1b4fdd072d88ccd3d3a3df4f46d003c6f5ed7612b9c838b2"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7588.c",
+    "size": 8610,
+    "sha256": "e6f9a470c7a53c3054523bbaf3d7a1f4429897789f496aefcead29150438acb8"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_st7920.c",
+    "size": 14707,
+    "sha256": "d6c67ea9300567b1361940d572e51170253d1e9fa182fdac02484ef450f512c0"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_stdio.c",
+    "size": 2698,
+    "sha256": "071872071ea13bc246d37ee24c134efd6ed2621e1368ba141628eab685c6589f"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_t6963.c",
+    "size": 26349,
+    "sha256": "7b51f9b3b8cbf9159dd6dd0051a5d25fc69f0855187ec695dccc7534e743b759"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1601.c",
+    "size": 11293,
+    "sha256": "4ec4326040a18f533408165d329e7bf9b5ef8d7a0238f0da8802b7173b3d6892"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1604.c",
+    "size": 11790,
+    "sha256": "2c26b3d58c1c361c090053ed42757578251c9a78d9c86454c359b55543726a99"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1608.c",
+    "size": 19615,
+    "sha256": "b75273ca23c4e24dacf74f2e5cc5a6436a75d77812cfd6ffd3131ee94a3857c4"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1609.c",
+    "size": 7175,
+    "sha256": "3b4fba6b937b29a7fcaa2c533291755338439d95f5cee91ad2f61e8aaa4bf1d2"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1610.c",
+    "size": 9181,
+    "sha256": "17d95ef06df9effe6f8f3ccfe2b55b8370f511f0d51ce0bcf0f116e4e3ce2555"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1611.c",
+    "size": 27834,
+    "sha256": "4769df01ea4ca94da3f3876939da31d78fe659a8337722ffa72a6e17cb24a56c"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1617.c",
+    "size": 10220,
+    "sha256": "97a1185027651832b9c448e20de1c70432a369457bdc986652cd4e550ce48a8f"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1628.c",
+    "size": 15213,
+    "sha256": "bf9c2c289f1a8b783813123a6a5924a5c890c8a1766a2e4f6080edd788df807a"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1638.c",
+    "size": 14247,
+    "sha256": "8ab93f834acade7931d7eb343c4f24b694e5bb1a956592385fb3727e5c18f505"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1698.c",
+    "size": 20251,
+    "sha256": "825b578175105c976cdb4e6c03ca6ab0ced5a4bcc4447088c50237423619d17c"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1701_dogs102.c",
+    "size": 7734,
+    "sha256": "eaf8ef35d53051ba0816dd23b72c01cd2a3d3e76861d17fefbfd77c9abeb5b5c"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_d_uc1701_mini12864.c",
+    "size": 7712,
+    "sha256": "9458d4830147b9b368880da27accb626a12971f5c201ee8257e3aea88b9ae8bd"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_debounce.c",
+    "size": 5815,
+    "sha256": "835d39f9b13100f3f8f4bfc3139d8db994dc2803a6f4f46a942e02aa00d03188"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_display.c",
+    "size": 7880,
+    "sha256": "4d119bc89210d44a11124509ca49efb32ee70cfaeb3651e4760c6a26a267567b"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_fonts.c",
+    "size": 1619194,
+    "sha256": "ab1eead9f2f856ccd80f6617d331f1d9c516c4e30c410df5c79d9152e2298c0f"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_gpio.c",
+    "size": 1767,
+    "sha256": "674b22094f1c0a18249a01dac3239bcbcc2e7231ffdbf5bca2d6ec69daf52b9e"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_input_value.c",
+    "size": 3726,
+    "sha256": "929e65864d564b7288a117d5f355b4e72b45164dc39d91dbafa6a975a34915eb"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_message.c",
+    "size": 4577,
+    "sha256": "42945642cf49b3016e67ebc90acc4fc008063b10cc35626500e04c5315bf09eb"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_selection_list.c",
+    "size": 5114,
+    "sha256": "49421912fc5629fa9a50fffd11e604b8e3ea6718a52411d880109281a8c4c99e"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_setup.c",
+    "size": 5021,
+    "sha256": "38591f904905ed9d8cd186eaa7240e27d4a04407a0562b8167c5f18ec78ef474"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_string.c",
+    "size": 4153,
+    "sha256": "61132e54421dcd08f18d658a586fecd2734f97f0f131c18cc5157727b858530e"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_u16toa.c",
+    "size": 2156,
+    "sha256": "da3674730751deefdf53d399981d5fc54e36a602aca2e9d89b6e9475c30b07a8"
+  },
+  {
+    "path": "components/u8g2/csrc/u8x8_u8toa.c",
+    "size": 2788,
+    "sha256": "767eef4fd9809f331bddf2a0f27727745ae082c385a7d6859c5e3597f9ffea8d"
+  },
+  {
+    "path": "firmware/CMakeLists.txt",
+    "size": 2590,
+    "sha256": "aef787837c9f00a4581724032b1bd6fc15699deaf6e563b15aa4693bb20cccbf"
+  },
+  {
+    "path": "firmware/app/arcade_store.c",
+    "size": 6438,
+    "sha256": "864c15db805a7cf59ca08da1ecd19938625badfe681cfd9c0be0a316e8e94120"
+  },
+  {
+    "path": "firmware/app/arcade_store.h",
+    "size": 650,
+    "sha256": "2af74462e56ec940c0007cb4672386145e2516ccdba7a188924678653f109724"
+  },
+  {
+    "path": "firmware/app/camera_remote.h",
+    "size": 500,
+    "sha256": "6a755e79e99cf7bade4a0faa0fd9fda698ea9b2eb9caa3763deb640a76b430a6"
+  },
+  {
+    "path": "firmware/app/cloud_payload.c",
+    "size": 1968,
+    "sha256": "aaa86ff486b38404da0661c282a3a7e5dfa09aea5361301a83b5ade67b2ae94e"
+  },
+  {
+    "path": "firmware/app/cloud_payload.h",
+    "size": 396,
+    "sha256": "6fac29d6e260b9ea20ac5cad02bb7010c10505fe42f9b52a68270c2c380743a5"
+  },
+  {
+    "path": "firmware/app/cloud_sync.c",
+    "size": 7612,
+    "sha256": "67df85337b14c7807b82b4cdcdff304d08396bb414d42bf530c3a0c14111ee07"
+  },
+  {
+    "path": "firmware/app/cloud_sync.h",
+    "size": 449,
+    "sha256": "1f6f7aef2e3e2a8fd557ec919c4fc656d4c6f44bda5df2f5f1c199285cd2face"
+  },
+  {
+    "path": "firmware/app/friend_mgr.c",
+    "size": 24814,
+    "sha256": "efec8f9dd2f48544e5568b1e9207781cbf559c25efeb9523c70b79a3ba4b9775"
+  },
+  {
+    "path": "firmware/app/friend_mgr.h",
+    "size": 2201,
+    "sha256": "d3ce44b5ef9abf7f34388bac34090b2d93c999a26f59cb3bf5b7d1085422927d"
+  },
+  {
+    "path": "firmware/app/friend_store.c",
+    "size": 7806,
+    "sha256": "78a4db19127a2396014ccb39eefffa930f478e292895bf972070ac896cf49537"
+  },
+  {
+    "path": "firmware/app/friend_store.h",
+    "size": 1228,
+    "sha256": "3521465cda6a6e6a893d998da8af85a1296887304282a175d258c9e71e69eed1"
+  },
+  {
+    "path": "firmware/app/mesh_notify.c",
+    "size": 1315,
+    "sha256": "61b9091222f815c606925e29d6109d977151d65d942cf96951c0ded057ff49c1"
+  },
+  {
+    "path": "firmware/app/mesh_notify.h",
+    "size": 553,
+    "sha256": "6b30c4144c327e62f6376939f9236b0da21ab37205baa7e54b6c547465952ec5"
+  },
+  {
+    "path": "firmware/app/message_service.c",
+    "size": 32835,
+    "sha256": "e6436fa05585310c0453a29fe1f10b380d79fc1ab089964170ef4627e786a4fb"
+  },
+  {
+    "path": "firmware/app/message_service.h",
+    "size": 2940,
+    "sha256": "225022a3d947fb221be802cf5222a86b330acc73777eb6cf1281398221662ad3"
+  },
+  {
+    "path": "firmware/app/morse_buffer.c",
+    "size": 5072,
+    "sha256": "d284a46fbae40981e58e1346c8fcdeb1f3c191f17c0cd90e97e8628e85afe6be"
+  },
+  {
+    "path": "firmware/app/morse_buffer.h",
+    "size": 3586,
+    "sha256": "e6773fbd57a971c0bf7d2da0b5884c0429e5cfef1bbc1e92f3d5cb61edc9d16a"
+  },
+  {
+    "path": "firmware/app/morse_codec.c",
+    "size": 3289,
+    "sha256": "7349666a4e8b74d1591aad009e150061f9414efae17771d00174d83f95907090"
+  },
+  {
+    "path": "firmware/app/morse_codec.h",
+    "size": 899,
+    "sha256": "8a06370d084c7961f50c0cd5ea52307d9dfb123d1d0f9cf5b697410db477ead1"
+  },
+  {
+    "path": "firmware/app/morse_engine.c",
+    "size": 7932,
+    "sha256": "e2507db1a38a280fa014e1407f62dd98a2306690def07479c25a431028fcb72c"
+  },
+  {
+    "path": "firmware/app/morse_engine.h",
+    "size": 4094,
+    "sha256": "5d920cef19e9b77f84a7c5d97d02b2e5b70e5650e393c123bdf60c121cab7f88"
+  },
+  {
+    "path": "firmware/app/morse_input.c",
+    "size": 2771,
+    "sha256": "0cac5dfe2c6f7bc95efde5f60dd73532419184ee70f061b83400961700eae5f7"
+  },
+  {
+    "path": "firmware/app/morse_input.h",
+    "size": 692,
+    "sha256": "2f5d658b09f355f72195623968b07a579f7c787e090daa746d8b3e1be329aefa"
+  },
+  {
+    "path": "firmware/app/morse_keyer.c",
+    "size": 2327,
+    "sha256": "fd1633a98675d1402dfb63ef0426e23f0ea10667d233cb3af05fbc66b537523f"
+  },
+  {
+    "path": "firmware/app/morse_keyer.h",
+    "size": 944,
+    "sha256": "3481961e27fd793e6626f71d0ed52bc265bde9ea17920dea32c36af8e0fa1f3a"
+  },
+  {
+    "path": "firmware/app/morse_live.c",
+    "size": 9132,
+    "sha256": "d24de20f8716f7e6987d56ebde233e66c95c39d5fb4beb7d7565cd27c5594c41"
+  },
+  {
+    "path": "firmware/app/morse_live.h",
+    "size": 2773,
+    "sha256": "58eef2431e99e7be73bb07753007d6174f1b6081279758407c9c37fd19cbaf47"
+  },
+  {
+    "path": "firmware/app/morse_playback.c",
+    "size": 3737,
+    "sha256": "74b3de8d991d3224a4054aaa222d688b68dea19e79af87df859b8e59b027be95"
+  },
+  {
+    "path": "firmware/app/morse_playback.h",
+    "size": 316,
+    "sha256": "f37a8c04cd155b790df14e80f85f6a80f2ac5bb37d6c5a8e192124dedd9e91df"
+  },
+  {
+    "path": "firmware/app/morse_rx_queue.c",
+    "size": 4739,
+    "sha256": "50a594a7574bb1795f9f09ca2047d057b2b0ffd73ad0ace46ffc82fe3bd1c9ff"
+  },
+  {
+    "path": "firmware/app/morse_rx_queue.h",
+    "size": 3246,
+    "sha256": "4327a54d42a7f0e1dde3a9cc919c4a726fe662ac0341222918289f622eaccc1c"
+  },
+  {
+    "path": "firmware/app/morse_terminal.c",
+    "size": 16076,
+    "sha256": "04789740e8d8d8087af6bd6d2f2b1df0863f3455afb30cfbc6ba4de1dc8e6c21"
+  },
+  {
+    "path": "firmware/app/morse_terminal.h",
+    "size": 1403,
+    "sha256": "2d02d12df8cff37e56210dd5f7d858fe6205bd584d74464aa903b2810353d5a7"
+  },
+  {
+    "path": "firmware/app/morse_tree.c",
+    "size": 3220,
+    "sha256": "96553128a93c641e782673161344b09ea68ff90c7e4bbf87d5a997ca51f238a8"
+  },
+  {
+    "path": "firmware/app/morse_tree.h",
+    "size": 3086,
+    "sha256": "6fd4a99cf0b9e79ad8db0b742b8d9faf84d5971b355fc9197100c816ea8528e7"
+  },
+  {
+    "path": "firmware/app/morse_tx.c",
+    "size": 254,
+    "sha256": "4c4ab2818981ad0149537e60238f1809e231b86eb3642d3187cd6233bf6b1264"
+  },
+  {
+    "path": "firmware/app/morse_tx.h",
+    "size": 1357,
+    "sha256": "c738ae3d18fdc5921392797735f0857b9e4c4fbb2e3d16ef0062b6387c6f3072"
+  },
+  {
+    "path": "firmware/app/morse_ui.c",
+    "size": 2614,
+    "sha256": "feaaa3524526e1c379e11c5f137e0fc5cde292fee96c4d6301af267b3b7307f9"
+  },
+  {
+    "path": "firmware/app/morse_ui.h",
+    "size": 930,
+    "sha256": "43a8bb4c40dfce1dec7a0d626ee74d8bd3600785b74b11d09c4f2cb9c82dbb2f"
+  },
+  {
+    "path": "firmware/app/nearby_games.c",
+    "size": 7539,
+    "sha256": "e2f3f7f85c9d9c22e91703d7abd3fab9413bffeef25285a852b0db26c4561c72"
+  },
+  {
+    "path": "firmware/app/nearby_games.h",
+    "size": 215,
+    "sha256": "5d38809ecab11e878e77d453309ad3329440d9f56b6c5e7d7c9d1190a07835ff"
+  },
+  {
+    "path": "firmware/app/pet.c",
+    "size": 5400,
+    "sha256": "4c53e272a337cbaff9e34198cf979d2b94b1d523aa9f283ecadd7469b8082810"
+  },
+  {
+    "path": "firmware/app/pet.h",
+    "size": 1224,
+    "sha256": "ce9b907c86e5ba4721742ff4f9ba29f67741a7d521759e0b7fb773c6c81dff65"
+  },
+  {
+    "path": "firmware/app/pet_attention.c",
+    "size": 862,
+    "sha256": "d379fb9bd4be62dbcf51082dc366c34e01dba50003525af9c4b3433cbf1d27e9"
+  },
+  {
+    "path": "firmware/app/pet_attention.h",
+    "size": 385,
+    "sha256": "b13e2382e373845631a254a63c84cc1232df07378c13af9e0366c25d4df59b93"
+  },
+  {
+    "path": "firmware/app/pet_games.c",
+    "size": 3135,
+    "sha256": "31302c74ec189dc63056226050316abe49ba3c41de26151adb356d11a3c389d3"
+  },
+  {
+    "path": "firmware/app/pet_games.h",
+    "size": 651,
+    "sha256": "917e25cc79eaf8bd5e9ab7807d1a06facf3f66ac093f908cea993b58f0816618"
+  },
+  {
+    "path": "firmware/app/pet_help.c",
+    "size": 1950,
+    "sha256": "c70b4da9482211048878be2af29b514b8131f7d1a92b87c9d0526ec6bef0dde6"
+  },
+  {
+    "path": "firmware/app/pet_help.h",
+    "size": 238,
+    "sha256": "0b5241333c1690988440115e13f43df3a119c8655808bdb3ece12326b88587dd"
+  },
+  {
+    "path": "firmware/app/pet_link.c",
+    "size": 9748,
+    "sha256": "cdebfa593eb5097ae4a736ae82e292e6748c5f993defbf4be0315ea10e02485d"
+  },
+  {
+    "path": "firmware/app/pet_link.h",
+    "size": 286,
+    "sha256": "b856c755d017c48b7bb9db0cbe2907db4caa99b32f8f584a55c46b029d527707"
+  },
+  {
+    "path": "firmware/app/pet_service.c",
+    "size": 8313,
+    "sha256": "6f7bebcede4e0ca434bd21e37942606b1081082a54082e868ad14ee0de224e8d"
+  },
+  {
+    "path": "firmware/app/pet_service.h",
+    "size": 1269,
+    "sha256": "eb380fbdc049a569ca8cd207264438418aa047cfbd103e52a70d4f7f0ee847e2"
+  },
+  {
+    "path": "firmware/app/quick_msg.c",
+    "size": 695,
+    "sha256": "9c1807f58b5380ef5fe4aa282bdaf142d437c5e2c1ccfa344f54da9ff552741d"
+  },
+  {
+    "path": "firmware/app/quick_msg.h",
+    "size": 397,
+    "sha256": "7214c3102a28643b0db9b6a5f0a72a4b5699f7aa07149ba3bf423b78cd84e4d6"
+  },
+  {
+    "path": "firmware/app/reaction_party.c",
+    "size": 29252,
+    "sha256": "0346da9bf693ef133261a45d0c1660b3734eae0d63473173fec3bde29004b443"
+  },
+  {
+    "path": "firmware/app/reaction_party.h",
+    "size": 323,
+    "sha256": "75092d317311baf2929f1e381f091324ef3ca5f349ca79db582460672a7c566f"
+  },
+  {
+    "path": "firmware/app/rps_game.c",
+    "size": 9062,
+    "sha256": "4cd1f46e34dbf1a0373e1d8e8b1abe2a682dd09fa5efc1921bf9ec733d2172af"
+  },
+  {
+    "path": "firmware/app/rps_game.h",
+    "size": 183,
+    "sha256": "350ac25a952e0c1fc72388e36c471e1bedc02b1b2bd1acf14f718821e49264ba"
+  },
+  {
+    "path": "firmware/app/snake.c",
+    "size": 2332,
+    "sha256": "b6eeda7b80a62c6a1cbd079637df9667301ae5cfa878f2a45ea47d12ddf7849f"
+  },
+  {
+    "path": "firmware/app/snake.h",
+    "size": 838,
+    "sha256": "824641d4adc73382dad6588de8fe5ce47d185a5334108794144e09d85c0eadcb"
+  },
+  {
+    "path": "firmware/app/stress_test.c",
+    "size": 3487,
+    "sha256": "829bb40bc27e6d2e389626890e293d138e82b288198e2dcddd0415415e777524"
+  },
+  {
+    "path": "firmware/app/stress_test.h",
+    "size": 1454,
+    "sha256": "15ff5a40ecc3ba8115412edc31f1e69f7e113905dbf900ca089602fc30a74806"
+  },
+  {
+    "path": "firmware/app/tetris.c",
+    "size": 3350,
+    "sha256": "247767992d8ccfeae8622b60a8e961c069293503f9f363991eb3fc08386a1ce7"
+  },
+  {
+    "path": "firmware/app/tetris.h",
+    "size": 814,
+    "sha256": "680667b7ad59ac4a61868397649ad9b5878e4b8f2dcb0df4749477cdda90321b"
+  },
+  {
+    "path": "firmware/app/training.c",
+    "size": 994,
+    "sha256": "e0941031fd44f5ca6c4eb17a1eb85a733fc441182a80e3a685b2ba105197526b"
+  },
+  {
+    "path": "firmware/app/training.h",
+    "size": 647,
+    "sha256": "a3fde06c13c4471c27717186fbcbc99119c694e65551ac82a482814d7278884e"
+  },
+  {
+    "path": "firmware/app/wifi_credentials.h",
+    "size": 962,
+    "sha256": "936bdc11fe7b860280a247698aa7d266314156d6b3c5b4eebd0033a0313d8ab1"
+  },
+  {
+    "path": "firmware/app/wifi_station.c",
+    "size": 13365,
+    "sha256": "1d38e128057e734c453e0d776b90d55b242b6e36053f2d80d37141ba705cb499"
+  },
+  {
+    "path": "firmware/app/wifi_station.h",
+    "size": 915,
+    "sha256": "8ea6d6df942ced0589116da463663b265e6db23b52ab70c262a095f675f8cdb0"
+  },
+  {
+    "path": "firmware/app/wireless_tools.c",
+    "size": 22097,
+    "sha256": "debd173b4d305116d010236fcd326dc834ba122ae342a362d4c75c73a2c1b557"
+  },
+  {
+    "path": "firmware/app/wireless_tools.h",
+    "size": 282,
+    "sha256": "6cf6f4352173d9169fd9a81e18b42cbfd08b5d97ed2df9ab96ea2d7bee7432b4"
+  },
+  {
+    "path": "firmware/config/constants.h",
+    "size": 4284,
+    "sha256": "49ef327cffb26d1beef26dd8f7b960022a5a8366074c968725e49e1640f3bf52"
+  },
+  {
+    "path": "firmware/config/defaults.h",
+    "size": 4862,
+    "sha256": "5e7e879e7c1c94444362f4191c307957ec26a7fa9bfee20794100e741f682561"
+  },
+  {
+    "path": "firmware/config/log_config.h",
+    "size": 8756,
+    "sha256": "ef83ff4201b3a2f62a9fc4ae3acf8c6f9452c2833244011edb564549bfd2ebaa"
+  },
+  {
+    "path": "firmware/config/pins.h",
+    "size": 5269,
+    "sha256": "f214cbcf3f1c913a6cc8312880e396ed143fed39c8f62172ffd751ed082853c8"
+  },
+  {
+    "path": "firmware/drivers/adc_battery.c",
+    "size": 3567,
+    "sha256": "48da0fb372282746bcb2f48e45722cdf00bc570864e792c01f1aaccd1f275cc6"
+  },
+  {
+    "path": "firmware/drivers/adc_battery.h",
+    "size": 1991,
+    "sha256": "aef322908edb5d99f08debb3da5f22ad6797933cbdb84f19a720c995640d962a"
+  },
+  {
+    "path": "firmware/drivers/ec06.c",
+    "size": 12471,
+    "sha256": "9408bb7efe0c1bb8ea7ae10dff326c4fc43dac830cd96d5d9ee6a8e5b6e91a03"
+  },
+  {
+    "path": "firmware/drivers/ec06.h",
+    "size": 7393,
+    "sha256": "a1e337fad7cd5556bcc5645aa6ff47863320a5758ccef976cb91144791c7aa11"
+  },
+  {
+    "path": "firmware/drivers/gpio_config.c",
+    "size": 9489,
+    "sha256": "faa2155474af9672d59f59d1699564b74a52ba524dbf2dcd200f11bc1992b0ee"
+  },
+  {
+    "path": "firmware/drivers/gpio_config.h",
+    "size": 1302,
+    "sha256": "aa0abe9a3f811a32f814a273d505eaea4658320c0ea1a4853798eda95a302c63"
+  },
+  {
+    "path": "firmware/drivers/load_switch.c",
+    "size": 3353,
+    "sha256": "119d81376d8994be098b537454d53b9b641c6b277eaf11546f121041a03b42c7"
+  },
+  {
+    "path": "firmware/drivers/load_switch.h",
+    "size": 2316,
+    "sha256": "0a41a269fa56942becc2c7c8026e0cdd03cdcd8238e754f5dca29d05d1faefb9"
+  },
+  {
+    "path": "firmware/drivers/mcpwm_buzzer.c",
+    "size": 7786,
+    "sha256": "41197d8bfc4e1ab4f7570f3f925edeace7d652016ccf27975f468d7682e798c7"
+  },
+  {
+    "path": "firmware/drivers/mcpwm_buzzer.h",
+    "size": 1366,
+    "sha256": "a13b0f70ec730f0cca183be1eb94d3fc0099f3c95d162331ec5573f63cfe2225"
+  },
+  {
+    "path": "firmware/drivers/motor_pwm.c",
+    "size": 4816,
+    "sha256": "7f2946351038999882cfaccf9c3f9c840f5f0bf46c23173105807d7ce4b58abb"
+  },
+  {
+    "path": "firmware/drivers/motor_pwm.h",
+    "size": 937,
+    "sha256": "95eaac2492d7ef70b04ba84f2301ab0e7cdd8ddccf6602d0c63d282b171676e1"
+  },
+  {
+    "path": "firmware/drivers/oled_power.c",
+    "size": 2401,
+    "sha256": "54f659ff8b90ce4b269f9a7e0a2c9c070d1d3b4392230f88d567572d79efaf20"
+  },
+  {
+    "path": "firmware/drivers/oled_power.h",
+    "size": 2581,
+    "sha256": "97eb8ed80a543f52780d9bfe21d8673471c85bab89bed81a539105393ff95811"
+  },
+  {
+    "path": "firmware/drivers/rgb_led.c",
+    "size": 27103,
+    "sha256": "a9e8bc28d7430f2d69640885739680163fb6b1babf2be472fe6f765a43c74ba8"
+  },
+  {
+    "path": "firmware/drivers/rgb_led.h",
+    "size": 4372,
+    "sha256": "b57ee0ac75f07760a62870969de18161addce84fe34ae1ceac8cda0387566435"
+  },
+  {
+    "path": "firmware/drivers/rmt_ws2812.c",
+    "size": 10496,
+    "sha256": "7ca66220c674cdc7e25199402950a026a639f2ce1919ffd7a395976cd8b13169"
+  },
+  {
+    "path": "firmware/drivers/rmt_ws2812.h",
+    "size": 2470,
+    "sha256": "41e17be6d00cb43cb8718d138fe6b612cdfda0bb7137811e006203d267b89a61"
+  },
+  {
+    "path": "firmware/firmware.c",
+    "size": 11288,
+    "sha256": "a88f1b9ec92b1a461365efce829c554cd281a1b72e825d6b2021750ba11c731a"
+  },
+  {
+    "path": "firmware/include/firmware.h",
+    "size": 3328,
+    "sha256": "3dd251617d638f53d17da0fd3499339f70207a195e2dea89c2e0380f911ec462"
+  },
+  {
+    "path": "firmware/protocol/mesh_crypto.c",
+    "size": 669,
+    "sha256": "ece5fc34deec816c66a3ec14aaed15dfa0e50170aeade3d98016ad99849ab753"
+  },
+  {
+    "path": "firmware/protocol/mesh_crypto.h",
+    "size": 4629,
+    "sha256": "cb54c30b65b28d5a37cf106c6d58c5f278585339b149277ef43e0fd9714c731c"
+  },
+  {
+    "path": "firmware/protocol/mesh_packet.c",
+    "size": 3976,
+    "sha256": "8f56377d232246c0df27b26222125ae14616df5b55e0114d6a084bdd71f47847"
+  },
+  {
+    "path": "firmware/protocol/mesh_packet.h",
+    "size": 2480,
+    "sha256": "3ca75c1b5475b09e6b240720f625213a695748e1168bd60273bf5caca6b17365"
+  },
+  {
+    "path": "firmware/radio/ble_radio.c",
+    "size": 10414,
+    "sha256": "aa305bc3f9728b28120a017e033321b3ee0b1e0bd6a4f5671d608be4b70f3aa5"
+  },
+  {
+    "path": "firmware/radio/ble_radio.h",
+    "size": 2727,
+    "sha256": "a90f3e2c37d0b4f88a04587cc667b3a844a5c16956086927a201a0c7cdd3e692"
+  },
+  {
+    "path": "firmware/radio/tool_hid.c",
+    "size": 11873,
+    "sha256": "60ec41ca67b7515969d135f58b137c048241de9e95429484ff6085fbe582f9d4"
+  },
+  {
+    "path": "firmware/radio/tool_hid.h",
+    "size": 594,
+    "sha256": "3c2bc502e2eac8ffdda9d120158595a781c9e4920b60d4bf81d163934f48e629"
+  },
+  {
+    "path": "firmware/radio/tool_hid_report.h",
+    "size": 660,
+    "sha256": "673d178c414418514bfe6119039ab9a931a92c4bd6ecdc93145d108c1f961c0f"
+  },
+  {
+    "path": "firmware/system/config_mode.c",
+    "size": 855,
+    "sha256": "0876108dd0d9fe2ce1212a7a5b9773ded9fec72fbda859518f68d6c00b036a8f"
+  },
+  {
+    "path": "firmware/system/config_mode.h",
+    "size": 1175,
+    "sha256": "6e45183a6b5a6b3dade638013006bbc5aa9ee1982f51fdb5d0a725ee50390df3"
+  },
+  {
+    "path": "firmware/system/device_control.c",
+    "size": 8016,
+    "sha256": "d5ef74d7a024381fcfc77ceb415b24d496eeaf422ed9a44a28e6c0895c95feae"
+  },
+  {
+    "path": "firmware/system/device_control.h",
+    "size": 598,
+    "sha256": "be6fb503b9597612dd80e7d504210f5a0b15eeb035c29c2e3d009548a320334f"
+  },
+  {
+    "path": "firmware/system/event_dispatcher.c",
+    "size": 588,
+    "sha256": "a9b0bf9829c074c3739c32fe6842d89f286e7eac93792d109eb4638ad6f73cf3"
+  },
+  {
+    "path": "firmware/system/event_dispatcher.h",
+    "size": 3535,
+    "sha256": "d9f1829b5cb8105b5fc4a801dc8e1d2e7b5837f9c3b0449e53e1aee1a2d3379b"
+  },
+  {
+    "path": "firmware/system/haptic_feedback.c",
+    "size": 4672,
+    "sha256": "66a07af0eb4f5b2d227b79ce601be61710c34561cc867a4bccffc9876b42bf86"
+  },
+  {
+    "path": "firmware/system/haptic_feedback.h",
+    "size": 1607,
+    "sha256": "245512f9e964da31769d81d3331aee6bae4898d2396c14d0eb3a98ccf075f742"
+  },
+  {
+    "path": "firmware/system/local_settings.c",
+    "size": 366,
+    "sha256": "f617be672a6928bcfd6721ed59358ca36b3f26fd4184d0e8ebe644fd8b6f7c3a"
+  },
+  {
+    "path": "firmware/system/local_settings.h",
+    "size": 333,
+    "sha256": "0674456d4096ae2cea5496fee1b2a4a72e31d4f181c7ca2d55e5139627cb9e2a"
+  },
+  {
+    "path": "firmware/system/log_manager.c",
+    "size": 11521,
+    "sha256": "05602bc45fe6bf650d4d6170522b528464aa688325ffb939b77f6f250e9372bb"
+  },
+  {
+    "path": "firmware/system/log_manager.h",
+    "size": 12626,
+    "sha256": "2abaf29c18b70249283e08088f5d85852ccc6b914a4aeb911133505f699f7bea"
+  },
+  {
+    "path": "firmware/system/nvs_config.c",
+    "size": 25823,
+    "sha256": "9f2c94cd5a65b90a80c97f1450135d6b4d5cd0f57d9989c3cece48b6eb85abff"
+  },
+  {
+    "path": "firmware/system/nvs_config.h",
+    "size": 15176,
+    "sha256": "3b50c783dbbd24c9e01834fd7f927ef63845d9ea52e9bb8c146dfe91a0b69261"
+  },
+  {
+    "path": "firmware/system/power_manager.c",
+    "size": 872,
+    "sha256": "eb3a9a666ca9e764eaffcf66dd81059f394c6af9e699f5c66ca8ff3fc78bf7f4"
+  },
+  {
+    "path": "firmware/system/power_manager.h",
+    "size": 498,
+    "sha256": "ebf6f2fe3ee0d5c039767794fc69c6212633f199c95857f8fb9aa7c38e524f3a"
+  },
+  {
+    "path": "firmware/system/power_mgmt.c",
+    "size": 9597,
+    "sha256": "4da944ddb9c5c7e6f4cc9aab3e5fb17eb03c90b02c3aa010f99ed09725bf96ff"
+  },
+  {
+    "path": "firmware/system/power_mgmt.h",
+    "size": 1569,
+    "sha256": "cf03b0be97022855806b751cc2a97ad7ad80d9abdaa74cd9d8f6bc74665b5b8b"
+  },
+  {
+    "path": "firmware/system/storage_nvs.c",
+    "size": 3158,
+    "sha256": "55b6985d5c5f43a5493b8b2c921cdebd8c66a3e05021afc9a45a59d3c1b666a5"
+  },
+  {
+    "path": "firmware/system/storage_nvs.h",
+    "size": 1021,
+    "sha256": "1481f11dbf1f64adce103d373c77397a4f13e60f0d44d9770a300917e537fcf9"
+  },
+  {
+    "path": "firmware/ui/OLED_config.h",
+    "size": 10399,
+    "sha256": "92e3911cfbdb29b9f8e25ccd1c51b6f8ea5d49fed3072606f3ef101f9ade0bdc"
+  },
+  {
+    "path": "firmware/ui/assets.c",
+    "size": 8768,
+    "sha256": "07ad43ee330e3aaa8cf2403b20259997febd0fef380ce5a5b9ac5a44dda28be8"
+  },
+  {
+    "path": "firmware/ui/assets.h",
+    "size": 1157,
+    "sha256": "324ad3474968cface1b8817bd5098416ed2b50b51777a16dff8b5bb4599b58fe"
+  },
+  {
+    "path": "firmware/ui/dev_mode.c",
+    "size": 34540,
+    "sha256": "b17b75510118e458d4c0db1f5c630fe7b51f3077f97f6c263c06f9e13fe073ef"
+  },
+  {
+    "path": "firmware/ui/dev_mode.h",
+    "size": 5946,
+    "sha256": "a8b42d29e1a3161f16a9283690f949e2daa9101b89ebcfd58d6006e9c854dfa6"
+  },
+  {
+    "path": "firmware/ui/local_pages.c",
+    "size": 23775,
+    "sha256": "14735735f8f9231bbd15927c889de2c49684c74c4995239e29a6fe48fded0869"
+  },
+  {
+    "path": "firmware/ui/local_pages.h",
+    "size": 269,
+    "sha256": "df9829050ed437a8629a22d7fd9fc83db3603648d641b2a9455d8d4b1662305a"
+  },
+  {
+    "path": "firmware/ui/menu_content.c",
+    "size": 7794,
+    "sha256": "18e88a610d2f2cccbd80cb11a308c58680439accf446a33e77da1bf4b30903c7"
+  },
+  {
+    "path": "firmware/ui/menu_content.h",
+    "size": 1848,
+    "sha256": "171d5ac1997be02f6d31b3e10614fd4417e67a1137ccfbe19a9e67b11711467f"
+  },
+  {
+    "path": "firmware/ui/menu_layout.h",
+    "size": 896,
+    "sha256": "88d6d82e38baf30e583ea5262ed00e287b3be4b8dd40dafd7ce78ea30e729593"
+  },
+  {
+    "path": "firmware/ui/menu_pages.c",
+    "size": 55202,
+    "sha256": "0ee22e1a25cefafa909b2e4055168dea11613d089a6970bd3c05b48a64fd69b1"
+  },
+  {
+    "path": "firmware/ui/message_draft.h",
+    "size": 2788,
+    "sha256": "882067f01e8f880c65727f725d1608c3ec3397c18e7514ffd824c1707571f588"
+  },
+  {
+    "path": "firmware/ui/message_emotes.h",
+    "size": 865,
+    "sha256": "85d63dc0399f733cbfc171cba2737dce47fe95eaebf64626cdfc7eba158175bb"
+  },
+  {
+    "path": "firmware/ui/morse_training_ui.c",
+    "size": 14709,
+    "sha256": "d588646b0bf5615a4c981631b763a90bf1e2bddcdd44598904853e6333c7b760"
+  },
+  {
+    "path": "firmware/ui/morse_training_ui.h",
+    "size": 635,
+    "sha256": "cdf7eb8ff616f08a3c9a60586577dd8e7aaa8aaeb68a7066afcdbd4bbd3b49c5"
+  },
+  {
+    "path": "firmware/ui/pet_notice.c",
+    "size": 1030,
+    "sha256": "84a7d362367e53df4d7941212ecbd7a30a2d21a4a67d713eab8a5d61ff00fb30"
+  },
+  {
+    "path": "firmware/ui/pet_notice.h",
+    "size": 105,
+    "sha256": "1b2bbf12ec6c23af1a9767bef19b954deca3e5de22f9077082f5bfb534b1db64"
+  },
+  {
+    "path": "firmware/ui/pet_page.c",
+    "size": 19019,
+    "sha256": "b229a1442ceacfef1c2ddf87eadf1183e9224a5973202ab3a85dfd77e6fbbfd4"
+  },
+  {
+    "path": "firmware/ui/pet_page.h",
+    "size": 185,
+    "sha256": "7af5014e37954c928e2fc05d11a06693960cc457689fc530cf9d1c9129709d3a"
+  },
+  {
+    "path": "firmware/ui/snake_page.c",
+    "size": 4024,
+    "sha256": "6c54f9e98830f471f977c69d752539cb08ac17db21759cea848a744ed0e4cc9b"
+  },
+  {
+    "path": "firmware/ui/snake_page.h",
+    "size": 134,
+    "sha256": "17841d3a573adda71e7b918d3523a245c767623ee28b7060d62641ea99be01e5"
+  },
+  {
+    "path": "firmware/ui/tetris_page.c",
+    "size": 5082,
+    "sha256": "7b199b0c7c40639b533505a5a7e1659cdb4edf07268446cee9ffa5fd2c560484"
+  },
+  {
+    "path": "firmware/ui/tetris_page.h",
+    "size": 138,
+    "sha256": "4454b40cbd8e8adbac5f2a1cb12fdcc6af0e2d02cd685ac7e37cfe964bd8827b"
+  },
+  {
+    "path": "firmware/ui/tile_marquee.h",
+    "size": 552,
+    "sha256": "495fc09cfd52c4a81cf6af5a05be00f36f642085f6b10fece38f64c52ca3e2ff"
+  },
+  {
+    "path": "firmware/ui/ui_task.c",
+    "size": 3559,
+    "sha256": "4184e18c7e629f5d4ee134d847db22349c0afa96f0ba25a385254f24cd4e34de"
+  },
+  {
+    "path": "firmware/ui/ui_task.h",
+    "size": 444,
+    "sha256": "be733a485271e90eebc2e6241eae759e8dda57165d45fce63e0983dc099eab95"
+  },
+  {
+    "path": "firmware/ui/wououi.c",
+    "size": 48733,
+    "sha256": "2ff70acc5736e37647ece595ad9c4712e308a202e146835942af1c92d97e4b5c"
+  },
+  {
+    "path": "firmware/ui/wououi.h",
+    "size": 17200,
+    "sha256": "6934474972b946bcd3855e94a2260a7daba3d0e5719bb1ed0f8d9b12c0456d14"
+  },
+  {
+    "path": "main/CMakeLists.txt",
+    "size": 113,
+    "sha256": "d55ef19b49231ac2079835af8f826e1eb63d1f62f54dcc056e38e78da9c535ae"
+  },
+  {
+    "path": "main/main.c",
+    "size": 5533,
+    "sha256": "1415349d2aec6da3bd9608a47109f38c9c0f452ec93487791e1cf63456a4dd67"
+  },
+  {
+    "path": "partitions_ota.csv",
+    "size": 927,
+    "sha256": "3b6fc83c86a4d74f8c3b8efa5c2d9184a09e35bc70bd742742ac278d059375a2"
+  },
+  {
+    "path": "sdkconfig.defaults",
+    "size": 1315,
+    "sha256": "d1060edab2ff064b53f5c9fa28794c4be8179fed7efa18c4cda2147b18081398"
+  }
+]

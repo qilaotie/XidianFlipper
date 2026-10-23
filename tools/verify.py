@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 from build import ROOT, digest, snapshot
+from flash_layout import capacity, profile
 
 
 def check_files(folder, records):
@@ -31,6 +32,14 @@ def verify(folder, original=False):
     if manifest["application"] != next(image for image in images if image["offset"] == "0x20000"):
         raise ValueError("Application record differs")
     check_files(folder, images)
+    table = (folder / 'firmware/partition-table.bin').read_bytes()
+    layout_name, _ = profile(table)
+    if manifest['application']['size'] > capacity(table):
+        raise ValueError('Application exceeds the compiled partition table')
+    if not original and (manifest['build'].get('layout') != layout_name or
+                         manifest['build']['slot_bytes'] != capacity(table) or
+                         manifest['build']['slot_free_bytes'] != capacity(table)-manifest['application']['size']):
+        raise ValueError('Manifest capacity differs from compiled partition table')
     bootstrap = manifest.get("bootstrap")
     if bootstrap and digest((folder / bootstrap["path"]).read_bytes()) != bootstrap["sha256"]:
         raise ValueError("Bootstrap manifest changed")
@@ -38,5 +47,9 @@ def verify(folder, original=False):
 
 
 if __name__ == "__main__":
+    import argparse
+    parser=argparse.ArgumentParser(description='Verify frozen original and a release matching current source.')
+    parser.add_argument('--release',type=Path,default=ROOT/'build/release')
+    args=parser.parse_args()
     verify(ROOT / "releases/original", original=True)
-    verify(ROOT / "build/release")
+    verify(args.release.resolve())

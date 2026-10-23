@@ -17,10 +17,10 @@ class Device:
         self.log = bytearray()
         self.frame = b""
         self.telemetry = {}
-        self.seq = 2000
+        self.seq = time.monotonic_ns() & 0xffffffff
 
     def send(self, op, value=0):
-        self.seq += 1
+        self.seq = (self.seq + 1) & 0xffffffff or 1
         payload = struct.pack("<BBIh", 2, op, self.seq, value)
         payload += struct.pack("<H", binascii.crc_hqx(payload, 0xffff))
         self.serial.write(b"\xaa\x55\x11\x0a\x00" + payload)

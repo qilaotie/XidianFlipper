@@ -3,6 +3,7 @@
 #include "wououi.h"
 #include "local_pages.h"
 #include "pet_service.h"
+#include "cloud_sync.h"
 #include "pet_notice.h"
 #include "ec06.h"
 #include "power_mgmt.h"
@@ -33,6 +34,7 @@ static void ui_task_fn(void *arg)
         pet_service_tick();
         power_mgmt_tick();
         if (g_power_off_in_progress) { vTaskDelay(pdMS_TO_TICKS(10)); continue; }
+        cloud_sync_tick();
         /* Storage/receipts are already handled by message_service's owner task. */
         mesh_notify_process();
         pet_notice_tick();

@@ -7,7 +7,7 @@ from menu_layout import menu_index
 root=Path(__file__).resolve().parents[1]
 layout=(root/'firmware/ui/menu_layout.h').read_text(encoding='utf-8')
 fun=['M_PET','M_TETRIS','M_SNAKE','M_ANSWER_BOOK','M_DICE','M_CRAPS','M_RPS','M_TREASURE','M_REACTION','M_NUMBER_BOMB','M_TIME_GUESS']
-tools=['M_HID_SLIDES','M_HID_MEDIA','M_HID_CAMERA','M_WIFI_CONNECT','M_WIFI_SCAN','M_BLE_SCAN','M_TOOL_MEMORY']
+tools=['M_HID_SLIDES','M_HID_MEDIA','M_HID_CAMERA','M_WIFI_CONNECT','M_CLOUD_SYNC','M_WIFI_SCAN','M_BLE_SCAN','M_TOOL_MEMORY']
 for group,pages in [('FUN',fun),('TOOLS',tools)]:
     for i,page in enumerate(pages):assert menu_index(group,page)==i
     body=layout.split('#define '+group+'_MENU_ITEMS(X)',1)[1].split('#define',1)[0]

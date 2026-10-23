@@ -30,6 +30,7 @@ static unsigned reward_mark,reward_gold;
 void pet_service_reward_begin(unsigned source){assert(source==PET_REWARD_TETRIS);reward_mark=0;}
 unsigned pet_service_reward(unsigned source,unsigned progress){assert(source==PET_REWARD_TETRIS);if(progress<=reward_mark)return 0;unsigned gold=(progress-reward_mark)*5;reward_mark=progress;reward_gold+=gold;return gold;}
 bool pet_service_flush(void){return true;}
+#include "arcade_ui_stubs.h"
 static void u8g2_SetDrawColor(int *ctx,unsigned c){(void)ctx;color=c;}
 static void u8g2_DrawBox(int *ctx,int x,int y,int w,int h){
     (void)ctx;assert(x>=0 && y>=0 && w>0 && h>0 && x+w<=128 && y+h<=32);
@@ -88,7 +89,7 @@ with tempfile.TemporaryDirectory(prefix='halfstep-tetris-') as temp:
     harness.write_text(shim + source + tests, encoding='utf-8')
     executable = Path(temp) / 'test.exe'
     subprocess.run(['gcc', '-std=c11', '-Wall', '-Wextra', '-Werror', '-fno-stack-protector',
-                    '-I', str(root / 'firmware/app'), str(harness),
+                    '-I', str(root / 'firmware/app'), '-I', str(root / 'tools'), str(harness),
                     str(root / 'firmware/app/tetris.c'), '-o', str(executable)], check=True)
     subprocess.run([str(executable), str(raw)], check=True)
 (root / 'build/tetris-host.png').write_bytes(png(raw.read_bytes()))

@@ -31,6 +31,9 @@ idf_component_register(
         "ui/tetris_page.c"
         "app/tetris.c"
         "app/snake.c"
+        "app/arcade_store.c"
+        "app/cloud_payload.c"
+        "app/cloud_sync.c"
         "app/pet.c"
         "app/pet_games.c"
         "app/pet_help.c"
@@ -88,6 +91,7 @@ idf_component_register(
         esp_wifi
         esp_event
         esp_netif
+        esp_http_client
         bt
         u8g2
         u8g2-hal-esp-idf

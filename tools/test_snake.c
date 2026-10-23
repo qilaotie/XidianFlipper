@@ -6,9 +6,11 @@ static void valid(const snake_t *s){
     assert(s->length>=3 && s->length<=SNAKE_CELLS);
     for(unsigned i=0;i<s->length;i++){
         assert(s->body[i]<SNAKE_CELLS);
+        assert(!snake_wall(s->map,s->body[i]));
         if(!s->won)assert(s->food!=s->body[i]);
         for(unsigned j=0;j<i;j++)assert(s->body[i]!=s->body[j]);
     }
+    if(!s->won)assert(!snake_wall(s->map,s->food));
 }
 int main(void){
     snake_t s,t;snake_init(&s,0);valid(&s);assert(s.length==3 && snake_interval(&s)==240);
@@ -22,9 +24,14 @@ int main(void){
     snake_init(&s,1);s.length=191;for(unsigned i=0;i<191;i++)s.body[i]=(uint8_t)(i+1);
     s.food=0;s.direction=2;snake_step(&s);assert(s.won && s.over && s.length==192);valid(&s);
     assert(snake_interval(&s)==90);assert(!snake_turn(&s,1));
+    assert(snake_capacity(0)==192 && snake_capacity(1)==184 && snake_capacity(2)==164);
+    for(unsigned map=1;map<SNAKE_MAPS;map++){
+        for(unsigned seed=0;seed<1000;seed++){snake_init_map(&s,seed,map);valid(&s);}
+        snake_init_map(&s,5,map);s.body[0]=map==1?33:51;s.direction=0;snake_step(&s);assert(s.over);
+    }
     uint32_t r=123;
     for(unsigned i=0;i<50000;i++){
-        r=r*1664525u+1013904223u;if(s.over)snake_init(&s,r);
+        r=r*1664525u+1013904223u;if(s.over)snake_init_map(&s,r,(r>>8)%SNAKE_MAPS);
         if(r&1)snake_turn(&s,(r&2)?1:-1);
         snake_step(&s);valid(&s);
     }

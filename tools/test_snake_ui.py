@@ -25,6 +25,7 @@ static unsigned reward_mark,reward_gold;
 void pet_service_reward_begin(unsigned source){assert(source==PET_REWARD_SNAKE);reward_mark=0;}
 unsigned pet_service_reward(unsigned source,unsigned progress){assert(source==PET_REWARD_SNAKE);if(progress<=reward_mark)return 0;unsigned gold=(progress-reward_mark)*2;reward_mark=progress;reward_gold+=gold;return gold;}
 bool pet_service_flush(void){return true;}
+#include "arcade_ui_stubs.h"
 static void u8g2_SetDrawColor(int *p,int c){(void)p;(void)c;}
 static void u8g2_SetFont(int *p,int f){(void)p;(void)f;}
 static void u8g2_DrawBox(int *p,int x,int y,int w,int h){(void)p;assert(x>=0&&y>=0&&x+w<=128&&y+h<=32);}
@@ -42,20 +43,23 @@ int main(void){
  assert(earned==2&&reward_gold==2);snake_page_proc();assert(earned==2&&reward_gold==2);
  key(BTN_ID_SP);assert(paused);uint8_t head=snake.body[0];clock_us+=5000000;snake_page_proc();assert(snake.body[0]==head);
  key(BTN_ID_SP);key(BTN_ID_CW);clock_us+=230000;snake_page_proc();assert(snake.direction==1);
- key(BTN_ID_LP);assert(!paused&&snake.length==3);
+ key(BTN_ID_LP);assert(paused&&map_menu);key(BTN_ID_SP);assert(!paused&&snake.length==3);
  assert(earned==0&&reward_gold==2);
- snake.over=true;key(BTN_ID_SP);assert(!snake.over&&!paused);
+ snake.over=true;key(BTN_ID_SP);assert(map_menu);key(BTN_ID_SP);assert(!snake.over&&!paused);
  key(BTN_ID_BACK);assert(ui.index==23&&ui.state==S_LAYER_OUT);
  snake_page_enter(M_SNAKE);assert(paused&&snake.length==3);
- for(unsigned i=0;i<5000;i++){
-  clock_us+=250000;if(snake.over)key(BTN_ID_SP);
+ for(unsigned map=0;map<SNAKE_MAPS;map++){
+  key(BTN_ID_LP);map_choice=map;key(BTN_ID_SP);assert(snake.map==map);
+  for(unsigned i=0;i<5000;i++){
+  clock_us+=250000;if(snake.over){key(BTN_ID_SP);key(BTN_ID_SP);}
   key(i%3?BTN_ID_CW:BTN_ID_CC);snake_page_proc();
+  }
  }
  puts("PASS production snake UI: drawing bounds, start/pause clock, growth, turn, restart, exit/reentry, 5000 renders");
 }
 '''
 with tempfile.TemporaryDirectory(prefix='halfstep-snake-') as temp:
     path=Path(temp);(path/'test.c').write_text(shim+source+tests,encoding='utf-8')
-    subprocess.run(['gcc','-std=c11','-Wall','-Wextra','-Werror','-fno-stack-protector','-I',str(root/'firmware/app'),
+    subprocess.run(['gcc','-std=c11','-Wall','-Wextra','-Werror','-fno-stack-protector','-I',str(root/'firmware/app'),'-I',str(root/'tools'),
                     str(path/'test.c'),str(root/'firmware/app/snake.c'),'-o',str(path/'test.exe')],check=True)
     subprocess.run([str(path/'test.exe')],check=True)

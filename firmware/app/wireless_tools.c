@@ -7,6 +7,7 @@
 #include "tool_hid.h"
 #include "camera_remote.h"
 #include "wifi_station.h"
+#include "cloud_sync.h"
 #include "message_draft.h"
 #include "esp_timer.h"
 #include "esp_wifi.h"
@@ -306,6 +307,24 @@ static void wifi_forget_page(int key){
     if(selected==0)back();
     if(selected==1){if(wifi_station_forget())back();else notice("WI-FI BUSY / RETRY");}
 }
+static void cloud_page(int key){
+    static unsigned selected;
+    if(key==BTN_ID_BACK){back();return;}
+    if(key==BTN_ID_CW)selected=(selected+1)%4;
+    if(key==BTN_ID_CC)selected=(selected+3)%4;
+    cloud_sync_status_t state;cloud_sync_status(&state);
+    if(key==BTN_ID_LP && selected==0){if(!cloud_sync_enable(!state.enabled))notice("SAVE/REMOVE ERROR");}
+    if(key==BTN_ID_SP && selected==0)notice("PUBLIC DATA: HOLD TO SET");
+    if(key==BTN_ID_SP && selected==1){if(!cloud_sync_now())notice("ENABLE SHARING FIRST");}
+    if(key==BTN_ID_LP && selected==2){if(!cloud_sync_remove())notice("CLOUD SAVE ERROR");}
+    if(key==BTN_ID_SP && selected==2)notice("HOLD:REMOVE ONLINE DATA");
+    if(key==BTN_ID_SP && selected==3){ui_navigate_to(M_WIFI_CONNECT);return;}
+    cloud_sync_status(&state);char value[28];
+    snprintf(value,sizeof(value),"CLOUD #%s SHARE:%s",state.id[0]?state.id:"------",state.enabled?"ON":"OFF");line(7,value);
+    static const char *const labels[]={"HOLD: SHARE ON/OFF","CLICK: SYNC NOW","HOLD: REMOVE ONLINE","CLICK: WI-FI SETTINGS"};line(18,labels[selected]);
+    if(state.result && state.result!=200 && !state.storage_error && !state.busy){snprintf(value,sizeof(value),"%d %.19s",state.result,state.text);line(30,value);}
+    else line(30,state.text);
+}
 static void remote_page(int key) {
     if (key == BTN_ID_BACK) { back(); return; }
     bool camera=s_page==M_HID_CAMERA;
@@ -367,7 +386,7 @@ void wireless_tools_proc(void) {
     u8g2_SetDrawColor(&u8g2,1); u8g2_SetFont(&u8g2,u8g2_font_5x7_tf);
     if (ui.index == M_TOOLS) {
         static M_SELECT rows[]={TOOLS_MENU_ITEMS(MENU_LABEL)};
-        ui.num[M_TOOLS] = 7; list_show(rows,M_TOOLS);
+        ui.num[M_TOOLS] = sizeof(rows)/sizeof(rows[0]); list_show(rows,M_TOOLS);
         if(btn.pressed) {
             int key=btn.id; btn.pressed=false;
             if(key==BTN_ID_CW || key==BTN_ID_CC) list_rotate_switch();
@@ -384,6 +403,7 @@ void wireless_tools_proc(void) {
     else if (ui.index == M_WIFI_PASSWORD)wifi_password_page(key);
     else if (ui.index == M_WIFI_STATUS)wifi_status_page(key);
     else if (ui.index == M_WIFI_FORGET)wifi_forget_page(key);
+    else if (ui.index == M_CLOUD_SYNC)cloud_page(key);
     else if (ui.index == M_HID_SLIDES || ui.index == M_HID_MEDIA || ui.index==M_HID_CAMERA) remote_page(key);
     else if (ui.index == M_TOOL_MEMORY) {
         char text[26];

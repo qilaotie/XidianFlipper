@@ -6,9 +6,17 @@
 #include "wououi.h"
 #include "esp_timer.h"
 #include "esp_random.h"
+#include "message_draft.h"
 #include <stdio.h>
 static unsigned selected;
-enum {HOME,SHOP,BAG,DEX,NEW_EGG,GAME,GROWTH,GAMES,MINIGAME,CONNECT,LINK,HELP,GUIDES};
+enum {HOME,SHOP,BAG,DEX,NEW_EGG,GAME,GROWTH,GAMES,MINIGAME,CONNECT,LINK,HELP,GUIDES,NAME};
+static char name_draft[PET_NAME_MAX+1];
+static draft_selector_t name_selector;
+static bool name_error;
+static void edit_name(void){
+    snprintf(name_draft,sizeof(name_draft),"%s",pet_service_name());
+    name_selector=(draft_selector_t){.selecting_group=true};name_error=false;
+}
 static bool help_link,help_manual;
 static unsigned help_page,help_item,help_mask;
 static int64_t help_at;
@@ -20,16 +28,17 @@ static int64_t go_at;
 static bool active,stats;
 static int64_t effect_until;
 static const char *notice;
-static const char *const actions[]={"FEED","PLAY","CLEAN","SLEEP","SHOP","BAG","DEX","GROWTH","CALLS","CONNECT","HOW TO"};
+static const char *const actions[]={"FEED","PLAY","CLEAN","SLEEP","SHOP","BAG","DEX","GROWTH","CALLS","CONNECT","HOW TO","NAME"};
 static const char *const items[]={"APPLE","SNACK","SOAP","BALL","PLANT","STARS","RUG","NO DECOR"};
 static const char *const species[]={"EGG","BABY","TEEN","SUNNY","SPORT","MELLOW"};
 static void label(int x,int y,const char *s){u8g2_DrawStr(&u8g2,x,y,s);}
 void pet_page_enter(uint8_t page){
     if(active && page!=M_PET){pet_link_leave();pet_service_flush();}
     active=page==M_PET;
-    if(active){pet_service_tick();selected=mode=cursor=0;stats=false;effect_until=0;notice=NULL;}
+    if(active){pet_service_tick();selected=mode=cursor=0;stats=false;effect_until=0;notice=NULL;
+        if(!pet_service_name()[0]){edit_name();mode=NAME;}}
 }
-bool pet_page_allows_attention(void){return mode!=GAME && mode!=MINIGAME && mode!=LINK;}
+bool pet_page_allows_attention(void){return mode!=GAME && mode!=MINIGAME && mode!=LINK && mode!=NAME;}
 static void creature(const pet_t *p,unsigned frame){
     unsigned stage=pet_stage(p),phase=(frame/4)%8;
     int dx=0,bob=(int)((frame/2)%2),eye=0;
@@ -133,7 +142,23 @@ void pet_page_proc(void){
     pet_service_tick();int64_t now=esp_timer_get_time();
     if(btn.pressed){
         int key=btn.id;btn.pressed=false;
-        if(key==BTN_ID_BACK){
+        if(mode==NAME){
+            if(key==BTN_ID_BACK){if(!message_draft_group_back(&name_selector))mode=HOME;}
+            else if(key==BTN_ID_CW || key==BTN_ID_CC){
+                int step=key==BTN_ID_CW?-1:1;
+                if(name_selector.selecting_group)name_selector.group=(name_selector.group+7+step)%7;
+                else message_draft_group_rotate(&name_selector,step);
+            }else if(key==BTN_ID_LP){
+                if(pet_service_set_name(name_draft)){mode=HOME;name_error=false;}else name_error=true;
+            }else if(key==BTN_ID_SP){
+                if(name_selector.selecting_group && name_selector.group<DRAFT_SPACE_GROUP)name_selector.selecting_group=false;
+                else {
+                    unsigned value=message_draft_group_choice(&name_selector);
+                    if(value==DRAFT_SEND){if(pet_service_set_name(name_draft)){mode=HOME;name_error=false;}else name_error=true;}
+                    else {name_error=!message_draft_edit(name_draft,sizeof(name_draft),value);}
+                }
+            }
+        }else if(key==BTN_ID_BACK){
             if(mode){
                 if(mode==LINK){pet_link_leave();mode=CONNECT;}
                 else if(mode==HELP){close_help(now);mode=help_manual?GUIDES:(help_link?CONNECT:GAMES);}
@@ -161,13 +186,14 @@ void pet_page_proc(void){
             if(key==BTN_ID_SP)game_result(now);
         }else{
             if(key==BTN_ID_LP && mode==HOME)stats=!stats;
-            unsigned count=mode==HOME?11:(mode==GUIDES?9:(mode==GAMES?7:(mode==SHOP?PET_ITEMS:(mode==BAG?PET_ITEMS+1:(mode==DEX?7:(mode==GROWTH?1:2))))));
+            unsigned count=mode==HOME?12:(mode==GUIDES?9:(mode==GAMES?7:(mode==SHOP?PET_ITEMS:(mode==BAG?PET_ITEMS+1:(mode==DEX?7:(mode==GROWTH?1:2))))));
             unsigned *position=mode==HOME?&selected:&cursor;
             if(key==BTN_ID_CW)*position=(*position+1)%count;
             if(key==BTN_ID_CC)*position=(*position+count-1)%count;
             if(key==BTN_ID_SP){
                 if(mode==HOME){
-                    if(selected==10){mode=GUIDES;cursor=0;effect_until=0;}
+                    if(selected==11){edit_name();mode=NAME;effect_until=0;}
+                    else if(selected==10){mode=GUIDES;cursor=0;effect_until=0;}
                     else if(selected==9){mode=CONNECT;cursor=0;effect_until=0;}
                     else if(selected==7){mode=GROWTH;cursor=0;effect_until=0;}
                     else if(selected==8){
@@ -195,6 +221,14 @@ void pet_page_proc(void){
                 }
             }
         }
+    }
+    if(mode==NAME){
+        u8g2_SetDrawColor(&u8g2,1);u8g2_SetFont(&u8g2,u8g2_font_5x7_tf);
+        label(1,7,"PET NAME (MAX 12)");label(1,15,name_draft[0]?name_draft:"_ YOUR PET NAME");
+        char select[26];unsigned value=message_draft_group_choice(&name_selector);
+        if(name_selector.selecting_group)snprintf(select,sizeof(select),"GROUP: %s",name_selector.group==DRAFT_SEND_GROUP?"SAVE":message_draft_group_name(name_selector.group));
+        else snprintf(select,sizeof(select),"%s [%c] SP:ADD",message_draft_group_name(name_selector.group),(char)(value+32));
+        label(1,23,select);label(1,31,name_error?"EMPTY / FULL / SAVE ERROR":"HOLD:SAVE BACK:CANCEL");return;
     }
     if(mode==GAME && now>go_at+3000000)game_result(now);
     if(mode==LINK){pet_link_proc(PG_NONE);return;}
@@ -250,7 +284,10 @@ void pet_page_proc(void){
             snprintf(line,sizeof(line),"REST %u WASH %u",p->energy,p->clean);label(42,15,line);
         }else{
             const char *name=stage==3?species[p->form+2]:species[stage];
-            snprintf(line,sizeof(line),"%s %lum",name,(unsigned long)(p->age/60));label(42,7,line);
+            const char *custom=pet_service_name();
+            if(custom[0])snprintf(line,sizeof(line),"%s",custom);
+            else snprintf(line,sizeof(line),"%s %lum",name,(unsigned long)(p->age/60));
+            label(42,7,line);
             if(!stage)snprintf(line,sizeof(line),"HATCH IN %lus",(unsigned long)(60-p->age));
             else snprintf(line,sizeof(line),"%s",p->sleeping?"SLEEPING":(p->fullness<20?"HUNGRY":(p->energy<20?"TIRED":(p->clean<20?"NEED WASH":"FEELING GOOD"))));
             label(42,15,line);

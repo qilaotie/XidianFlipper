@@ -15,6 +15,7 @@
 #include "haptic_feedback.h"
 #include "message_service.h"
 #include "pet_service.h"
+#include "arcade_store.h"
 #include "morse_playback.h"
 #include "morse_terminal.h"
 #include "morse_training_ui.h"
@@ -112,7 +113,7 @@ static void manual_sleep(void)
         return;
     }
     nvs_write_all_data();
-    if(!pet_service_flush()){
+    if(!arcade_flush() || !pet_service_flush()){
         message_service_resume();
         ESP_LOGW(TAG,"Sleep cancelled: pet state could not be saved");
         haptic_play(HAPTIC_ERROR);

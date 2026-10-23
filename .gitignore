@@ -11,3 +11,5 @@ __pycache__/
 *.dmp
 /dist/
 /.publish/
+/.wrangler/
+/node_modules/
