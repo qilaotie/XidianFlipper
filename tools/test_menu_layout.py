@@ -21,6 +21,17 @@ assets=(root/'firmware/ui/assets.c').read_text(encoding='utf-8').split('const ui
 pixels=re.findall(r'0x[0-9A-Fa-f]{2}',assets)
 assert len(pixels)==8*112
 assert pixels[7*112:8*112]!=pixels[5*112:6*112]
+tool=[int(v,16) for v in pixels[7*112:8*112]]
+header=(root/'firmware/ui/wououi.h').read_text(encoding='utf-8')
+assert re.search(r'#define\s+TILE_ICON_W\s+28\b',header)
+# XBMP uses four bytes per row even at width 28. No ink in clipped padding.
+for y in range(28):
+    row=int.from_bytes(bytes(tool[y*4:y*4+4]),'little')
+    assert row>>28==0
+    assert all(((row>>x)&1)==((row>>(27-x))&1) for x in range(28))
+for y in range(10,25):
+    row=int.from_bytes(bytes(tool[y*4:y*4+4]),'little')
+    assert row&(1<<2) and row&(1<<25), 'Both toolbox sides must be visible'
 assert 'icon_pic[icons[i]]' in source and 'i < 7 ? i : 5' not in source
 routes=(root/'firmware/ui/menu_pages.c').read_text(encoding='utf-8')
 for i,page in [(5,'M_TOOLS'),(6,'M_SETTING'),(7,'M_ABOUT')]:
