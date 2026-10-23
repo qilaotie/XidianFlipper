@@ -2,6 +2,9 @@
 #include "pet_service.h"
 #include "pet_games.h"
 #include "pet_help.h"
+#include "help_text.h"
+#include "ui_language.h"
+#include "ui_zh.h"
 #include "pet_link.h"
 #include "wououi.h"
 #include "esp_timer.h"
@@ -9,7 +12,7 @@
 #include "message_draft.h"
 #include <stdio.h>
 static unsigned selected;
-enum {HOME,SHOP,BAG,DEX,NEW_EGG,GAME,GROWTH,GAMES,MINIGAME,CONNECT,LINK,HELP,GUIDES,NAME};
+enum {HOME,SHOP,BAG,DEX,NEW_EGG,GAME,GROWTH,GAMES,MINIGAME,CONNECT,LINK,HELP,GUIDES,NAME,ROOM};
 static char name_draft[PET_NAME_MAX+1];
 static draft_selector_t name_selector;
 static bool name_error;
@@ -28,7 +31,8 @@ static int64_t go_at;
 static bool active,stats;
 static int64_t effect_until;
 static const char *notice;
-static const char *const actions[]={"FEED","PLAY","CLEAN","SLEEP","SHOP","BAG","DEX","GROWTH","CALLS","CONNECT","HOW TO","NAME"};
+static const char *const actions[]={"FEED","PLAY","CLEAN","SLEEP","SHOP","BAG","DEX","GROWTH","CALLS","CONNECT","HOW TO","NAME","ROOM"};
+static const char *const rooms[]={"CLASSIC","STUDY","GARDEN","SPACE"};
 static const char *const items[]={"APPLE","SNACK","SOAP","BALL","PLANT","STARS","RUG","NO DECOR"};
 static const char *const species[]={"EGG","BABY","TEEN","SUNNY","SPORT","MELLOW"};
 static void label(int x,int y,const char *s){u8g2_DrawStr(&u8g2,x,y,s);}
@@ -38,19 +42,22 @@ void pet_page_enter(uint8_t page){
     if(active){pet_service_tick();selected=mode=cursor=0;stats=false;effect_until=0;notice=NULL;
         if(!pet_service_name()[0]){edit_name();mode=NAME;}}
 }
-bool pet_page_allows_attention(void){return mode!=GAME && mode!=MINIGAME && mode!=LINK && mode!=NAME;}
+bool pet_page_allows_attention(void){return mode!=GAME && mode!=MINIGAME && mode!=LINK && mode!=NAME && mode!=HELP;}
 static void creature(const pet_t *p,unsigned frame){
-    unsigned stage=pet_stage(p),phase=(frame/4)%8;
+    unsigned stage=pet_stage(p),phase=(frame/4)%16;
     int dx=0,bob=(int)((frame/2)%2),eye=0;
     bool wave=false,stretch=false,sit=false;
     if(!p->sleeping && p->energy>=25){
         if(phase==0)eye=-1;
-        if(phase==1 || phase==5)dx=(int)(frame%5)-2;
-        if(phase==2)bob=-(int)(frame%2);
+        if(phase==1 || phase==5 || phase==12)dx=(int)(frame%5)-2;
+        if(phase==2 || phase==6)bob=-(int)(frame%3);
         if(phase==3)stretch=true;
         if(phase==4)eye=1;
         if(phase==6)sit=true;
         if(phase==7)wave=true;
+        if(phase==8 && p->mood>=50){dx=(int)(frame%3)-1;bob=-(int)(frame%2);wave=true;}
+        if(phase==11)eye=-1;
+        if(phase==13)eye=1;
     }else if(!p->sleeping)sit=true;
     if(!stage){
         u8g2_DrawEllipse(&u8g2,19,19+bob,9,11,U8G2_DRAW_ALL);
@@ -60,6 +67,7 @@ static void creature(const pet_t *p,unsigned frame){
     int y=stage==1?12+bob:8+bob,h=stage==1?15:20;
     if(stretch)h++;
     if(sit){y++;h--;}
+    u8g2_SetDrawColor(&u8g2,0);u8g2_DrawBox(&u8g2,6+dx,y,27,h);u8g2_SetDrawColor(&u8g2,1);
     u8g2_DrawRFrame(&u8g2,6+dx,y,27,h,5);
     if(stage==3 && p->form==PET_SPORT){
         u8g2_DrawRFrame(&u8g2,9+dx,y-6,4,8,1);u8g2_DrawRFrame(&u8g2,25+dx,y-6,4,8,1);
@@ -72,11 +80,17 @@ static void creature(const pet_t *p,unsigned frame){
     }else{
         u8g2_DrawBox(&u8g2,13+dx+eye,y+5,2,3);u8g2_DrawBox(&u8g2,25+dx+eye,y+5,2,3);
     }
-    if(p->sleeping)label(34,10,"Z");
-    if(p->mood<25)u8g2_DrawHLine(&u8g2,18+dx,y+11,5);
+    if(p->sleeping)label(34,8+(int)(frame%3),"Z");
+    if(!p->sleeping && p->energy>=25 && phase==9)u8g2_DrawCircle(&u8g2,20+dx,y+11,2,U8G2_DRAW_ALL);
+    else if(p->mood<25)u8g2_DrawHLine(&u8g2,18+dx,y+11,5);
     else {u8g2_DrawLine(&u8g2,18+dx,y+10,20+dx,y+12);u8g2_DrawLine(&u8g2,20+dx,y+12,22+dx,y+10);}
     u8g2_DrawHLine(&u8g2,8+dx,y+h,5);u8g2_DrawHLine(&u8g2,25+dx,y+h,5);
     if(wave){u8g2_DrawLine(&u8g2,3,y+8,1,y+4);u8g2_DrawLine(&u8g2,35,y+8,38,y+4);}
+    if(!p->sleeping && p->energy>=25){
+        if(phase==10){u8g2_DrawLine(&u8g2,33,y+8,36,y+3);u8g2_DrawLine(&u8g2,36,y+3,33,y+1);}
+        if(phase==14){u8g2_DrawLine(&u8g2,33,y+15,37,y+12);u8g2_DrawLine(&u8g2,37,y+12,39,y+14+(int)(frame%2));}
+        if(phase==15 && (p->owned&1))u8g2_DrawCircle(&u8g2,2+(int)(frame%3),27-(int)(frame%3),2,U8G2_DRAW_ALL);
+    }
     if(p->clean<25){u8g2_DrawPixel(&u8g2,3,27);u8g2_DrawPixel(&u8g2,36,24);}
 }
 static void feedback(bool ok,const char *yes,const char *no,int64_t now){
@@ -88,6 +102,19 @@ static void game_result(int64_t now){
     mode=HOME;
 }
 static void decoration(const pet_t *p){
+    unsigned room=mode==ROOM?cursor:pet_room(p);
+    if(room==1){
+        u8g2_DrawFrame(&u8g2,1,1,11,10);u8g2_DrawVLine(&u8g2,6,1,10);u8g2_DrawHLine(&u8g2,1,6,11);
+        u8g2_DrawHLine(&u8g2,30,14,10);for(int x=31;x<39;x+=3)u8g2_DrawVLine(&u8g2,x,5,9);
+        u8g2_DrawHLine(&u8g2,0,31,40);
+    }else if(room==2){
+        u8g2_DrawCircle(&u8g2,5,5,3,U8G2_DRAW_ALL);u8g2_DrawHLine(&u8g2,29,3,9);
+        for(int x=1;x<35;x+=6){u8g2_DrawLine(&u8g2,x,31,x+2,28);u8g2_DrawLine(&u8g2,x+2,28,x+4,31);}
+    }else if(room==3){
+        for(int x=2;x<39;x+=9){u8g2_DrawPixel(&u8g2,x,2+(x%5));u8g2_DrawPixel(&u8g2,x,15);}
+        u8g2_DrawCircle(&u8g2,35,6,3,U8G2_DRAW_ALL);u8g2_DrawHLine(&u8g2,0,31,40);
+        for(int x=0;x<40;x+=8)u8g2_DrawVLine(&u8g2,x,29,2);
+    }
     if(p->decor==1){
         u8g2_DrawBox(&u8g2,1,27,5,4);u8g2_DrawVLine(&u8g2,3,20,7);
         u8g2_DrawLine(&u8g2,3,24,0,21);u8g2_DrawLine(&u8g2,3,23,6,20);
@@ -135,7 +162,7 @@ static void open_help(unsigned item,bool manual,int64_t now){
     help_page=0;help_mask=0;help_at=now;mode=HELP;effect_until=0;
 }
 static void close_help(int64_t now){
-    if(!help_manual && now-help_at>=2000000 && help_mask==((1u<<pet_help_pages(help_item))-1))
+    if(!help_manual && now-help_at>=2000000 && help_mask==((1u<<ui_pet_help_pages(help_item))-1))
         pet_service_help_seen(help_item);
 }
 void pet_page_proc(void){
@@ -168,7 +195,7 @@ void pet_page_proc(void){
             }
             else {pet_service_flush();if(ui.layer){ui.index=ui.parent_index[ui.layer];ui.state=S_LAYER_OUT;}return;}
         }else if(mode==HELP){
-            unsigned pages=pet_help_pages(help_item);
+            unsigned pages=ui_pet_help_pages(help_item);
             if(key==BTN_ID_CW)help_page=(help_page+1)%pages;
             if(key==BTN_ID_CC)help_page=(help_page+pages-1)%pages;
             if(key==BTN_ID_SP){
@@ -186,13 +213,14 @@ void pet_page_proc(void){
             if(key==BTN_ID_SP)game_result(now);
         }else{
             if(key==BTN_ID_LP && mode==HOME)stats=!stats;
-            unsigned count=mode==HOME?12:(mode==GUIDES?9:(mode==GAMES?7:(mode==SHOP?PET_ITEMS:(mode==BAG?PET_ITEMS+1:(mode==DEX?7:(mode==GROWTH?1:2))))));
+            unsigned count=mode==HOME?13:(mode==ROOM?PET_ROOMS:(mode==GUIDES?9:(mode==GAMES?7:(mode==SHOP?PET_ITEMS:(mode==BAG?PET_ITEMS+1:(mode==DEX?7:(mode==GROWTH?1:2)))))));
             unsigned *position=mode==HOME?&selected:&cursor;
             if(key==BTN_ID_CW)*position=(*position+1)%count;
             if(key==BTN_ID_CC)*position=(*position+count-1)%count;
             if(key==BTN_ID_SP){
                 if(mode==HOME){
-                    if(selected==11){edit_name();mode=NAME;effect_until=0;}
+                    if(selected==12){mode=ROOM;cursor=pet_room(pet_service_state());effect_until=0;}
+                    else if(selected==11){edit_name();mode=NAME;effect_until=0;}
                     else if(selected==10){mode=GUIDES;cursor=0;effect_until=0;}
                     else if(selected==9){mode=CONNECT;cursor=0;effect_until=0;}
                     else if(selected==7){mode=GROWTH;cursor=0;effect_until=0;}
@@ -204,6 +232,10 @@ void pet_page_proc(void){
                     else if(selected==PET_PLAY){
                         mode=GAMES;cursor=0;effect_until=0;
                     }else feedback(pet_service_action(selected),"HAPPY!","WAIT / WAKE UP",now);
+                }else if(mode==ROOM){
+                    bool ok=pet_service_room(cursor);
+                    if(ok)pet_service_flush();
+                    feedback(ok,"ROOM EQUIPPED","NO GOLD/SAVE ERR",now);
                 }else if(mode==GUIDES)open_help(cursor,true,now);
                 else if(mode==GAMES || mode==CONNECT){
                     bool link=mode==CONNECT;unsigned item=link?PET_HELP_VISIT+cursor:cursor;
@@ -235,8 +267,9 @@ void pet_page_proc(void){
     if(mode==HELP){
         unsigned item=help_item;help_mask|=1u<<help_page;
         u8g2_SetDrawColor(&u8g2,1);u8g2_SetFont(&u8g2,u8g2_font_5x7_tf);
-        for(unsigned row=0;row<3;row++)label(1,7+8*(int)row,pet_help_line(item,help_page,row));
-        char footer[27];snprintf(footer,sizeof(footer),"%u/%u TURN:PAGE SP:%s",help_page+1,pet_help_pages(item),help_manual?"BACK":"START");
+        for(unsigned row=0;row<(ui_language_chinese()?2u:3u);row++)
+            ui_zh_draw(&u8g2,1,ui_language_chinese()?10+12*(int)row:7+8*(int)row,ui_pet_help_line(item,help_page,row));
+        char footer[27];snprintf(footer,sizeof(footer),"%u/%u TURN:PAGE SP:%s",help_page+1,ui_pet_help_pages(item),help_manual?"BACK":"START");
         label(1,31,now<effect_until && notice?notice:footer);return;
     }
     if(mode==MINIGAME){
@@ -294,6 +327,12 @@ void pet_page_proc(void){
         }
         const char *action=selected==PET_SLEEP && p->sleeping?"WAKE":(selected==8?(p->spare?"CALLS OFF":"CALLS ON"):actions[selected]);
         snprintf(line,sizeof(line),">%s %uG",action,p->coins);label(42,23,line);
+    }else if(mode==ROOM){
+        snprintf(line,sizeof(line),"ROOM %uG",p->coins);label(42,7,line);
+        snprintf(line,sizeof(line),">%s",rooms[cursor]);label(42,15,line);
+        if(pet_room_owned(p,cursor))snprintf(line,sizeof(line),"%s",pet_room(p)==cursor?"EQUIPPED":"OWNED SP:EQUIP");
+        else snprintf(line,sizeof(line),"%uG SP:BUY+EQUIP",pet_room_price(cursor));
+        label(42,23,line);
     }else if(mode==SHOP || mode==BAG){
         snprintf(line,sizeof(line),"%s %uG",mode==SHOP?"SHOP":"BAG",p->coins);label(42,7,line);
         snprintf(line,sizeof(line),">%s",items[cursor]);label(42,15,line);

@@ -98,6 +98,7 @@ static bool change(unsigned operation,unsigned argument){
     if(operation==2)ok=pet_use(&state,argument);
     if(operation==3)ok=pet_game(&state,argument!=0);
     if(operation==4){pet_new_egg(&state);ok=true;}
+    if(operation==5)ok=pet_room_choose(&state,argument);
     if(!ok)return false;
     last_action=now;dirty=pending=true;
     if(now-last_save>=5000000)save();
@@ -113,6 +114,7 @@ bool pet_service_complete_game(bool won){
     return true;
 }
 bool pet_service_new_egg(void){return change(4,0);}
+bool pet_service_room(unsigned room){return change(5,room);}
 static bool save_extra(void){
     nvs_handle_t h;esp_err_t rc=nvs_open("pet_user",NVS_READWRITE,&h);
     if(rc==ESP_OK){rc=nvs_set_blob(h,"extra_v1",&extra,sizeof(extra));if(rc==ESP_OK)rc=nvs_commit(h);nvs_close(h);}

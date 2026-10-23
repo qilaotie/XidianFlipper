@@ -1,5 +1,6 @@
 #include "wireless_tools.h"
 #include "wououi.h"
+#include "ui_zh.h"
 #include "menu_layout.h"
 #include "local_pages.h"
 #include "message_service.h"
@@ -115,7 +116,35 @@ void wireless_tools_on_enter(uint8_t page) {
         portEXIT_CRITICAL(&s_lock);
     }
 }
-static void line(int y, const char *text) { u8g2_DrawStr(&u8g2, 2, y, text); }
+typedef struct {int y;bool raw;char text[96];} tool_row_t;
+static tool_row_t s_rows[3];
+static uint32_t s_view_at;
+static void row(int y,const char *text,bool raw){
+    tool_row_t *r=&s_rows[y<=10?0:(y<=20?1:2)];r->y=y;r->raw=raw;
+    snprintf(r->text,sizeof(r->text),"%s",text);
+}
+static void line(int y,const char *text){row(y,text,false);}
+static void raw_line(int y,const char *text){row(y,text,true);}
+static void render_rows(void){
+    bool chinese=false;
+    for(unsigned i=0;i<3;i++)if(!s_rows[i].raw && ui_zh_lookup(s_rows[i].text)!=s_rows[i].text)chinese=true;
+    if(s_page==M_WIFI_PASSWORD)chinese=false;
+    if(!chinese){
+        if(esp_timer_get_time()<s_notice_until){u8g2_SetDrawColor(&u8g2,0);u8g2_DrawBox(&u8g2,0,23,128,9);u8g2_SetDrawColor(&u8g2,1);}
+        for(unsigned i=0;i<3;i++)if(s_rows[i].text[0])u8g2_DrawStr(&u8g2,2,s_rows[i].y,s_rows[i].text);
+        return;
+    }
+    u8g2_SetDrawColor(&u8g2,0);u8g2_DrawBox(&u8g2,0,0,128,32);u8g2_SetDrawColor(&u8g2,1);
+    /* A 32px display cannot fit three 12px Chinese rows. Keep the title, then
+     * alternate detail/help every 3s; a control input shows the detail first. */
+    unsigned second=(ms()-s_view_at)/3000%2?2:1;
+    if(!s_rows[second].text[0])second=second==1?2:1;
+    if(esp_timer_get_time()<s_notice_until)second=2;
+    for(unsigned n=0;n<2;n++){
+        tool_row_t *r=&s_rows[n?second:0];int y=n?27:11;
+        if(r->raw)u8g2_DrawStr(&u8g2,2,y,r->text);else ui_zh_draw(&u8g2,2,y,r->text);
+    }
+}
 static void notice(const char *text) {
     snprintf(s_notice, sizeof(s_notice), "%.25s", text); s_notice_until = esp_timer_get_time() + 1200000;
 }
@@ -150,21 +179,21 @@ static void ble_page(int key) {
     }
     char text[26];
     if (!s_detail) {
-        snprintf(text, sizeof(text), "BLE %02u/%02u %ddBm", count ? s_selected+1 : 0, count, selected.rssi); line(7,text);
+        snprintf(text, sizeof(text), "BLE %02u/%02u %ddBm", count ? s_selected+1 : 0, count, selected.rssi); raw_line(7,text);
         if (found && selected.name[0]) snprintf(text,sizeof(text),"%.24s",selected.name);
         else if (found) snprintf(text,sizeof(text),"%02X:%02X:%02X:%02X:%02X:%02X",selected.mac[0],selected.mac[1],selected.mac[2],selected.mac[3],selected.mac[4],selected.mac[5]);
         else snprintf(text,sizeof(text),"Scanning broadcasts...");
-        line(18,text); line(30,"SP:SIGNAL HOLD:CLEAR");
+        raw_line(18,text); line(30,"SP:SIGNAL HOLD:CLEAR");
     } else {
         if (!found) { line(7,"DEVICE EXPIRED"); line(19,"BACK: DEVICE LIST"); return; }
         if (selected.name[0]) snprintf(text,sizeof(text),"%.24s",selected.name);
         else snprintf(text,sizeof(text),"%02X:%02X:%02X:%02X:%02X:%02X",selected.mac[0],selected.mac[1],selected.mac[2],selected.mac[3],selected.mac[4],selected.mac[5]);
-        line(7,text);
+        raw_line(7,text);
         uint32_t age = ms() - selected.seen;
         if (key == BTN_ID_SP) s_entered = !s_entered;
         if (s_entered) snprintf(text,sizeof(text),"MFG:%04X UUID:%s",selected.company,selected.service?"YES":"NO");
         else snprintf(text,sizeof(text),"%ddBm  %s %lus",selected.rssi, age < 3000 ? "LIVE" : "LAST",(unsigned long)(age/1000));
-        line(17,text);
+        raw_line(17,text);
         if (ms() - s_sample >= 250) {
             s_sample = ms(); memmove(s_history,s_history+1,sizeof(s_history)-1);
             int level = (selected.rssi+100)/7;
@@ -196,13 +225,13 @@ static void wifi_page(int key) {
     if (key == BTN_ID_SP) s_detail = !s_detail;
     if (key == BTN_ID_LP && !status.scanning)wifi_station_scan();
     char text[26];
-    if(error) { snprintf(text,sizeof(text),"WIFI ERROR %X",error); line(10,text); line(27,"BACK: EXIT / RETRY"); return; }
+    if(error) { snprintf(text,sizeof(text),"WIFI ERROR %X",error); raw_line(10,text); line(27,"BACK: EXIT / RETRY"); return; }
     if (!count) { line(10,status.scanning ? "SCANNING WI-FI..." : "NO HOTSPOTS FOUND"); line(27,"HOLD:SCAN BACK:EXIT"); return; }
-    snprintf(text,sizeof(text),"WIFI %02u/%02u %ddBm",(s_selected+1)%100,count%100,ap.rssi); line(7,text);
+    snprintf(text,sizeof(text),"WIFI %02u/%02u %ddBm",(s_selected+1)%100,count%100,ap.rssi); raw_line(7,text);
     if (s_detail) snprintf(text,sizeof(text),"%02X:%02X:%02X:%02X:%02X:%02X",ap.bssid[0],ap.bssid[1],ap.bssid[2],ap.bssid[3],ap.bssid[4],ap.bssid[5]);
     else { printable(text,sizeof(text),ap.ssid,sizeof(ap.ssid)); if(!text[0]) snprintf(text,sizeof(text),"<HIDDEN SSID>"); }
-    line(18,text);
-    snprintf(text,sizeof(text),"CH%02u %.9s%s",ap.primary%100,auth_name(ap.authmode),status.scanning?" SCAN":""); line(30,text);
+    raw_line(18,text);
+    snprintf(text,sizeof(text),"CH%02u %.9s%s",ap.primary%100,auth_name(ap.authmode),status.scanning?" SCAN":""); raw_line(30,text);
 }
 static int wifi_menu(M_SELECT *rows,unsigned count,int key){
     ui.num[ui.index]=(uint8_t)count;
@@ -240,7 +269,7 @@ static void wifi_networks_page(int key){
     if(key==BTN_ID_LP && !status.scanning)wifi_station_scan();
     wifi_station_status(&status);
     if(status.scanning){line(10,"SCANNING 2.4GHz...");line(28,"BACK: CANCEL VIEW");return;}
-    if(status.error){char text[26];snprintf(text,sizeof(text),"SCAN ERROR %X",status.error);line(10,text);line(28,"HOLD:RETRY BACK:EXIT");return;}
+    if(status.error){char text[26];snprintf(text,sizeof(text),"SCAN ERROR %X",status.error);raw_line(10,text);line(28,"HOLD:RETRY BACK:EXIT");return;}
     if(!status.count){line(10,"NO HOTSPOTS FOUND");line(28,"HOLD:SCAN BACK:EXIT");return;}
     static M_SELECT rows[WIFI_STATION_AP_MAX];
     static char labels[WIFI_STATION_AP_MAX][32];
@@ -279,12 +308,12 @@ static void wifi_password_page(int key){
         }else if(!message_draft_edit(s_wifi_password,sizeof(s_wifi_password),choice))notice("PASSWORD MAXIMUM 64");
     }
     unsigned length=(unsigned)strlen(s_wifi_password);char text[28],mask[22];
-    snprintf(text,sizeof(text),"PASSWORD %u/64",length);line(7,text);
-    unsigned shown=length>20?20:length;memset(mask,'*',shown);mask[shown]=0;line(18,mask);
+    snprintf(text,sizeof(text),"PASSWORD %u/64",length);raw_line(7,text);
+    unsigned shown=length>20?20:length;memset(mask,'*',shown);mask[shown]=0;raw_line(18,mask);
     const char *name=s_wifi_selector.group==DRAFT_SEND_GROUP?"CONNECT":message_draft_group_name(s_wifi_selector.group);
     if(s_wifi_selector.selecting_group)snprintf(text,sizeof(text),"<%s> HOLD:CONNECT",name);
     else snprintf(text,sizeof(text),"%s <%c> BACK:GROUP",name,(char)(32+choice));
-    line(30,text);
+    raw_line(30,text);
 }
 static void wifi_status_page(int key){
     if(key==BTN_ID_BACK){back();return;}
@@ -292,12 +321,12 @@ static void wifi_status_page(int key){
     wifi_station_status_t status;wifi_station_status(&status);char text[28],name[23];
     printable(name,sizeof(name),(const uint8_t*)(status.ssid[0]?status.ssid:status.saved_ssid),33);
     if(status.online){
-        line(7,name);line(18,status.ip);
-        if(status.error){snprintf(text,sizeof(text),"LINK OK / ERR %X",status.error);line(30,text);}
-        else {snprintf(text,sizeof(text),"CONNECTED %ddB HOLD:OFF",status.rssi);line(30,text);}
+        raw_line(7,name);line(18,status.ip);
+        if(status.error){snprintf(text,sizeof(text),"LINK OK / ERR %X",status.error);raw_line(30,text);}
+        else {snprintf(text,sizeof(text),"CONNECTED %ddB HOLD:OFF",status.rssi);raw_line(30,text);}
     }else{
-        line(7,status.connecting?"CONNECTING / DHCP...":"WI-FI DISCONNECTED");line(18,name);
-        if(status.error){snprintf(text,sizeof(text),"ERR %X REASON %u",status.error,status.reason);line(30,text);}
+        line(7,status.connecting?"CONNECTING / DHCP...":"WI-FI DISCONNECTED");raw_line(18,name);
+        if(status.error){snprintf(text,sizeof(text),"ERR %X REASON %u",status.error,status.reason);raw_line(30,text);}
         else line(30,"BACK:MENU HOLD:STOP");
     }
 }
@@ -320,10 +349,12 @@ static void cloud_page(int key){
     if(key==BTN_ID_SP && selected==2)notice("HOLD:REMOVE ONLINE DATA");
     if(key==BTN_ID_SP && selected==3){ui_navigate_to(M_WIFI_CONNECT);return;}
     cloud_sync_status(&state);char value[28];
-    snprintf(value,sizeof(value),"CLOUD #%s SHARE:%s",state.id[0]?state.id:"------",state.enabled?"ON":"OFF");line(7,value);
+    if(state.result && state.result!=200 && !state.busy)
+        snprintf(value,sizeof(value),"CLOUD #%s %s ERR%d",state.id[0]?state.id:"------",state.enabled?"ON":"OFF",state.result);
+    else snprintf(value,sizeof(value),"CLOUD #%s SHARE:%s",state.id[0]?state.id:"------",state.enabled?"ON":"OFF");
+    raw_line(7,value);
     static const char *const labels[]={"HOLD: SHARE ON/OFF","CLICK: SYNC NOW","HOLD: REMOVE ONLINE","CLICK: WI-FI SETTINGS"};line(18,labels[selected]);
-    if(state.result && state.result!=200 && !state.storage_error && !state.busy){snprintf(value,sizeof(value),"%d %.19s",state.result,state.text);line(30,value);}
-    else line(30,state.text);
+    line(30,state.text);
 }
 static void remote_page(int key) {
     if (key == BTN_ID_BACK) { back(); return; }
@@ -352,11 +383,11 @@ static void remote_page(int key) {
     tool_hid_status_t state; tool_hid_status(&state);
     bool usable = state.connected && state.encrypted && (media ? state.media_ready : state.keyboard_ready);
     if(camera){
-        char title[26];snprintf(title,sizeof(title),"CAMERA %s %ums",camera_keys[s_camera_key].name,camera_pulses[s_camera_pulse]);line(7,title);
+        char title[26];snprintf(title,sizeof(title),"CAMERA %s %ums",camera_keys[s_camera_key].name,camera_pulses[s_camera_pulse]);raw_line(7,title);
     }else line(7,media?"MEDIA REMOTE":"SLIDE REMOTE");
     if (state.error) {
         char text[26]; snprintf(text,sizeof(text),"BLUETOOTH ERROR %d",state.error);
-        line(18,text); line(30,"BACK: EXIT / RETRY");
+        raw_line(18,text); line(30,"BACK: EXIT / RETRY");
     }
     else if (!state.connected) { line(18,"PAIR: Halfstep Remote"); line(30,"MESSAGING PAUSED"); }
     else if (!usable) {
@@ -383,6 +414,7 @@ static void remote_page(int key) {
     }
 }
 void wireless_tools_proc(void) {
+    memset(s_rows,0,sizeof(s_rows));
     u8g2_SetDrawColor(&u8g2,1); u8g2_SetFont(&u8g2,u8g2_font_5x7_tf);
     if (ui.index == M_TOOLS) {
         static M_SELECT rows[]={TOOLS_MENU_ITEMS(MENU_LABEL)};
@@ -396,6 +428,8 @@ void wireless_tools_proc(void) {
         return;
     }
     int key = btn.pressed ? btn.id : -1; btn.pressed=false;
+    static uint8_t previous_page=255;
+    if(previous_page!=ui.index || key!=-1){s_view_at=ms();previous_page=ui.index;}
     if (ui.index == M_BLE_SCAN) ble_page(key);
     else if (ui.index == M_WIFI_SCAN) wifi_page(key);
     else if (ui.index == M_WIFI_CONNECT)wifi_connection_page(key);
@@ -408,11 +442,12 @@ void wireless_tools_proc(void) {
     else if (ui.index == M_TOOL_MEMORY) {
         char text[26];
         line(7,"RUNTIME HEAP");
-        snprintf(text,sizeof(text),"FREE %uK MIN %uK",(unsigned)(heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024)%10000,(unsigned)(heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT)/1024)%10000); line(18,text);
-        snprintf(text,sizeof(text),"LARGEST BLOCK %uK",(unsigned)(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT)/1024)); line(30,text);
+        snprintf(text,sizeof(text),"FREE %uK MIN %uK",(unsigned)(heap_caps_get_free_size(MALLOC_CAP_8BIT)/1024)%10000,(unsigned)(heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT)/1024)%10000); raw_line(18,text);
+        snprintf(text,sizeof(text),"LARGEST BLOCK %uK",(unsigned)(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT)/1024)); raw_line(30,text);
         if(key==BTN_ID_BACK) back();
     }
     if (esp_timer_get_time() < s_notice_until) {
-        u8g2_SetDrawColor(&u8g2,0); u8g2_DrawBox(&u8g2,0,23,128,9); u8g2_SetDrawColor(&u8g2,1); line(30,s_notice);
+        line(30,s_notice);
     }
+    render_rows();
 }

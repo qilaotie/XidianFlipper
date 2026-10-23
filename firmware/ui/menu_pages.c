@@ -7,6 +7,9 @@
  */
 
 #include "wououi.h"
+#include "ui_language.h"
+#include "ui_style.h"
+#include "home_widgets.h"
 #include "local_pages.h"
 #include "morse_playback.h"
 #include "message_service.h"
@@ -117,7 +120,9 @@ static void pager_home_draw(void)
     snprintf(line, sizeof(line), "ROOM %02u", message_service_get_channel());
     u8g2_DrawStr(&u8g2, 20, 7, line);
     u8g2_DrawStr(&u8g2, 96, 7, g_config.buzzer_enabled ? "SOUND" : "MUTE");
-    u8g2_DrawHLine(&u8g2, 0, 10, 128);
+    if(ui_style_skin()==UI_SKIN_MINIMAL){for(int x=0;x<128;x+=8)u8g2_DrawHLine(&u8g2,x,10,4);}
+    else {u8g2_DrawHLine(&u8g2,0,10,128);if(ui_style_skin()==UI_SKIN_TERMINAL)u8g2_DrawHLine(&u8g2,0,12,128);}
+    if(home_widget_draw(unread))return;
     /* Large envelope and unread badge occupy the old button-help space. */
     const int bounce = unread && (esp_timer_get_time() / 500000) % 2 ? -1 : 0;
     u8g2_DrawRFrame(&u8g2, 3, 16 + bounce, 23, 14, 2);
@@ -187,8 +192,8 @@ void friends_proc(void)
  *  ~ = ��ֵ��?? + = ��ֵ��??SP�л�), - = ����
  * �T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T�T */
 
-/* Nine settings rows; checkbox storage uses the renderer's row-minus-one index. */
-static uint8_t s_settings_toggles[9];  /* [2]=LED, [3]=Buzzer, [5]=Scroll */
+/* Ten settings rows; checkbox storage uses the renderer's row-minus-one index. */
+static uint8_t s_settings_toggles[9];  /* [2]=LED, [3]=Buzzer, [5]=Scroll, [8]=Chinese */
 static uint8_t s_settings_values[9];
 
 /* V6.14: �������ؼ�????�ӳٱ���༭??*/
@@ -259,6 +264,7 @@ void settings_proc(void)
     s_settings_toggles[2]  = g_config.led_enabled ? 1 : 0;            /* item 3 → check_box.m[2] */
     s_settings_toggles[3]  = g_config.buzzer_enabled ? 1 : 0;         /* item 4 → check_box.m[3] */
     s_settings_toggles[5]  = g_config.long_text_scroll_enable ? 1 : 0; /* item 6 → check_box.m[5] */
+    s_settings_toggles[8] = ui_language_chinese()?1:0; /* item 9 -> row-minus-one */
 
     check_box.m = s_settings_toggles;
     s_settings_values[0] = ui.param[DISP_BRI];                         /* item 0: ~ Disp Bri */
@@ -266,6 +272,8 @@ void settings_proc(void)
     s_settings_values[2] = ui.param[BTN_LPT];                           /* item 2: ~ Btn LPT */
     s_settings_values[5] = (uint8_t)(1200u / (g_config.morse_dot_ms ? g_config.morse_dot_ms : 200));     /* item 5: ~ Morse Speed (*10ms) */
     check_box.v = s_settings_values + 1;
+    settings_menu[10].m_select=(char *)ui_style_skin_label();
+    settings_menu[11].m_select=(char *)ui_style_widget_label();
     list_show(settings_menu, M_SETTING);
 
     if (btn.pressed) {
@@ -331,6 +339,15 @@ void settings_proc(void)
                         break;
                     case 8:
                         ui_navigate_to(M_SLEEP_CONFIRM);
+                        break;
+                    case 9:
+                        settings_menu[9].m_select=ui_language_set_chinese(!ui_language_chinese())?"+ Chinese UI":"+ Language SAVE ERROR";
+                        break;
+                    case 10:
+                        ui_style_set((ui_style_skin()+1)%UI_SKINS,ui_style_widget());
+                        break;
+                    case 11:
+                        ui_style_set(ui_style_skin(),(ui_style_widget()+1)%UI_WIDGETS);
                         break;
                     default: break;
                 }

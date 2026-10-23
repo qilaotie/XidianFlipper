@@ -1,0 +1,9 @@
+#ifndef HALFSTEP_HELP_TEXT_H
+#define HALFSTEP_HELP_TEXT_H
+unsigned ui_pet_help_pages(unsigned item);
+const char *ui_pet_help_line(unsigned item,unsigned page,unsigned row);
+#define GAME_GUIDES 10
+const char *game_guide_name(unsigned item);
+unsigned game_guide_pages(unsigned item);
+const char *game_guide_line(unsigned item,unsigned page,unsigned row);
+#endif

@@ -29,10 +29,11 @@ void pet_new(pet_t *p){
 }
 bool pet_valid(const pet_t *p){
     if(!p || p->version!=2 || p->age>MAX_AGE || p->fullness>100 || p->mood>100 ||
-       p->energy>100 || p->clean>100 || p->sleeping>1 || p->reserved[0] || p->reserved[1] ||
+       p->energy>100 || p->clean>100 || p->sleeping>1 || p->reserved[0]>7 || p->reserved[1]>=PET_ROOMS ||
        p->spare>1 || p->coins>9999 || p->care_good>30 || p->owned>15 || p->decor>3 ||
        p->form>3 || p->dex>63 || !(p->dex&1))return false;
     for(unsigned i=0;i<3;i++)if(p->items[i]>9)return false;
+    if(!pet_room_owned(p,p->reserved[1]))return false;
     if(p->decor && !(p->owned&(1u<<p->decor)))return false;
     unsigned stage=pet_stage(p);
     if((stage==3)!=(p->form!=0))return false;
@@ -101,4 +102,16 @@ bool pet_game(pet_t *p,bool won){
 void pet_new_egg(pet_t *p){
     pet_t old=*p;pet_new(p);p->coins=old.coins;memcpy(p->items,old.items,sizeof(p->items));
     p->owned=old.owned;p->decor=old.decor;p->dex|=old.dex;p->spare=old.spare;
+    memcpy(p->reserved,old.reserved,sizeof(p->reserved));
+}
+unsigned pet_room(const pet_t *p){return p->reserved[1];}
+bool pet_room_owned(const pet_t *p,unsigned room){return room<PET_ROOMS && (!room || (p->reserved[0]&(1u<<(room-1))));}
+unsigned pet_room_price(unsigned room){static const unsigned prices[]={0,25,35,50};return room<PET_ROOMS?prices[room]:0;}
+bool pet_room_choose(pet_t *p,unsigned room){
+    if(room>=PET_ROOMS)return false;
+    if(!pet_room_owned(p,room)){
+        unsigned price=pet_room_price(room);if(p->coins<price)return false;
+        p->coins=(uint16_t)(p->coins-price);p->reserved[0]|=(uint8_t)(1u<<(room-1));
+    }
+    p->reserved[1]=(uint8_t)room;return true;
 }

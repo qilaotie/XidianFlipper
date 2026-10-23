@@ -18,7 +18,13 @@ int main(void){
  assert(pet_act(&p,PET_CLEAN)&&p.clean==100);assert(!pet_act(&p,99));
  pet_advance(&p,0xFFFFFFFFu);assert(pet_valid(&p)&&p.age==31536000u);
  pet_advance(&p,0xFFFFFFFFu);assert(pet_valid(&p));assert(p.fullness==0&&p.energy==0&&p.clean==0);
- p.version=3;assert(!pet_valid(&p));pet_new(&p);p.reserved[0]=1;assert(!pet_valid(&p));
+ p.version=3;assert(!pet_valid(&p));pet_new(&p);p.reserved[0]=128;assert(!pet_valid(&p));
+ pet_new(&p);p.coins=100;assert(pet_room_choose(&p,1)&&p.coins==75&&pet_room(&p)==1&&pet_valid(&p));
+ assert(pet_room_choose(&p,0)&&pet_room_choose(&p,1)&&p.coins==75);
+ pet_new_egg(&p);assert(pet_room(&p)==1&&pet_room_owned(&p,1)&&pet_valid(&p));
+ p.reserved[1]=2;assert(!pet_valid(&p));
+ pet_new(&p);p.coins=0;assert(!pet_room_choose(&p,3)&&pet_room(&p)==0&&!pet_room_owned(&p,3));
+ assert(!pet_room_choose(&p,PET_ROOMS)&&pet_valid(&p));
  pet_new(&p);p.sleeping=2;assert(!pet_valid(&p));
  pet_new(&p);pet_t other=p;
  for(unsigned i=0;i<3600;i++)pet_advance(&p,1);

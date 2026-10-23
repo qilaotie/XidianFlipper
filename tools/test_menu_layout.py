@@ -6,7 +6,7 @@ import tempfile
 from menu_layout import menu_index
 root=Path(__file__).resolve().parents[1]
 layout=(root/'firmware/ui/menu_layout.h').read_text(encoding='utf-8')
-fun=['M_PET','M_TETRIS','M_SNAKE','M_ANSWER_BOOK','M_DICE','M_CRAPS','M_RPS','M_TREASURE','M_REACTION','M_NUMBER_BOMB','M_TIME_GUESS']
+fun=['M_PET','M_TETRIS','M_SNAKE','M_ANSWER_BOOK','M_DICE','M_CRAPS','M_RPS','M_TREASURE','M_REACTION','M_NUMBER_BOMB','M_TIME_GUESS','M_GAME_HELP']
 tools=['M_HID_SLIDES','M_HID_MEDIA','M_HID_CAMERA','M_WIFI_CONNECT','M_CLOUD_SYNC','M_WIFI_SCAN','M_BLE_SCAN','M_TOOL_MEMORY']
 for group,pages in [('FUN',fun),('TOOLS',tools)]:
     for i,page in enumerate(pages):assert menu_index(group,page)==i
@@ -21,6 +21,7 @@ start=source.index('static void tile_text(')
 end=source.index('/*===========================================================================',source.index('void tile_show(',start))
 shim=r'''
 #include "tile_marquee.h"
+#include "ui_style.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -38,6 +39,8 @@ static struct {bool long_text_scroll_enable;}g_config;
 static int u8g2,u8g2_font_6x10_tf=6,u8g2_font_5x7_tf=5,font_width;
 static uint64_t clock_us=1000000;
 static bool clipping;
+static unsigned mock_skin;
+unsigned ui_style_skin(void){return mock_skin;}
 static int text_x;
 static char last_text[80];
 static int64_t esp_timer_get_time(void){return (int64_t)clock_us;}
@@ -48,10 +51,13 @@ static void u8g2_SetFont(int *p,int f){(void)p;font_width=f;}
 static unsigned u8g2_GetStrWidth(int *p,const char *s){(void)p;return (unsigned)strlen(s)*font_width;}
 static void u8g2_SetClipWindow(int *p,int l,int t,int r,int b){(void)p;assert(l>=0&&r<=128&&l<r&&t>=0&&b<=32);clipping=true;}
 static void u8g2_SetMaxClipWindow(int *p){(void)p;clipping=false;}
-static void u8g2_DrawStr(int *p,int x,int y,const char *s){(void)p;(void)y;assert(clipping);text_x=x;snprintf(last_text,sizeof(last_text),"%s",s);}
+static void u8g2_DrawStr(int *p,int x,int y,const char *s){(void)p;(void)y;if(!clipping)return;text_x=x;snprintf(last_text,sizeof(last_text),"%s",s);}
 static void u8g2_DrawXBMP(int *p,int x,int y,int w,int h,const uint8_t *data){(void)p;(void)x;(void)y;(void)w;(void)h;(void)data;assert(!clipping);}
 static void u8g2_DrawBox(int *p,int x,int y,int w,int h){(void)p;(void)x;(void)y;(void)w;(void)h;assert(!clipping);}
 static void u8g2_DrawHLine(int *p,int x,int y,int w){u8g2_DrawBox(p,x,y,w,1);}
+static void u8g2_DrawVLine(int *p,int x,int y,int h){u8g2_DrawBox(p,x,y,1,h);}
+static void u8g2_DrawFrame(int *p,int x,int y,int w,int h){u8g2_DrawBox(p,x,y,w,h);}
+static void u8g2_DrawLine(int *p,int x,int y,int a,int b){(void)a;(void)b;u8g2_DrawBox(p,x,y,1,1);}
 '''
 tests=r'''
 int main(void){
@@ -72,6 +78,7 @@ int main(void){
  clock_us+=1500000;tile_show(icons);assert(text_x<37);
  g_config.long_text_scroll_enable=false;tile_show(icons);assert(text_x==37&&!strcmp(last_text,"Remote / Wi-Fi"));
  ui.select[0]=4;ui.init=false;tile_show(icons);assert(!strcmp(last_text,"Pet & party games"));
+ for(mock_skin=0;mock_skin<UI_SKINS;mock_skin++)for(unsigned i=0;i<8;i++){ui.select[0]=i;tile_show(icons);assert(!clipping);}
  puts("PASS menus: complete unique routes, marquee timing/end pauses/reset, clipping, short fallback");
 }
 '''

@@ -131,6 +131,9 @@ M_SELECT settings_menu[] = {
     {"+ Text Scroll"},
     {"- Factory Reset"},
     {"- Screen / power"},
+    {"+ Chinese UI"},
+    {"- Skin: PIXEL"},
+    {"- Home: MESSAGES"},
 };
 
 /* ══════════════════════════════════════════════════════════════

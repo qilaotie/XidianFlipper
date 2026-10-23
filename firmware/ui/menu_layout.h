@@ -12,7 +12,8 @@
  X("- Treasure radar",M_TREASURE) \
  X("- Reaction party",M_REACTION) \
  X("- Number bomb",M_NUMBER_BOMB) \
- X("- Time guess 1-10s",M_TIME_GUESS)
+ X("- Time guess 1-10s",M_TIME_GUESS) \
+ X("- How to play",M_GAME_HELP)
 #define TOOLS_MENU_ITEMS(X) \
  X("- Slide remote",M_HID_SLIDES) \
  X("- Media remote",M_HID_MEDIA) \

@@ -16,6 +16,11 @@ enum {PET_FEED,PET_PLAY,PET_CLEAN,PET_SLEEP,PET_CALLS,PET_ACTIONS};
 enum {PET_NEED_FOOD=1,PET_NEED_REST=2,PET_NEED_WASH=4,PET_NEED_COMPANY=8};
 enum {PET_APPLE,PET_SNACK,PET_SOAP,PET_BALL,PET_PLANT,PET_STARS,PET_RUG,PET_ITEMS};
 enum {PET_SUNNY=1,PET_SPORT,PET_MELLOW};
+#define PET_ROOMS 4
+unsigned pet_room(const pet_t *p);
+bool pet_room_owned(const pet_t *p,unsigned room);
+unsigned pet_room_price(unsigned room);
+bool pet_room_choose(pet_t *p,unsigned room);
 void pet_new(pet_t *p);
 bool pet_valid(const pet_t *p);
 bool pet_migrate(pet_t *p,const pet_v1_t *old);

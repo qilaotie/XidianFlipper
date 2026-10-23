@@ -4,6 +4,8 @@ import re
 import subprocess
 import tempfile
 root=Path(__file__).resolve().parents[1]
+defaults=(root/'sdkconfig.defaults').read_text(encoding='utf8')
+assert 'CONFIG_ESP_TASK_WDT_PANIC=y' in defaults
 source=(root/'firmware/app/cloud_sync.c').read_text(encoding='utf8')
 source=re.sub(r'^#include .*\n','',source,flags=re.M)
 shim=r'''
@@ -52,7 +54,7 @@ static QueueHandle_t xQueueCreate(unsigned count,size_t size){assert(count==1&&s
 static void vQueueDelete(QueueHandle_t q){free(q);}
 static int xQueueOverwrite(QueueHandle_t q,const void*v){memcpy(q->bytes,v,q->size);q->full=true;return 1;}
 static int xQueueReceive(QueueHandle_t q,void*v,unsigned timeout){(void)timeout;if(!q->full)return 0;memcpy(v,q->bytes,q->size);q->full=false;return 1;}
-static int xTaskCreate(void(*fn)(void*),const char*n,unsigned stack,void*a,unsigned priority,void*h){(void)fn;(void)n;(void)a;(void)priority;(void)h;assert(stack>=8192);return 1;}
+static int xTaskCreate(void(*fn)(void*),const char*n,unsigned stack,void*a,unsigned priority,void*h){(void)fn;(void)n;(void)a;(void)h;assert(stack>=8192 && priority==0);return 1;}
 static time_t fake_time(time_t*t){if(t)*t=clock_value;return clock_value;}
 #define time fake_time
 typedef struct{const char*server;}esp_sntp_config_t;

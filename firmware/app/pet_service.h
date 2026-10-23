@@ -14,6 +14,7 @@ bool pet_service_game(bool won);
 /* Caller pays PET_PLAY at start and settles a finished round only once. */
 bool pet_service_complete_game(bool won);
 bool pet_service_new_egg(void);
+bool pet_service_room(unsigned room);
 bool pet_service_help_needed(unsigned item);
 void pet_service_help_seen(unsigned item);
 /* outcome: 0 visit, 1 loss, 2 draw, 3 win. Returns actual credited gold;

@@ -11,6 +11,9 @@ shim=r'''
 #include "pet_games.h"
 #include "pet_help.h"
 #include "message_draft.h"
+#include "help_text.h"
+static bool host_chinese;
+bool ui_language_chinese(void){return host_chinese;}
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -66,6 +69,7 @@ static void u8g2_SetDrawColor(int *p,int c){(void)p;(void)c;}
 static void u8g2_SetFont(int *p,int f){(void)p;(void)f;}
 static void u8g2_DrawBox(int *p,int x,int y,int w,int h){(void)p;assert(x>=0&&y>=0&&x+w<=128&&y+h<=32);}
 static void u8g2_DrawRFrame(int *p,int x,int y,int w,int h,int r){(void)r;u8g2_DrawBox(p,x,y,w,h);}
+static void u8g2_DrawFrame(int *p,int x,int y,int w,int h){u8g2_DrawBox(p,x,y,w,h);}
 static void u8g2_DrawHLine(int *p,int x,int y,int w){u8g2_DrawBox(p,x,y,w,1);}
 static void u8g2_DrawVLine(int *p,int x,int y,int h){u8g2_DrawBox(p,x,y,1,h);}
 static void u8g2_DrawPixel(int *p,int x,int y){u8g2_DrawBox(p,x,y,1,1);}
@@ -74,6 +78,10 @@ static void u8g2_DrawEllipse(int *p,int x,int y,int rx,int ry,int opts){(void)op
 static void u8g2_DrawCircle(int *p,int x,int y,int r,int opts){u8g2_DrawEllipse(p,x,y,r,r,opts);}
 static void u8g2_DrawDisc(int *p,int x,int y,int r,int opts){u8g2_DrawEllipse(p,x,y,r,r,opts);}
 static void u8g2_DrawStr(int *p,int x,int y,const char *s){(void)p;assert(x>=0&&y>=7&&y<=32&&x+strlen(s)*5<=128);}
+static void ui_zh_draw(int *p,int x,int y,const char *s){
+ for(const char *c=s;*c;c++)if((unsigned char)*c>=128){assert(x==1 && (y==10 || y==22));return;}
+ u8g2_DrawStr(p,x,y,s);
+}
 '''
 tests=r'''
 static void boot(void){initialized=false;dirty=pending=error=false;last_action=-2000000;pet_service_tick();}
@@ -203,9 +211,37 @@ int main(void){
  assert(!pet_service_social(3,0,&gift) && gift==-1 && writes==before);
  pet_service_help_seen(0);assert(writes==before && stored_extra[0]==99);
  memcpy(stored_extra,saved_metadata,20);boot();assert(writable && !error);
- for(unsigned decor=0;decor<4;decor++)for(unsigned form=1;form<=3;form++){
+ host_chinese=true;extra.views[0]=0;
+ for(unsigned view=0;view<3;view++){
+  mode=GAMES;cursor=0;key(BTN_ID_SP);assert(mode==HELP && ui_pet_help_pages(0)==4);
+  /* Only first two Chinese pages is insufficient, unlike old English 2 pages. */
+  key(BTN_ID_CW);clock_us+=2100000;key(BTN_ID_BACK);assert(extra.views[0]==view);
+  mode=GAMES;cursor=0;key(BTN_ID_SP);
+  for(unsigned page=1;page<4;page++)key(BTN_ID_CW);
+  clock_us+=2100000;key(BTN_ID_BACK);assert(extra.views[0]==view+1);
+ }
+ assert(!pet_service_help_needed(0));
+ mode=GUIDES;cursor=0;key(BTN_ID_SP);assert(mode==HELP && help_manual);
+ for(unsigned page=1;page<4;page++)key(BTN_ID_CW);
+ clock_us+=2100000;key(BTN_ID_BACK);assert(extra.views[0]==3);
+ host_chinese=false;
+ state.coins=100;clock_us+=2500000;mode=HOME;selected=12;key(BTN_ID_SP);assert(mode==ROOM);
+ cursor=1;pet_page_proc();assert(state.coins==100 && pet_room(&state)==0);
+ key(BTN_ID_SP);assert(state.coins==75 && pet_room(&state)==1);boot();assert(state.coins==75 && pet_room(&state)==1);
+ clock_us+=2500000;assert(pet_service_room(0));clock_us+=2500000;assert(pet_service_room(1));assert(state.coins==75);
+ assert(pet_service_flush());boot();assert(state.coins==75 && pet_room_owned(&state,1));
+ clock_us+=2500000;commit_fail=true;assert(pet_service_room(2));assert(!pet_service_flush());
+ assert(state.coins==40 && pet_room(&state)==2);boot();commit_fail=false;
+ assert(state.coins==75 && pet_room(&state)==1 && !pet_room_owned(&state,2));
+ state.coins=0;clock_us+=2500000;assert(!pet_service_room(3)&&!pet_room_owned(&state,3)&&pet_room(&state)==1);
+ for(unsigned room=0;room<PET_ROOMS;room++)for(unsigned decor=0;decor<4;decor++)for(unsigned form=1;form<=3;form++){
   pet_new(&state);pet_advance(&state,1800);state.form=(uint8_t)form;state.dex=63;state.owned=15;state.decor=(uint8_t)decor;
-  for(unsigned frame=0;frame<64;frame++)creature(&state,frame);
+  state.reserved[0]=7;state.reserved[1]=(uint8_t)room;mode=HOME;
+  for(unsigned age=0;age<4;age++)for(unsigned sleep=0;sleep<2;sleep++)for(unsigned weak=0;weak<2;weak++){
+   static const unsigned ages[]={0,60,600,1800};state.age=ages[age];state.sleeping=sleep;state.energy=weak?10:100;
+   for(unsigned frame=0;frame<128;frame++)creature(&state,frame);
+  }
+  state.age=1800;mode=ROOM;for(cursor=0;cursor<PET_ROOMS;cursor++)pet_page_proc();mode=HOME;
   for(unsigned m=0;m<=CONNECT;m++){
    if(m==GAME || m==MINIGAME)continue;
    mode=m;unsigned count=m==HOME?11:(m==GAMES?7:(m==SHOP?PET_ITEMS:(m==BAG?PET_ITEMS+1:(m==DEX?7:(m==GROWTH?1:2)))));
@@ -218,5 +254,5 @@ int main(void){
 with tempfile.TemporaryDirectory(prefix='halfstep-pet-') as temp:
     path=Path(temp);(path/'test.c').write_text(shim+source('firmware/app/pet_service.c')+source('firmware/ui/pet_page.c')+tests,encoding='utf-8')
     subprocess.run(['gcc','-std=c11','-Wall','-Wextra','-Werror','-fno-stack-protector','-I',str(root/'firmware/app'),'-I',str(root/'firmware/ui'),
-                    str(path/'test.c'),str(root/'firmware/app/pet.c'),str(root/'firmware/app/pet_games.c'),str(root/'firmware/app/pet_help.c'),'-o',str(path/'test.exe')],check=True)
+                    str(path/'test.c'),str(root/'firmware/app/pet.c'),str(root/'firmware/app/pet_games.c'),str(root/'firmware/app/pet_help.c'),str(root/'firmware/ui/help_text.c'),'-o',str(path/'test.exe')],check=True)
     subprocess.run([str(path/'test.exe')],check=True)

@@ -16,6 +16,8 @@
  */
 
 #include "wououi.h"
+#include "ui_zh.h"
+#include "ui_style.h"
 #include "local_pages.h"
 #include "tile_marquee.h"
 #include "esp_timer.h"
@@ -36,6 +38,15 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 #include <stdio.h>
+
+static bool zh_scope(void){
+    return ui.index==M_MAIN || ui.index==M_SETTING || ui.index==M_TOOLS || ui.index==M_FUN_HUB || ui.index==M_GAME_HELP ||
+        ui.index==M_SLEEP_CONFIRM || ui.index==M_WIFI_CONNECT || ui.index==M_WIFI_FORGET ||
+        (ui.index==M_WINDOW && win.index==M_SETTING);
+}
+/* Restrict localization to system UI, never user messages or text editors. */
+#define u8g2_DrawStr(d,x,y,s) (zh_scope()?ui_zh_draw(d,x,y,s):(void)u8g2_DrawStr(d,x,y,s))
+#define u8g2_GetStrWidth(d,s) (zh_scope()?ui_zh_width(d,s):u8g2_GetStrWidth(d,s))
 #include <string.h>
 #include <math.h>
 
@@ -350,6 +361,18 @@ static void tile_text(int x,int baseline,const char *text,uint32_t elapsed,bool 
     u8g2_DrawStr(&u8g2,x+37-offset,baseline,text);
     u8g2_SetMaxClipWindow(&u8g2);
 }
+static void simple_icon(int x,unsigned icon){
+    /* Native line art: no image buffers or font changes to games. */
+    u8g2_DrawFrame(&u8g2,x+3,3,27,22);
+    if(icon==0){u8g2_DrawLine(&u8g2,x+4,4,x+16,14);u8g2_DrawLine(&u8g2,x+29,4,x+16,14);}
+    else if(icon==1){u8g2_DrawVLine(&u8g2,x+16,7,14);u8g2_DrawHLine(&u8g2,x+10,11,13);}
+    else if(icon==2){u8g2_DrawVLine(&u8g2,x+16,4,20);u8g2_DrawHLine(&u8g2,x+7,10,6);u8g2_DrawHLine(&u8g2,x+20,10,6);}
+    else if(icon==3){u8g2_DrawBox(&u8g2,x+9,9,3,3);u8g2_DrawBox(&u8g2,x+21,9,3,3);u8g2_DrawHLine(&u8g2,x+10,19,13);}
+    else if(icon==4){u8g2_DrawBox(&u8g2,x+8,7,3,3);u8g2_DrawBox(&u8g2,x+15,13,3,3);u8g2_DrawBox(&u8g2,x+22,19,3,3);}
+    else if(icon==5){u8g2_DrawHLine(&u8g2,x+7,9,19);u8g2_DrawHLine(&u8g2,x+7,18,19);u8g2_DrawBox(&u8g2,x+11,7,3,5);u8g2_DrawBox(&u8g2,x+20,16,3,5);}
+    else if(icon==6){u8g2_DrawBox(&u8g2,x+15,7,3,3);u8g2_DrawVLine(&u8g2,x+16,13,8);}
+    else {u8g2_DrawLine(&u8g2,x+9,8,x+23,21);u8g2_DrawLine(&u8g2,x+22,7,x+9,21);}
+}
 void tile_show(const uint8_t icon_pic[][16 * 7])
 {
     static const char *names[] = {"MESSAGES", "MORSE LIVE", "LEARN", "FRIENDS", "FUN", "SETTINGS", "ABOUT", "TOOLS"};
@@ -368,7 +391,14 @@ void tile_show(const uint8_t icon_pic[][16 * 7])
     for (unsigned i = 0; i < ui.num[ui.index] && i < 8; ++i) {
         int x = (int)((tile.icon_x / TILE_ICON_S + i) * DISP_W);
         if (x <= -DISP_W || x >= DISP_W) continue;
-        u8g2_DrawXBMP(&u8g2, x + 2, 0, TILE_ICON_W, TILE_ICON_H, icon_pic[i < 7 ? i : 5]);
+        unsigned skin=ui_style_skin();
+        if(skin==UI_SKIN_PIXEL)u8g2_DrawXBMP(&u8g2, x + 2, 0, TILE_ICON_W, TILE_ICON_H, icon_pic[i < 7 ? i : 5]);
+        else if(skin==UI_SKIN_MINIMAL)simple_icon(x,i);
+        else {
+            static const char *const codes[]={"MSG","CW","LRN","FRD","FUN","SET","INF","TLS"};
+            u8g2_SetFont(&u8g2,u8g2_font_5x7_tf);u8g2_DrawFrame(&u8g2,x+2,1,30,26);
+            u8g2_DrawStr(&u8g2,x+6,11,codes[i]);u8g2_DrawStr(&u8g2,x+6,23,">_");
+        }
         u8g2_SetFont(&u8g2, u8g2_font_6x10_tf);
         bool scroll=i==ui.select[ui.layer] && g_config.long_text_scroll_enable;
         tile_text(x,11,names[i],now-selected_at,scroll);
@@ -649,8 +679,11 @@ void list_show(M_SELECT arr[], uint8_t ui_index)
 
     // 绘制文字选择框 (反色)
     u8g2_SetDrawColor(&u8g2, 2);
-    u8g2_DrawRBox(&u8g2, 0, (int)list.box_y, (int)list.box_x,
-                  LIST_LINE_H, (int)LIST_BOX_R);
+    if(ui_style_skin()==UI_SKIN_MINIMAL)u8g2_DrawRFrame(&u8g2,0,(int)list.box_y,(int)list.box_x,LIST_LINE_H,1);
+    else if(ui_style_skin()==UI_SKIN_TERMINAL){
+        u8g2_DrawBox(&u8g2,0,(int)list.box_y,2,LIST_LINE_H);
+        u8g2_DrawHLine(&u8g2,0,(int)list.box_y+LIST_LINE_H-1,(int)list.box_x);
+    }else u8g2_DrawRBox(&u8g2,0,(int)list.box_y,(int)list.box_x,LIST_LINE_H,(int)LIST_BOX_R);
 
     // 白天模式遮罩
     if (!ui.param[DARK_MODE]) {
@@ -748,7 +781,7 @@ void ui_init(void)
     ui.num[M_MAIN]    = 8;   /* Seven original tiles plus wireless tools. */
     ui.num[M_HOME]    = 1;
     /* ── V8.0: 设置精简为 9 项 ── */
-    ui.num[M_SETTING] = 9;
+    ui.num[M_SETTING] = 12;
     ui.num[M_ABOUT]   = 7;
     /* ── 二级功能页 (V6.13) ── */
     ui.num[M_QUICK_MSG]       = 10;
@@ -1287,6 +1320,7 @@ void ui_proc(void)
         case M_TETRIS:          tetris_page_proc();  break;
         case M_SNAKE:           snake_page_proc();   break;
         case M_PET:             pet_page_proc();     break;
+        case M_GAME_HELP: {extern void game_help_page_proc(void);game_help_page_proc();break;}
         case M_RPS:             rps_proc();          break;
         case M_WINDOW:
             if (win.title[0] != '\0') {

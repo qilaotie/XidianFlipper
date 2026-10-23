@@ -86,7 +86,10 @@ static void worker(void *arg){
 static bool start(void){
     if(jobs)return true;
     jobs=xQueueCreate(1,sizeof(job_t));results=xQueueCreate(1,sizeof(result_t));
-    if(jobs && results && xTaskCreate(worker,"cloud_sync",8192,NULL,2,NULL)==pdPASS)return true;
+    /* TLS arithmetic can run longer than the idle watchdog interval on C6.
+     * Share the idle priority's time slices rather than starving IDLE0; never
+     * disable its watchdog or certificate verification to hide that starvation. */
+    if(jobs && results && xTaskCreate(worker,"cloud_sync",8192,NULL,0,NULL)==pdPASS)return true;
     if(jobs)vQueueDelete(jobs);
     if(results)vQueueDelete(results);
     jobs=results=NULL;text="NO MEMORY / RETRY";return false;
