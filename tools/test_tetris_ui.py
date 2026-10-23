@@ -23,6 +23,9 @@ static struct {int layer,index,state;int parent_index[20];} ui;
 static unsigned char pixels[512];
 static unsigned color=1;
 static int u8g2;
+static bool ui_language_chinese(void){return false;}
+static void u8g2_SetFontDirection(int *p,int dir){(void)p;(void)dir;}
+static void ui_zh_draw_fit(int *p,int x,int y,const char *s,unsigned w){(void)p;(void)x;(void)y;(void)s;(void)w;}
 static uint64_t clock_us=1000000;
 static int64_t esp_timer_get_time(void){return (int64_t)clock_us;}
 static uint32_t esp_random(void){return 12345;}

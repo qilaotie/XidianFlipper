@@ -9,6 +9,8 @@
 #include "rmt_ws2812.h"
 #include "esp_timer.h"
 #include "esp_random.h"
+#include "ui_zh.h"
+#include "ui_language.h"
 #include <stdio.h>
 #include <string.h>
 typedef enum { PICK_LESSON, SET_SPEED, DEMONSTRATE, ANSWER, WRONG, SUCCESS } phase_t;
@@ -255,8 +257,9 @@ void morse_training_ui_tick(void)
 }
 static void draw_center(const char *text, int y)
 {
-    int x = (DISP_W - u8g2_GetStrWidth(&u8g2, text)) / 2;
-    u8g2_DrawStr(&u8g2, x, y, text);
+    int x = (DISP_W - ui_zh_width(&u8g2, text)) / 2;
+    if(x<1)x=1;
+    ui_zh_draw_fit(&u8g2,x,ui_language_chinese() && y>12 && y<26?18:y,text,126);
 }
 void morse_training_ui_render(void)
 {
@@ -276,7 +279,7 @@ void morse_training_ui_render(void)
         return;
     }
     if (s_phase == PICK_LESSON) {
-        u8g2_SetFont(&u8g2, u8g2_font_9x15_tr); draw_center(target, 23);
+        u8g2_SetFont(&u8g2, ui_language_chinese()?u8g2_font_6x10_tf:u8g2_font_9x15_tr); draw_center(target, 23);
         u8g2_SetFont(&u8g2, u8g2_font_5x7_tr);
         bool done = (s_progress.completed[s_session.mode] & (1ULL << s_session.lesson)) != 0;
         draw_center(done ? "COMPLETED" : "READY TO LEARN", 31);
@@ -300,7 +303,7 @@ void morse_training_ui_render(void)
         u8g2_DrawLine(&u8g2, 17 + shake, 13, 24 + shake, 20);
         u8g2_DrawLine(&u8g2, 24 + shake, 13, 17 + shake, 20);
         u8g2_SetFont(&u8g2, u8g2_font_6x10_tf);
-        u8g2_DrawStr(&u8g2, 36 + shake, 21, "TRY AGAIN");
+        ui_zh_draw_fit(&u8g2, 36 + shake, ui_language_chinese()?18:21, "TRY AGAIN",86);
         u8g2_SetFont(&u8g2, u8g2_font_5x7_tr);
         if (s_session.hint) snprintf(line, sizeof(line), "Hint: %c %s", target[0], morse_codec_encode(target[0]));
         else snprintf(line, sizeof(line), "Attempt %u", s_session.mistakes);
@@ -308,14 +311,14 @@ void morse_training_ui_render(void)
         return;
     }
     if (s_session.mode == TRAINING_CHOICE) {
-        u8g2_SetFont(&u8g2, u8g2_font_9x15_tr);
+        u8g2_SetFont(&u8g2, ui_language_chinese()?u8g2_font_6x10_tf:u8g2_font_9x15_tr);
         for (unsigned i = 0; i < 4; ++i) {
             char option[2] = { s_choices[i], 0 };
             if (i == s_selected) {
-                u8g2_DrawBox(&u8g2, 7 + i * 30, 10, 23, 14);
+                u8g2_DrawBox(&u8g2, 7 + i * 30, ui_language_chinese()?8:10, 23, ui_language_chinese()?12:14);
                 u8g2_SetDrawColor(&u8g2, 0);
             }
-            u8g2_DrawStr(&u8g2, 14 + i * 30, 22, option);
+            u8g2_DrawStr(&u8g2, 14 + i * 30, ui_language_chinese()?18:22, option);
             u8g2_SetDrawColor(&u8g2, 1);
         }
         u8g2_SetFont(&u8g2, u8g2_font_5x7_tr);
@@ -325,8 +328,8 @@ void morse_training_ui_render(void)
             snprintf(line, sizeof(line), "Hint: %c %s", target[0], morse_codec_encode(target[0])); draw_center(line, 31);
         } else draw_center("Choose what you heard", 31);
     } else {
-        u8g2_SetFont(&u8g2, u8g2_font_9x15_tr);
-        u8g2_DrawStr(&u8g2, 2, 23, target);
+        u8g2_SetFont(&u8g2, ui_language_chinese()?u8g2_font_6x10_tf:u8g2_font_9x15_tr);
+        u8g2_DrawStr(&u8g2, 2, ui_language_chinese()?18:23, target);
         u8g2_SetFont(&u8g2, u8g2_font_6x10_tf);
         if (s_session.mode == TRAINING_FOLLOW || s_session.hint) {
             const char *pattern = morse_codec_encode(target[0]);
@@ -343,7 +346,7 @@ void morse_training_ui_render(void)
                 }
             } else u8g2_DrawStr(&u8g2, 24, 20, pattern);
         }
-        else u8g2_DrawStr(&u8g2, 24, 20, "FROM MEMORY");
+        else ui_zh_draw_fit(&u8g2, 24,ui_language_chinese()?18:20,"FROM MEMORY",100);
         u8g2_SetFont(&u8g2, u8g2_font_5x7_tr);
         if (s_phase == DEMONSTRATE) draw_center("LISTEN...", 31);
         else if (s_pattern_len) draw_center(s_pattern, 31);

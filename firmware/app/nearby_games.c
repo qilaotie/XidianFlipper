@@ -4,6 +4,8 @@
 #ifdef NEARBY_HOST_TEST
 #include "../../tools/nearby_host_stubs.h"
 #else
+#include "ui_zh.h"
+#include "ui_language.h"
 #include "message_service.h"
 #include "ble_radio.h"
 #include "wououi.h"
@@ -109,7 +111,7 @@ static int best_peer(uint32_t now) {
             (s_peers[i].rssi==s_peers[best].rssi && memcmp(s_peers[i].mac,s_peers[best].mac,6)<0)))best=(int)i;
     return best;
 }
-static void line(int y,const char *text) { u8g2_DrawStr(&u8g2,2,y,text); }
+static void line(int y,const char *text) { ui_zh_three_line(&u8g2,2,y,text,124,ms()); }
 static void leave(void) {
     nearby_games_enter(0);btn.pressed=false;haptic_play(HAPTIC_BACK);
     if(ui.layer){ui.index=ui.parent_index[ui.layer];ui.state=S_LAYER_OUT;}
@@ -151,8 +153,8 @@ static void radar(uint32_t now) {
     int level=(s_peer.rssi+95)/7;if(level<0)level=0;if(level>8)level=8;
     char text[28];snprintf(text,sizeof(text),"%s %ddB%s",s_peer.name[0]?s_peer.name:"TREASURE",s_peer.rssi,s_locked?" *":"");
     line(8,text);
-    for(int i=0;i<8;i++)u8g2_DrawFrame(&u8g2,2+i*11,12,8,8);
-    for(int i=0;i<level;i++)u8g2_DrawBox(&u8g2,3+i*11,13,6,6);
+    for(int i=0;i<8;i++)u8g2_DrawFrame(&u8g2,2+i*11,12,8,ui_language_chinese()?3:8);
+    for(int i=0;i<level;i++)u8g2_DrawBox(&u8g2,3+i*11,13,6,ui_language_chinese()?1:6);
     line(30,s_sound?"SP:LOCK LP:MUTE":"SP:LOCK LP:SOUND");
     if(s_sound && now-s_beep>=radar_interval(s_peer.rssi)){haptic_play(HAPTIC_RADAR);s_beep=now;}
 }

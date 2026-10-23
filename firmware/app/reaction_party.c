@@ -4,6 +4,8 @@
 #ifdef PARTY_HOST_TEST
 #include "../../tools/party_host_stubs.h"
 #else
+#include "ui_zh.h"
+#include "ui_language.h"
 #include "message_service.h"
 #include "ble_radio.h"
 #include "wououi.h"
@@ -423,19 +425,19 @@ static unsigned party_rank(unsigned index){
     for(unsigned i=0;i<s_party.count;i++)if(party_metric(s_party.players[i].score)<party_metric(score))++rank;
     return rank;
 }
-static void party_line(int y,const char *text){u8g2_DrawStr(&u8g2,2,y,text);}
+static void party_line(int y,const char *text){ui_zh_three_line(&u8g2,2,y,text,124,party_ms());}
 static void party_bomb_draw(void){
     char text[30];
     if(s_party.phase==P_RESULTS){
-        snprintf(text,sizeof(text),"BOMB NUMBER: %u",s_party.bomb_secret);party_line(8,text);
-        snprintf(text,sizeof(text),"OUT: %s",s_party.players[s_party.bomb_turn].name);party_line(19,text);
+        snprintf(text,sizeof(text),ui_zh_lookup("BOMB NUMBER: %u"),s_party.bomb_secret);party_line(8,text);
+        snprintf(text,sizeof(text),ui_zh_lookup("OUT: %s"),s_party.players[s_party.bomb_turn].name);party_line(19,text);
         party_line(30,s_party.local_flags&P_NEXT?"NEXT READY / WAITING":"PRESS:NEXT BACK:EXIT");return;
     }
-    snprintf(text,sizeof(text),"RANGE %u..%u",s_party.bomb_low,s_party.bomb_high);party_line(8,text);
-    snprintf(text,sizeof(text),"TURN: %s",s_party.players[s_party.bomb_turn].name);party_line(19,text);
+    snprintf(text,sizeof(text),ui_zh_lookup("RANGE %u..%u"),s_party.bomb_low,s_party.bomb_high);party_line(8,text);
+    snprintf(text,sizeof(text),ui_zh_lookup("TURN: %s"),s_party.players[s_party.bomb_turn].name);party_line(19,text);
     if(party_self()==s_party.bomb_turn){
         if(s_party.guess_pending)party_line(30,"SUBMITTING...");
-        else {snprintf(text,sizeof(text),"< %u > PRESS:GUESS",s_party.guess);party_line(30,text);}
+        else {snprintf(text,sizeof(text),ui_zh_lookup("< %u > PRESS:GUESS"),s_party.guess);party_line(30,text);}
     }else party_line(30,"WAIT FOR YOUR TURN");
 }
 static void party_draw(void){
@@ -457,18 +459,18 @@ static void party_draw(void){
         else if(s_party.game==PARTY_GAME_TIME){
             unsigned elapsed=p->score-1;
             snprintf(middle,sizeof(middle),"#%u %u.%03us E%lums",rank,elapsed/1000,elapsed%1000,(unsigned long)party_metric(p->score));
-        }else snprintf(middle,sizeof(middle),"RANK %u: %u ms",rank,(unsigned)(p->score-1));
+        }else snprintf(middle,sizeof(middle),ui_zh_lookup("RANK %u: %u ms"),rank,(unsigned)(p->score-1));
         party_line(8,top);party_line(19,middle);party_line(30,s_party.local_flags&P_NEXT?"NEXT READY / WAITING":"TURN:SCORES PRESS:NEXT");return;
     }
     if(s_party.phase==P_RUN){
-        if(s_party.game==PARTY_GAME_TIME){snprintf(top,sizeof(top),"TARGET: %u SECONDS",s_party.target);party_line(8,top);}
+        if(s_party.game==PARTY_GAME_TIME){snprintf(top,sizeof(top),ui_zh_lookup("TARGET: %u SECONDS"),s_party.target);party_line(8,top);}
         else party_line(8,"REACTION PARTY");
         if(s_party.local_score){
             if(party_failed(s_party.local_score))snprintf(middle,sizeof(middle),"%s",s_party.local_score==(s_party.game==PARTY_GAME_TIME?TIME_EARLY:PARTY_EARLY)?"FALSE START!":"NO RESPONSE");
             else if(s_party.game==PARTY_GAME_TIME){
                 unsigned elapsed=s_party.local_score-1;
-                snprintf(middle,sizeof(middle),"YOU: %u.%03u s",elapsed/1000,elapsed%1000);
-            }else snprintf(middle,sizeof(middle),"YOU: %u ms",(unsigned)(s_party.local_score-1));
+                snprintf(middle,sizeof(middle),ui_zh_lookup("YOU: %u.%03u s"),elapsed/1000,elapsed%1000);
+            }else snprintf(middle,sizeof(middle),ui_zh_lookup("YOU: %u ms"),(unsigned)(s_party.local_score-1));
             party_line(20,middle);party_line(30,"WAIT FOR ALL RESULTS");
         }else if(s_party.game==PARTY_GAME_TIME){
             party_line(20,s_party.go_shown?"GO! COUNT SILENTLY":"WAIT FOR GO...");
@@ -477,18 +479,18 @@ static void party_draw(void){
         return;
     }
     unsigned ready=0;for(unsigned i=0;i<s_party.count;i++)if(s_party.players[i].flags&P_READY)++ready;
-    snprintf(top,sizeof(top),"%s %u/4 READY %u",s_party.host?"HOST":"ROOM",s_party.count,ready);
-    snprintf(middle,sizeof(middle),"%s %s",p->name,p->flags&P_READY?"READY":"WAIT");
+    snprintf(top,sizeof(top),ui_zh_lookup("%s %u/4 READY %u"),ui_zh_lookup(s_party.host?"HOST":"ROOM"),s_party.count,ready);
+    snprintf(middle,sizeof(middle),"%s %s",p->name,ui_zh_lookup(p->flags&P_READY?"READY":(ui_language_chinese()?"PLAYER WAIT":"WAIT")));
     party_line(8,top);party_line(19,middle);
     if(s_party.phase==P_LOCK){
-        if(s_party.game==PARTY_GAME_TIME){snprintf(middle,sizeof(middle),"TARGET %us / ARMING",s_party.target);party_line(30,middle);}
+        if(s_party.game==PARTY_GAME_TIME){snprintf(middle,sizeof(middle),ui_zh_lookup("TARGET %us / ARMING"),s_party.target);party_line(30,middle);}
         else party_line(30,"LOCKING PLAYER LIST...");
     }
     else if(s_party.host && s_party.quiet){
         uint32_t elapsed=party_ms()-s_party.quiet_at;
-        snprintf(middle,sizeof(middle),"ALL READY: START IN %lu",(unsigned long)(elapsed>=5000?0:(5000-elapsed+999)/1000));party_line(30,middle);
+        snprintf(middle,sizeof(middle),ui_zh_lookup("ALL READY: START IN %lu"),(unsigned long)(elapsed>=5000?0:(5000-elapsed+999)/1000));party_line(30,middle);
     }else if(!s_party.host && s_party.quiet_remaining && (s_party.local_flags&P_READY)){
-        snprintf(middle,sizeof(middle),"ALL READY: START IN %u",s_party.quiet_remaining);party_line(30,middle);
+        snprintf(middle,sizeof(middle),ui_zh_lookup("ALL READY: START IN %u"),s_party.quiet_remaining);party_line(30,middle);
     }else party_line(30,s_party.local_flags&P_READY?"READY / WAIT FOR HOST":"PRESS & RELEASE:READY");
 }
 void reaction_party_proc(void){

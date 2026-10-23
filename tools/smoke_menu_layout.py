@@ -46,7 +46,7 @@ def main():
             capture(f'fun_row_{i}','M_FUN_HUB');click();pump(.5);capture(page,page)
             if page=='M_TETRIS':rotate(-1);click()
             else:back()
-        back();rotate(3);capture('tools_text_start','M_MAIN');pump(1.6);capture('tools_text_scroll','M_MAIN')
+        back();rotate(1);capture('tools_text_start','M_MAIN');pump(1.6);capture('tools_text_scroll','M_MAIN')
         click();capture('tools_first_remote','M_TOOLS')
         for i,page in enumerate(entries('TOOLS')):
             if i:rotate(1)

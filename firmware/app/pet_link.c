@@ -1,5 +1,6 @@
 /* Ephemeral Connection-inspired play, not the Bandai infrared protocol. */
 #include "pet_link.h"
+#include "ui_zh.h"
 #include "pet_games.h"
 #include "pet_service.h"
 #include "message_service.h"
@@ -157,11 +158,11 @@ void pet_link_proc(unsigned input){
         else if(reward_gift>=0){static const char *const gifts[]={"APPLE","SNACK","SOAP"};snprintf(line,sizeof(line),"GIFT %s +%uG",gifts[reward_gift],reward_gold);}
         else if(reward_gold)snprintf(line,sizeof(line),"VISIT +%uG BAG FULL",reward_gold);
         else snprintf(line,sizeof(line),"VISIT: NO GIFT / LIMIT");
-        u8g2_DrawStr(&u8g2,1,18,line);help="SP: AGAIN BACK: EXIT";
-    }else if(now-base<3000){snprintf(line,sizeof(line),"START IN %lu",(unsigned long)((3999-(now-base))/1000));u8g2_DrawStr(&u8g2,1,18,line);}
+        ui_zh_draw_fit(&u8g2,1,18,line,126);help="SP: AGAIN BACK: EXIT";
+    }else if(now-base<3000){snprintf(line,sizeof(line),"START IN %lu",(unsigned long)((3999-(now-base))/1000));ui_zh_draw_fit(&u8g2,1,18,line,126);}
     else if(!duel){draw_pet(24,pet_service_state()->form,now/300);draw_pet(84,peer.form,now/300+1);return;}
     else{
-        snprintf(line,sizeof(line),"%s %u:%u",pet_games_name(game.kind),game.score,remote_score);u8g2_DrawStr(&u8g2,1,18,line);
+        snprintf(line,sizeof(line),"%s %u:%u",pet_games_name(game.kind),game.score,remote_score);ui_zh_draw_fit(&u8g2,1,18,line,126);
         if(game.done)help="WAIT PEER RESULT...";
         else if(game.kind==PG_BUMP){snprintf(line,sizeof(line),"POWER %u SP:>=7",game.meter);help=line;}
         else if(game.kind==PG_HEADING){
@@ -170,5 +171,5 @@ void pet_link_proc(unsigned input){
         }
         else help="TAP FAST! BACK: EXIT";
     }
-    u8g2_DrawStr(&u8g2,1,31,help);
+    ui_zh_draw_fit(&u8g2,1,30,help,126);
 }

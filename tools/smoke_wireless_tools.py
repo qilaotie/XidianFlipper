@@ -108,7 +108,7 @@ def main():
         for _ in range(5): back()
         capture("home", "M_HOME")
         if args.wifi_connect:
-            click(); rotate(7); click(); rotate(menu_index('TOOLS','M_WIFI_CONNECT')); click()
+            click(); rotate(5); click(); rotate(menu_index('TOOLS','M_WIFI_CONNECT')); click()
             capture("wifi_connect_menu", "M_WIFI_CONNECT")
             click(); pump(6); capture("wifi_networks", "M_WIFI_NETWORKS")
             if args.wifi_ap_index is not None:
@@ -126,7 +126,7 @@ def main():
             print("Wi-Fi UI/scanning checked; no password or connect command sent. Evidence:", out)
             return
         if args.camera:
-            click(); rotate(7); click(); rotate(menu_index('TOOLS','M_HID_CAMERA')); click(); pump(2)
+            click(); rotate(5); click(); rotate(menu_index('TOOLS','M_HID_CAMERA')); click(); pump(2)
             capture("camera_default", "M_HID_CAMERA")
             rotate(1); capture("camera_volume_down", "M_HID_CAMERA")
             rotate(1); capture("camera_enter", "M_HID_CAMERA")
@@ -171,7 +171,7 @@ def main():
             assert "Guru Meditation" not in text and "assert failed" not in text
             print("Editor navigation checked; no message transmitted. Evidence:", out)
             return
-        click(); rotate(7); click()
+        click(); rotate(5); click()
         capture("tools_menu", "M_TOOLS")
         rotate(menu_index('TOOLS','M_BLE_SCAN'))
         click(); pump(3)

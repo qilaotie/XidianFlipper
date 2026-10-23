@@ -27,7 +27,7 @@ def main():
         pump(.2);(out/(name+'.png')).write_bytes(png(d.frame));print('CAPTURE '+name,flush=True)
     try:
         pump(5);d.send(9,0);pump(1);assert d.telemetry.get('page')==1
-        click();turn(7);click();turn(menu_index('TOOLS','M_WIFI_CONNECT'));click();click();pump(9)
+        click();turn(5);click();turn(menu_index('TOOLS','M_WIFI_CONNECT'));click();click();pump(9)
         assert d.telemetry.get('page')==55,d.telemetry
         capture('hotspots');answer=[];errors=[]
         def read_secret():

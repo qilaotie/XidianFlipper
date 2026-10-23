@@ -13,6 +13,9 @@ shim=r'''
 #include "message_draft.h"
 #include "help_text.h"
 static bool host_chinese;
+#include <assert.h>
+static const char *ui_zh_lookup(const char *s){return s;}
+static void ui_zh_draw_fit(int *p,int x,int y,const char *s,unsigned w){(void)p;(void)s;assert(x==42 && (y==11 || y==27) && w==86);}
 bool ui_language_chinese(void){return host_chinese;}
 #include <assert.h>
 #include <stdio.h>
@@ -248,7 +251,20 @@ int main(void){
    for(unsigned i=0;i<count;i++){cursor=i;selected=i;clock_us+=400000;pet_page_proc();}
   }
  }
- puts("PASS pet v2 store/UI: legacy migration preserved, v2 priority, atomic economy/reboot, menu bounds, game reward/timeout, new-egg confirmation");
+ for(unsigned lang=0;lang<2;lang++){
+  host_chinese=lang;
+  static const unsigned modes[]={HOME,SHOP,BAG,DEX,NEW_EGG,GROWTH,GAMES,CONNECT,GUIDES,ROOM};
+  static const unsigned counts[]={13,PET_ITEMS,PET_ITEMS+1,7,2,1,7,2,9,PET_ROOMS};
+  for(unsigned m=0;m<10;m++)for(unsigned i=0;i<counts[m];i++){mode=modes[m];selected=cursor=i;pet_page_proc();}
+  for(unsigned k=0;k<PG_COUNT;k++){
+   pet_games_start(&mini,k,123);mini_at=clock_us;mini_settled=true;mode=MINIGAME;
+   for(unsigned target=0;target<4;target++){
+    if((k!=PG_MEMORY && target==3) || (k==PG_MEMORY && !target))continue;
+    mini.target=target;pet_page_proc();
+   }
+  }
+ }
+ puts("PASS pet v2 store/UI: legacy migration preserved, atomic economy/reboot, EN/ZH menu bounds, game reward/timeout, new-egg confirmation");
 }
 '''
 with tempfile.TemporaryDirectory(prefix='halfstep-pet-') as temp:

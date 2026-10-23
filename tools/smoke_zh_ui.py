@@ -33,11 +33,11 @@ def main():
             for i in range(8):
                 if i:turn(1)
                 capture('main_'+str(i),2)
-            turn(-2);click();capture('settings_0')
+            turn(-1);click();capture('settings_0')
             click();capture('brightness_dialog');back()
             for i in range(1,9):turn(1);capture('settings_'+str(i))
-            click();capture('screen_power');back();back();turn(2)
-        else:turn(7)
+            click();capture('screen_power');back();back();turn(-1)
+        else:turn(5)
         click();capture('tools_0')
         for i in range(1,8):turn(1);capture('tools_'+str(i))
         # Read-only memory details, then observe both alternating rows.

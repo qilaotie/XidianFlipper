@@ -24,7 +24,7 @@ const char *ui_pet_help_line(unsigned item,unsigned page,unsigned row){
     return row<2?pet_zh[item][page][row]:"";
 }
 typedef struct {const char *name;const char *en[4][2];const char *zh[4][2];} guide_t;
-static const guide_t guides[GAME_GUIDES]={
+static const guide_t guides[10]={
  {"- Tetris portrait",{{"HOLD DEVICE PORTRAIT","10 COLUMNS / 20 ROWS"},{"TURN: MOVE; TAP: ROTATE","HOLD: DROP TO BOTTOM"},{"BACK: PAUSE / RESUME","PAUSE MENU: EXIT TO SAVE"},{"EACH LINE: PET +5G","CONTINUE RESTORES PAUSED"}},{{"方块：将设备竖持","十列二十行棋盘"},{"转动平移 短按旋转","长按直接落到底部"},{"返回键暂停或继续","暂停菜单选退出保存"},{"每消一行宠物得五币","续局后仍需确认开始"}}},
  {"- Snake",{{"TURN: RELATIVE LEFT/RIGHT","ONE TURN PER MOVEMENT"},{"TAP: START / PAUSE","HOLD: CHOOSE A NEW MAP"},{"WALL / BODY: GAME OVER","HOLLOW FOOD: GROW +1"},{"BACK: SAVE AND EXIT","ONE FOOD: PET +2G"}},{{"贪吃蛇：转动转向","每走一格只转一次"},{"短按开始或暂停","长按新局选择地图"},{"撞外墙障碍或身体结束","吃空心食物长一格"},{"返回保存并退出","每个食物宠物得两币"}}},
  {"- Answer book",{{"THINK OF A QUESTION","TAP TO GET AN ANSWER"},{"FOR FUN, NOT ADVICE","BACK: RETURN TO MENU"},{"NO NETWORK REQUIRED","NO COINS OR GAME SAVE"},{"TAP AGAIN: NEW ANSWER","BACK: EXIT"}},{{"答案之书：心想问题","短按查看随机答案"},{"仅供娱乐 不作建议","返回键回到菜单"},{"不需要联网或对手","不涉及金币或存档"},{"可再次短按换答案","随时返回退出"}}},
@@ -36,9 +36,28 @@ static const guide_t guides[GAME_GUIDES]={
  {"- Number bomb",{{"HOST A ROOM; OTHERS JOIN","2 TO 4 PLAYERS"},{"READY, THEN WAIT TO START","ONE HIDDEN NUMBER: 1-100"},{"TURN: CHOOSE; TAP: GUESS","ONLY CURRENT PLAYER ACTS"},{"HIT BOMB: LOSE THE ROUND","WATCH RANGE AND TIMEOUT"}},{{"数字炸弹：创建或加入","二到四人 准备后开局"},{"隐藏数字范围一到一百","玩家按轮次进行猜测"},{"转动选数 短按提交","只在轮到自己时操作"},{"猜中炸弹则本轮失败","注意范围缩小与超时"}}},
  {"- Time guess 1-10s",{{"HOST A ROOM; OTHERS JOIN","2 TO 4 PLAYERS"},{"READY; TARGET IS 1-10s","WATCH THE START SIGNAL"},{"COUNT SILENTLY, THEN TAP","ONE FINISH TAP PER PLAYER"},{"RANKED BY ABSOLUTE ERROR","ALL CONFIRM NEXT ROUND"}},{{"盲猜秒数：创建或加入","二到四人准备后开局"},{"目标随机一到十秒","看到开始信号后默数"},{"觉得时间到了就短按","每人只能提交一次"},{"按与目标的误差排名","所有人确认下一轮"}}}
 };
-const char *game_guide_name(unsigned item){return item<GAME_GUIDES?guides[item].name:"";}
+static const guide_t pet_guides[4]={
+ {"- Care and controls",{{"PET: TURN TO AN ACTION","TAP TO USE; HOLD: STATS"},{"FEED / CLEAN / SLEEP","WAKE BEFORE PLAYING"},{"FOOD MOOD REST CLEAN","NEEDS CAN TRIGGER CALLS"},{"BACK: RETURN TO MENU","CARE NEEDS NO GOLD"}},{{"宠物：转动选择操作","短按执行 长按看属性"},{"可喂食清洁睡觉唤醒","玩游戏前先让宠物醒来"},{"关注饱食心情精力清洁","需要照顾时会发出提醒"},{"返回键退出宠物页面","基础照顾不需要金币"}}},
+ {"- Growth and naming",{{"EGG BABY TEEN ADULT","AGE COUNTS RUNNING TIME"},{"CARE/TRAINING AFFECT FORM","ADULT FORM STAYS FIXED"},{"NAME: UP TO 12 ASCII","HOLD OR SAVE TO CONFIRM"},{"DEX: CHECK FOUND FORMS","NEW EGG KEEPS COLLECTION"}},{{"蛋幼体少年成年四阶段","年龄按运行时间累积"},{"照顾训练影响成年形态","成年后形态不再改变"},{"名字限十二个英文字符","改名页保存或长按确认"},{"图鉴可查看已发现形态","重新养蛋保留收集金币"}}},
+ {"- Shop and rewards",{{"SHOP: TAP TO BUY","BAG: USE / EQUIP ITEMS"},{"GAMES WIN: EARN GOLD","TETRIS LINE +5 SNAKE +2"},{"VISIT: BOTH GET GIFTS","DUEL: WIN DRAW LOSS PAY"},{"OWNED DECOR EQUIPS FREE","NEW EGG KEEPS INVENTORY"}},{{"商店短按购买背包使用","永久装饰装备不再扣币"},{"宠物小游戏获胜得八币","方块行五币蛇吃食两币"},{"拜访双方都有金币礼物","对战胜平负均有金币"},{"道具可补充不同属性","新蛋保留背包和钱包"}}},
+ {"- Rooms and idle actions",{{"ROOM: TURN TO PREVIEW","TAP: BUY AND EQUIP"},{"CLASSIC FREE STUDY 25G","GARDEN 35G SPACE 50G"},{"OWNED ROOMS EQUIP FREE","ROOM + DECOR CAN COMBINE"},{"IDLE: WAIT TO SEE ACTIONS","SLEEP/LOW REST: CALM"}},{{"房间转动预览短按装备","未购买时扣币解锁"},{"原房免费 书房25币","花园35币 太空50币"},{"房间买过后免费切换","背景与原有装饰叠加"},{"停留可看哈欠挠头动作","睡觉精力低时动作安静"}}}
+};
+const char *pet_guide_name(unsigned item){
+    static const char *const names[]={"- Catch notes","- Bump","- Flags","- Heading","- Memory","- Sprint","- Quick tap","- Visit","- Duel"};
+    return item<4?pet_guides[item].name:(item<PET_GUIDES?names[item-4]:"");
+}
+unsigned pet_guide_pages(unsigned item){return item<4?4:(item<PET_GUIDES?(ui_language_chinese()?ui_pet_help_pages(item-4):(pet_help_pages(item-4)*3+1)/2):0);}
+const char *pet_guide_line(unsigned item,unsigned page,unsigned row){
+    if(item>=PET_GUIDES || page>=pet_guide_pages(item) || row>=2)return "";
+    if(item<4)return ui_language_chinese()?pet_guides[item].zh[page][row]:pet_guides[item].en[page][row];
+    /* English pet pages have three original rows; expose all rows over pairs. */
+    if(!ui_language_chinese()){unsigned flat=page*2+row;return flat<pet_help_pages(item-4)*3?pet_help_line(item-4,flat/3,flat%3):"";}
+    return ui_pet_help_line(item-4,page,row);
+}
+const char *game_guide_name(unsigned item){return item==10?"- Pet":(item<10?guides[item].name:"");}
 unsigned game_guide_pages(unsigned item){return item<GAME_GUIDES?4:0;}
 const char *game_guide_line(unsigned item,unsigned page,unsigned row){
     if(item>=GAME_GUIDES || page>=4 || row>=2)return "";
+    if(item==10)return ui_language_chinese()?pet_guides[0].zh[page][row]:pet_guides[0].en[page][row];
     return ui_language_chinese()?guides[item].zh[page][row]:guides[item].en[page][row];
 }

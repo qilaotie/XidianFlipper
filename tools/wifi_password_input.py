@@ -47,7 +47,7 @@ def main():
                 for _ in range(amount):
                     d.send(1, 1); pump(.25)
                 pump(.35)
-            click(); menu_rotate(7); click(); menu_rotate(menu_index('TOOLS','M_WIFI_CONNECT')); click()
+            click(); menu_rotate(5); click(); menu_rotate(menu_index('TOOLS','M_WIFI_CONNECT')); click()
             click(); pump(6)
             assert d.telemetry.get('page') == 55, 'Network list unavailable'
             target = Path('build/wifi-input-target.png')

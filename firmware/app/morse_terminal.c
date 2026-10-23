@@ -11,6 +11,7 @@
 #include "nvs_config.h"
 #include "rmt_ws2812.h"
 #include "wououi.h"
+#include "ui_zh.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -433,7 +434,7 @@ void morse_terminal_render(void) {
             u8g2_SetFont(&u8g2, u8g2_font_5x7_tr);
             u8g2_DrawStr(&u8g2, 80, 15, caption);
         } else
-            u8g2_DrawStr(&u8g2, 34, 15, "Invalid code");
+            ui_zh_draw_fit(&u8g2, 34, 15, "Invalid code",90);
     }
     (void)s_practice;
 }

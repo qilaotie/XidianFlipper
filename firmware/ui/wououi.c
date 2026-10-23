@@ -42,6 +42,8 @@
 static bool zh_scope(void){
     return ui.index==M_MAIN || ui.index==M_SETTING || ui.index==M_TOOLS || ui.index==M_FUN_HUB || ui.index==M_GAME_HELP ||
         ui.index==M_SLEEP_CONFIRM || ui.index==M_WIFI_CONNECT || ui.index==M_WIFI_FORGET ||
+        ui.index==M_LEARN_HUB || ui.index==M_MESSAGES_HUB || ui.index==M_CHANNEL_HUB || ui.index==M_FRIENDS ||
+        ui.index==M_FRIEND_DETAIL || ui.index==M_RECIPIENT_PICK || ui.index==M_ABOUT ||
         (ui.index==M_WINDOW && win.index==M_SETTING);
 }
 /* Restrict localization to system UI, never user messages or text editors. */
@@ -375,8 +377,9 @@ static void simple_icon(int x,unsigned icon){
 }
 void tile_show(const uint8_t icon_pic[][16 * 7])
 {
-    static const char *names[] = {"MESSAGES", "MORSE LIVE", "LEARN", "FRIENDS", "FUN", "SETTINGS", "ABOUT", "TOOLS"};
-    static const char *details[] = {"Quick phrases", "Key & listen", "Practice + quiz", "Touch to add", "Pet, arcade & party games", "Make it yours", "BLUE LONG", "Remotes, Wi-Fi & scanners"};
+    static const char *names[] = {"MESSAGES", "MORSE LIVE", "LEARN", "FRIENDS", "FUN", "TOOLS", "SETTINGS", "ABOUT"};
+    static const char *details[] = {"Quick phrases", "Key & listen", "Practice + quiz", "Touch to add", "Pet, arcade & party games", "Remotes, Wi-Fi & scanners", "Make it yours", "BLUE LONG"};
+    static const unsigned icons[] = {0,1,2,3,4,7,5,6};
     static int previous=-1;
     static uint32_t selected_at;
     uint32_t now=(uint32_t)(esp_timer_get_time()/1000);
@@ -392,10 +395,10 @@ void tile_show(const uint8_t icon_pic[][16 * 7])
         int x = (int)((tile.icon_x / TILE_ICON_S + i) * DISP_W);
         if (x <= -DISP_W || x >= DISP_W) continue;
         unsigned skin=ui_style_skin();
-        if(skin==UI_SKIN_PIXEL)u8g2_DrawXBMP(&u8g2, x + 2, 0, TILE_ICON_W, TILE_ICON_H, icon_pic[i < 7 ? i : 5]);
-        else if(skin==UI_SKIN_MINIMAL)simple_icon(x,i);
+        if(skin==UI_SKIN_PIXEL)u8g2_DrawXBMP(&u8g2, x + 2, 0, TILE_ICON_W, TILE_ICON_H, icon_pic[icons[i]]);
+        else if(skin==UI_SKIN_MINIMAL)simple_icon(x,icons[i]);
         else {
-            static const char *const codes[]={"MSG","CW","LRN","FRD","FUN","SET","INF","TLS"};
+            static const char *const codes[]={"MSG","CW","LRN","FRD","FUN","TLS","SET","INF"};
             u8g2_SetFont(&u8g2,u8g2_font_5x7_tf);u8g2_DrawFrame(&u8g2,x+2,1,30,26);
             u8g2_DrawStr(&u8g2,x+6,11,codes[i]);u8g2_DrawStr(&u8g2,x+6,23,">_");
         }
@@ -411,7 +414,7 @@ void tile_show(const uint8_t icon_pic[][16 * 7])
             const char *description=details[i];
             if(!g_config.long_text_scroll_enable){
                 if(i==4)description="Pet & party games";
-                if(i==7)description="Remote / Wi-Fi";
+                if(i==5)description="Remote / Wi-Fi";
             }
             tile_text(x,23,description,now-selected_at,scroll);
         }

@@ -39,7 +39,7 @@ def main():
         evidence.append({'name':name,'telemetry':d.telemetry.copy()});print('CAPTURE '+name,flush=True)
         if page is not None:assert d.telemetry.get('page')==page,(name,d.telemetry)
     def enter_cloud():
-        capture('home',1);click();turn(7);click();capture('tools',41)
+        capture('home',1);click();turn(5);click();capture('tools',41)
         turn(menu_index('TOOLS','M_WIFI_CONNECT'));click();turn(2);click();capture('connect_saved_result');pump(10);capture('wifi_status',57)
         back();back();turn(1);click();capture('cloud_entry',62)
     try:

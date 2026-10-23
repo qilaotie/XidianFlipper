@@ -21,3 +21,7 @@ void haptic_play(int effect);
 void u8g2_SetDrawColor(void *display, int color);
 void u8g2_SetFont(void *display, const void *font);
 void u8g2_DrawStr(void *display, int x, int y, const char *text);
+#define ui_zh_draw_fit(d,x,y,s,w) ((void)(w),u8g2_DrawStr(d,x,y,s))
+#define ui_zh_three_line(d,x,y,s,w,n) ((void)(n),ui_zh_draw_fit(d,x,y,s,w))
+#define ui_language_chinese() false
+#define ui_zh_lookup(s) (s)

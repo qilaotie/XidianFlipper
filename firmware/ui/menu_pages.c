@@ -10,6 +10,7 @@
 #include "ui_language.h"
 #include "ui_style.h"
 #include "home_widgets.h"
+#include "ui_zh.h"
 #include "local_pages.h"
 #include "morse_playback.h"
 #include "message_service.h"
@@ -38,6 +39,10 @@
 #include "esp_random.h"
 #include <string.h>
 #include <stdio.h>
+
+static bool localized_game_text(void){return ui.index==M_ANSWER_BOOK || ui.index==M_DICE || ui.index==M_CRAPS;}
+#define u8g2_DrawStr(d,x,y,s) (localized_game_text()?ui_zh_draw(d,x,y,s):(void)u8g2_DrawStr(d,x,y,s))
+#define u8g2_GetStrWidth(d,s) (localized_game_text()?ui_zh_width(d,s):u8g2_GetStrWidth(d,s))
 
 /* V9.0: 移除 V6.39 发送状态页变量（fire-and-forget 无需等待ACK） */
 static uint32_t s_sending_start_ms = 0;      /* 进入发送页的时刻 */
@@ -69,9 +74,9 @@ void main_proc(void)
                     case 2: ui_navigate_to(M_LEARN_HUB); break;
                     case 3: ui_navigate_to(M_FRIENDS); break;
                     case 4: ui_navigate_to(M_FUN_HUB); break;
-                    case 5: ui_navigate_to(M_SETTING); break;
-                    case 6: ui_navigate_to(M_ABOUT); break;
-                    case 7: ui_navigate_to(M_TOOLS); break;
+                    case 5: ui_navigate_to(M_TOOLS); break;
+                    case 6: ui_navigate_to(M_SETTING); break;
+                    case 7: ui_navigate_to(M_ABOUT); break;
                 }
                 break;
 
@@ -924,6 +929,10 @@ void answer_book_proc(void)
         u8g2_DrawStr(&u8g2, (DISP_W - u8g2_GetStrWidth(&u8g2, l2)) / 2, 26, l2);
     } else {
         const char *txt = g_answers[s_shown];
+        if(ui_language_chinese()){
+            ui_zh_draw(&u8g2,2,11,"YOUR ANSWER");
+            ui_zh_draw_fit(&u8g2,(DISP_W-ui_zh_width(&u8g2,txt))/2,27,txt,124);return;
+        }
         u8g2_SetFont(&u8g2, ANSWER_FONT);
         int16_t w = u8g2_GetStrWidth(&u8g2, txt);
         if (w > DISP_W - 8) {           /* safety fallback for long strings */
@@ -1213,7 +1222,7 @@ void craps_proc(void)
         u8g2_DrawStr(&u8g2, 61, 25, "SP: AGAIN");
     } else if (s_status == CRAPS_POINT) {
         char point_text[12];
-        snprintf(point_text, sizeof(point_text), "POINT: %u", s_point);
+        snprintf(point_text, sizeof(point_text), ui_zh_lookup("POINT: %u"), s_point);
         u8g2_DrawStr(&u8g2, 61, 12, point_text);
         u8g2_DrawStr(&u8g2, 61, 25, "SP: ROLL");
     } else {

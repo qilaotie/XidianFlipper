@@ -30,7 +30,7 @@ def main():
     def home():
         for _ in range(5):back()
         assert d.telemetry.get('page')==1,d.telemetry
-    def settings():home();click();turn(5);click();turn(9);pump(1)
+    def settings():home();click();turn(6);click();turn(9);pump(1)
     def fun(page):home();click();turn(4);click();turn(menu_index('FUN',page));click()
     def compare(name):
         expected=(out/(name+'.raw')).read_bytes()

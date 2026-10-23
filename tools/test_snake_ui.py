@@ -32,6 +32,8 @@ static void u8g2_DrawBox(int *p,int x,int y,int w,int h){(void)p;assert(x>=0&&y>
 static void u8g2_DrawVLine(int *p,int x,int y,int h){u8g2_DrawBox(p,x,y,1,h);}
 static void u8g2_DrawFrame(int *p,int x,int y,int w,int h){u8g2_DrawBox(p,x,y,w,h);}
 static void u8g2_DrawStr(int *p,int x,int y,const char *s){(void)p;assert(x>=0&&y>=7&&y<=32&&x+strlen(s)*5<=128);}
+static bool ui_language_chinese(void){return false;}
+static void ui_zh_three_line(int *p,int x,int y,const char *s,unsigned w,unsigned now){(void)w;(void)now;u8g2_DrawStr(p,x,y,s);}
 '''
 tests=r'''
 static void key(int k){btn.id=k;btn.pressed=true;snake_page_proc();}

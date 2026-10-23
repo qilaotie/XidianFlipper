@@ -27,7 +27,7 @@ def main():
   pump(1.5 if a.restore or a.record_state else .1);assert d.telemetry.get('page')==page,(name,d.telemetry)
   assert len(d.frame)==512 and any(d.frame)
   (out/(name+'.png')).write_bytes(png(d.frame));print('CAPTURE '+name,flush=True)
- def settings(row):home();click();turn(5);click();turn(row)
+ def settings(row):home();click();turn(6);click();turn(row)
  try:
   pump(4);d.send(9,0);pump(.5);home()
   if a.normalize:
@@ -46,11 +46,11 @@ def main():
    else:assert path.read_bytes()==d.frame[:256],'Widget changed after reboot'
    home()
    if a.restore:
-    click();turn(7);click();turn(4);click();capture('cloud_after_reboot',62);pump(12);capture('cloud_settled',62);home()
+    click();turn(5);click();turn(4);click();capture('cloud_after_reboot',62);pump(12);capture('cloud_settled',62);home()
    print('PASS settings snapshot/reboot comparison',flush=True);return
   for skin in range(3):
    settings(10);capture('skin_'+str(skin)+'_setting',3)
-   home();click();capture('skin_'+str(skin)+'_main',2);turn(7);capture('skin_'+str(skin)+'_tools_tile',2)
+   home();click();capture('skin_'+str(skin)+'_main',2);turn(5);capture('skin_'+str(skin)+'_tools_tile',2)
    settings(10);click()
   for widget in range(4):
    home();capture('widget_'+str(widget),1)

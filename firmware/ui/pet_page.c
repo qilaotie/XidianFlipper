@@ -125,6 +125,60 @@ static void decoration(const pet_t *p){
     }
     if(p->decor==3)u8g2_DrawRFrame(&u8g2,1,28,38,4,1);
 }
+/* A 32px display fits two full Chinese rows, not four legacy 8px rows.
+ * Keep the selected action visible; alternate only secondary care statistics. */
+static void chinese_menu(const pet_t *p,int64_t now){
+    char top[96],bottom[96];const char *head="";bool raw_name=false;
+    unsigned phase=(unsigned)(now/3000000)%2;
+    top[0]=bottom[0]=0;
+    if(mode==GAME){head=now<go_at?"WAIT...":"GO! TAP";snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup("SP WITHIN 1.2s"));
+    }else if(mode==MINIGAME){
+        snprintf(top,sizeof(top),"%s %u",ui_zh_lookup(pet_games_name(mini.kind)),mini.score);head=top;
+        if(mini.done){head=mini.won?"WIN +8G":"TRY AGAIN";snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup("SP: GAME MENU"));}
+        else if(mini.kind==PG_MEMORY){
+            snprintf(top,sizeof(top),"%s %u/%u",ui_zh_lookup(mini.phase?"YOUR TURN":"REMEMBER"),mini.index+1,mini.length);
+            static const char *const cue[]={"?","LEFT TURN","RIGHT TURN","TAP"};
+            snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup(mini.phase?"REPEAT THE ORDER":(mini.deadline-(uint32_t)((now-mini_at)/1000)<150?"-":cue[mini.target])));
+        }else if(mini.kind==PG_BUMP){snprintf(top,sizeof(top),ui_zh_lookup("POWER %u"),mini.meter);snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup("SP: POWER>=7"));}
+        else if(mini.kind==PG_FLAGS){static const char *const cue[]={"LEFT TURN","RIGHT TURN","TAP"};snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup(cue[mini.target]));}
+        else if(mini.kind==PG_SPRINT){unsigned elapsed=(unsigned)((now-mini_at)/1000000);snprintf(bottom,sizeof(bottom),ui_zh_lookup("TIME %us TAP"),elapsed>=20?0:20-elapsed);}
+        else if(mini.kind==PG_HEADING){snprintf(top,sizeof(top),ui_zh_lookup("YOU %u BALL %u"),mini.lane+1,mini.target+1);snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup("SP: LAST 300ms"));}
+        else snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup("TURN TO CATCH"));
+    }else if(mode==HOME){
+        head=pet_service_name();raw_name=head[0]!=0;
+        if(!head[0])head=species[pet_stage(p)==3?p->form+2u:pet_stage(p)];
+        if(stats){snprintf(top,sizeof(top),ui_zh_lookup(phase?"REST %u WASH %u":"FOOD %u MOOD %u"),phase?p->energy:p->fullness,phase?p->clean:p->mood);head=top;raw_name=false;}
+        else if(phase){head=p->sleeping?"SLEEPING":(p->fullness<20?"HUNGRY":(p->energy<20?"TIRED":(p->clean<20?"NEED WASH":"FEELING GOOD")));raw_name=false;}
+        const char *action=selected==PET_SLEEP && p->sleeping?"WAKE":(selected==8?(p->spare?"CALLS OFF":"CALLS ON"):actions[selected]);
+        snprintf(bottom,sizeof(bottom),">%s %uG",ui_zh_lookup(action),p->coins);
+    }else if(mode==ROOM){
+        snprintf(top,sizeof(top),"%s %uG",ui_zh_lookup(rooms[cursor]),p->coins);head=top;
+        if(pet_room_owned(p,cursor))snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup(pet_room(p)==cursor?"EQUIPPED":"OWNED SP:EQUIP"));
+        else snprintf(bottom,sizeof(bottom),ui_zh_lookup("%uG SP:BUY+EQUIP"),pet_room_price(cursor));
+    }else if(mode==SHOP || mode==BAG){
+        snprintf(top,sizeof(top),"%s %uG",ui_zh_lookup(items[cursor]),p->coins);head=top;
+        if(mode==SHOP){
+            if(cursor>=3 && (p->owned&(1u<<(cursor-3))))snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup("OWNED"));
+            else snprintf(bottom,sizeof(bottom),ui_zh_lookup("%uG SP:BUY"),pet_price(cursor));
+        }
+        else if(cursor<3)snprintf(bottom,sizeof(bottom),ui_zh_lookup("x%u SP:USE"),p->items[cursor]);
+        else snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup(cursor==PET_ITEMS?"NO DECOR":((p->owned&(1u<<(cursor-3)))?(cursor==PET_BALL?"SP: USE":"SP: EQUIP"):"NOT OWNED")));
+    }else if(mode==GAMES || mode==GUIDES || mode==CONNECT){
+        head=mode==CONNECT?(cursor?"DUEL":"VISIT"):(cursor<PG_COUNT?pet_games_name(cursor):(cursor==PG_COUNT?"QUICK TAP":(cursor==PET_HELP_VISIT?"VISIT":"DUEL")));
+        snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup(mode==GUIDES?"SP: READ":"SP: OPEN"));
+    }else if(mode==DEX){
+        head=cursor==6?"NEW EGG?":species[cursor];
+        snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup(cursor==6?"SP: OPEN":((p->dex&(1u<<cursor))?"DISCOVERED":"LOCKED")));
+    }else if(mode==NEW_EGG){head="RETIRE THIS PET?";snprintf(bottom,sizeof(bottom),"%s",ui_zh_lookup(cursor?"SP: NEW EGG":"SP: KEEP"));
+    }else if(mode==GROWTH){head=species[pet_growth_form(p)+2];snprintf(bottom,sizeof(bottom),ui_zh_lookup(phase?"WINS %u/5":"CARE %u/24"),phase?p->games_won:p->care_good);}
+    if(mode!=GAME && mode!=MINIGAME){
+        if(pet_service_error()){head="SAVE ERROR";raw_name=false;}
+        else if(now<effect_until && notice){head=notice;raw_name=false;}
+    }
+    if(raw_name)u8g2_DrawStr(&u8g2,42,11,head);
+    else ui_zh_draw_fit(&u8g2,42,11,head,86);
+    ui_zh_draw_fit(&u8g2,42,27,bottom,86);
+}
 static void game_visual(const pet_t *p,int64_t now){
     unsigned elapsed=(unsigned)((now-mini_at)/1000);
     if(mini.kind==PG_NOTES || mini.kind==PG_HEADING){
@@ -269,7 +323,7 @@ void pet_page_proc(void){
         u8g2_SetDrawColor(&u8g2,1);u8g2_SetFont(&u8g2,u8g2_font_5x7_tf);
         for(unsigned row=0;row<(ui_language_chinese()?2u:3u);row++)
             ui_zh_draw(&u8g2,1,ui_language_chinese()?10+12*(int)row:7+8*(int)row,ui_pet_help_line(item,help_page,row));
-        char footer[27];snprintf(footer,sizeof(footer),"%u/%u TURN:PAGE SP:%s",help_page+1,ui_pet_help_pages(item),help_manual?"BACK":"START");
+        char footer[27];snprintf(footer,sizeof(footer),ui_language_chinese()?"%u/%u < > [OK:%s]":"%u/%u TURN:PAGE SP:%s",help_page+1,ui_pet_help_pages(item),help_manual?"BACK":"START");
         label(1,31,now<effect_until && notice?notice:footer);return;
     }
     if(mode==MINIGAME){
@@ -286,6 +340,7 @@ void pet_page_proc(void){
         }else label(17,20,"?");
     }else if(mode==MINIGAME)game_visual(p,now);
     else {decoration(p);creature(p,(unsigned)(now/400000));}
+    if(ui_language_chinese()){chinese_menu(p,now);return;}
     char line[20];
     if(mode==GAMES || mode==CONNECT || mode==GUIDES){
         label(42,7,mode==GAMES?"PET GAMES":(mode==GUIDES?"HOW TO PLAY":"CONNECTION"));

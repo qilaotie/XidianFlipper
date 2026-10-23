@@ -3,6 +3,8 @@
 #ifdef RPS_HOST_TEST
 #include "../../tools/rps_host_stubs.h"
 #else
+#include "ui_zh.h"
+#include "ui_language.h"
 #include "message_service.h"
 #include "ble_radio.h"
 #include "wououi.h"
@@ -168,17 +170,17 @@ void rps_proc(void) {
         if (s_state == DONE) op = RESULT;
         if (op && send_frame(op)) s_last_tx = now;
     }
-    char top[26], bottom[26];
+    char top[96], bottom[96];
     if (!ready) { snprintf(top, sizeof(top), "RADIO NOT READY"); snprintf(bottom, sizeof(bottom), "BACK: EXIT"); }
     else if (s_state == SEARCH) { snprintf(top, sizeof(top), "RPS: SEARCH NEARBY"); snprintf(bottom, sizeof(bottom), "OPEN RPS ON PEER"); }
     else if (s_state == LINKING) { snprintf(top, sizeof(top), "LINK %02X%02X %ddBm", s_peer.mac[4], s_peer.mac[5], s_peer.rssi); snprintf(bottom, sizeof(bottom), "MATCHING..."); }
     else if (s_state == LOST) { snprintf(top, sizeof(top), "PEER LEFT / TIMEOUT"); snprintf(bottom, sizeof(bottom), "SP: SEARCH AGAIN"); }
     else if (s_state == DONE) {
         const char *result = s_move == s_remote ? "DRAW" : s_move % 3 + 1 == s_remote ? "WIN" : "LOSE";
-        snprintf(top, sizeof(top), "%s %s/%s", result, s_names[s_move], s_names[s_remote]);
+        snprintf(top, sizeof(top), "%s %s/%s", ui_zh_lookup(result), ui_zh_lookup(s_names[s_move]), ui_zh_lookup(s_names[s_remote]));
         snprintf(bottom, sizeof(bottom), "%s", s_confirmed ? "SP: NEXT MATCH" : "CONFIRMING RESULT...");
     } else {
-        snprintf(top, sizeof(top), "%s: %s", s_move ? "LOCKED" : "PICK", s_names[s_move ? s_move : s_choice]);
+        snprintf(top, sizeof(top), "%s: %s", ui_zh_lookup(s_move ? (ui_language_chinese()?"PICK LOCKED":"LOCKED") : "PICK"), ui_zh_lookup(s_names[s_move ? s_move : s_choice]));
         snprintf(bottom, sizeof(bottom), "%s", s_move ? "WAIT FOR PEER..." : "TURN:PICK SP:LOCK");
     }
     u8g2_SetDrawColor(&u8g2, 1); u8g2_SetFont(&u8g2, u8g2_font_5x7_tf);
@@ -187,9 +189,9 @@ void rps_proc(void) {
         if (s_peer.name[0]) snprintf(opponent, sizeof(opponent), "VS %s", s_peer.name);
         else snprintf(opponent, sizeof(opponent), "VS %02X%02X", s_peer.mac[4], s_peer.mac[5]);
         u8g2_DrawStr(&u8g2, 2, 7, opponent);
-        u8g2_DrawStr(&u8g2, 2, 18, top);
-        u8g2_DrawStr(&u8g2, 2, 30, bottom);
+        ui_zh_draw_fit(&u8g2, 2, 18, top,124);
+        ui_zh_draw_fit(&u8g2, 2, 30, bottom,124);
     } else {
-        u8g2_DrawStr(&u8g2, 2, 11, top); u8g2_DrawStr(&u8g2, 2, 27, bottom);
+        ui_zh_draw_fit(&u8g2, 2, 11, top,124); ui_zh_draw_fit(&u8g2, 2, 27, bottom,124);
     }
 }

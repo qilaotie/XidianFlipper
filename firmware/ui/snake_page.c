@@ -5,6 +5,8 @@
 #include "wououi.h"
 #include "esp_random.h"
 #include "esp_timer.h"
+#include "ui_zh.h"
+#include "ui_language.h"
 #include <stdio.h>
 static snake_t snake;
 static bool paused;
@@ -65,13 +67,15 @@ void snake_page_proc(void){
     snprintf(score,sizeof(score),paused?"B%lu":"G%lu",(unsigned long)(paused?arcade_best(ARCADE_SNAKE,false):earned));u8g2_DrawStr(&u8g2,99,32,score);
     if(map_menu){
         u8g2_SetDrawColor(&u8g2,0);u8g2_DrawBox(&u8g2,3,3,90,26);u8g2_SetDrawColor(&u8g2,1);
-        u8g2_DrawStr(&u8g2,5,10,snake_map_name(map_choice));
-        u8g2_DrawStr(&u8g2,5,18,"TURN:MAP SP:START");
-        u8g2_DrawStr(&u8g2,5,26,bad_save?"SAVE ERR NEW ONLY":"BACK:KEEP OLD SAVE");
+        if(ui_language_chinese()){u8g2_SetDrawColor(&u8g2,0);u8g2_DrawBox(&u8g2,0,0,96,32);u8g2_SetDrawColor(&u8g2,1);}
+        ui_zh_three_line(&u8g2,5,10,ui_language_chinese() && !map_choice?"SNAKE CLASSIC":snake_map_name(map_choice),86,now);
+        ui_zh_three_line(&u8g2,5,18,"TURN:MAP SP:START",86,now);
+        ui_zh_three_line(&u8g2,5,26,bad_save?"SAVE ERR NEW ONLY":"BACK:KEEP OLD SAVE",86,now);
     }else if(paused || snake.over){
         u8g2_SetDrawColor(&u8g2,0);u8g2_DrawBox(&u8g2,3,3,90,26);u8g2_SetDrawColor(&u8g2,1);
-        u8g2_DrawStr(&u8g2,5,10,resume_menu?(choice?" CONTINUE":">CONTINUE"):(snake.over?(snake.won?"YOU WIN!":"GAME OVER"):"SNAKE: SP START"));
-        u8g2_DrawStr(&u8g2,5,18,resume_menu?(choice?">NEW GAME":" NEW GAME"):(snake.over?"SP: NEW GAME":"TURN: LEFT/RIGHT"));
-        u8g2_DrawStr(&u8g2,5,26,arcade_error(ARCADE_SNAKE)?"SAVE ERR HOLD:NEW":"HOLD:NEW BACK:EXIT");
+        if(ui_language_chinese()){u8g2_SetDrawColor(&u8g2,0);u8g2_DrawBox(&u8g2,0,0,96,32);u8g2_SetDrawColor(&u8g2,1);}
+        ui_zh_three_line(&u8g2,5,10,resume_menu?(choice?" CONTINUE":">CONTINUE"):(snake.over?(snake.won?"YOU WIN!":"GAME OVER"):"SNAKE: SP START"),86,now);
+        ui_zh_three_line(&u8g2,5,18,resume_menu?(choice?">NEW GAME":" NEW GAME"):(snake.over?"SP: NEW GAME":"TURN: LEFT/RIGHT"),86,now);
+        ui_zh_three_line(&u8g2,5,26,arcade_error(ARCADE_SNAKE)?"SAVE ERR HOLD:NEW":"HOLD:NEW BACK:EXIT",86,now);
     }
 }

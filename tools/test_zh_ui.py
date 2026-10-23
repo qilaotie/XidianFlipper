@@ -22,10 +22,16 @@ bool ui_language_chinese(void){return test_chinese;}
 #include "help_text.c"
 static unsigned pixels;
 static int low,high;
+void u8g2_SetDrawColor(u8g2_t *d,uint8_t c){d->draw_color=c;}
+void u8g2_DrawBox(u8g2_t *d,u8g2_uint_t x,u8g2_uint_t y,u8g2_uint_t w,u8g2_uint_t h){(void)d;assert(x+w<=128 && y+h<=32);}
 uint8_t u8x8_DrawTile(u8x8_t *d,uint8_t x,uint8_t y,uint8_t n,uint8_t *p){(void)d;(void)x;(void)y;(void)n;(void)p;assert(0);return 0;}
 uint8_t u8g2_IsIntersection(u8g2_t *d,u8g2_uint_t x,u8g2_uint_t y,u8g2_uint_t a,u8g2_uint_t b){(void)d;(void)x;(void)y;(void)a;(void)b;return 1;}
 void u8g2_DrawHVLine(u8g2_t *d,u8g2_uint_t x,u8g2_uint_t y,u8g2_uint_t n,uint8_t dir){
- (void)d;assert(dir==0);assert(x+n<=128);assert(y<32);
+ (void)d;assert(dir<=3);
+ if(dir==0){assert(x+n<=128);assert(y<32);}
+ else if(dir==1){assert(x<128);assert(y+n<=32);}
+ else if(dir==2){assert(x<128 && x+1>=n);assert(y<32);}
+ else {assert(x<128);assert(y<32 && y+1>=n);}
  pixels+=n;if(y<low)low=y;if(y>high)high=y;
 }
 int main(void){
@@ -41,6 +47,7 @@ int main(void){
   }
   assert(!strcmp(ui_zh_lookup(translations[i].key),s));
   unsigned width=ui_zh_width(&d,translations[i].key);
+  ui_zh_draw_fit(&d,42,27,translations[i].key,86);
   /* Main tile descriptions intentionally scroll in a clipped viewport. */
   if(width<=124){low=100;high=-1;pixels=0;ui_zh_draw(&d,2,15,translations[i].key);assert(pixels);}
   translated++;
@@ -63,14 +70,22 @@ int main(void){
    if(w>126){fprintf(stderr,"Game guide too wide lang%u %u/%u/%u: %u\n",lang,item,p,r,w);too_wide++;continue;}
    ui_zh_draw(&d,1,lang?10+12*r:9+12*r,s);
   }
+  for(unsigned item=0;item<PET_GUIDES;item++)for(unsigned p=0;p<pet_guide_pages(item);p++)for(unsigned r=0;r<2;r++){
+   const char *s=pet_guide_line(item,p,r);unsigned w=ui_zh_width(&d,s);
+   if(w>126){fprintf(stderr,"Pet guide too wide lang%u %u/%u/%u: %u\n",lang,item,p,r,w);too_wide++;continue;}
+   ui_zh_draw(&d,1,lang?10+12*r:9+12*r,s);
+  }
  }
  assert(!too_wide);
+ test_chinese=true;u8g2_SetFontDirection(&d,1);
+ for(unsigned i=0;i<4;i++){static const char *const names[]={"PAUSED","CONT","NEW","EXIT"};ui_zh_draw_fit(&d,67-12*i,2,names[i],30);}
+ u8g2_SetFontDirection(&d,0);
  test_chinese=false;assert(!strcmp(ui_zh_lookup("SETTINGS"),"SETTINGS"));assert(ui_zh_width(&d,"SETTINGS")==u8g2_GetStrWidth(&d,"SETTINGS"));
  printf("PASS %u translation keys, actual glyph coverage/width/draw, ASCII passthrough and English switch\n",translated);
 }
 '''
 scope=core[core.index('static bool zh_scope(void)'):core.index('/* Restrict localization')]
-scope_shim='enum {M_MAIN=1,M_SETTING,M_TOOLS,M_SLEEP_CONFIRM,M_WIFI_CONNECT,M_WIFI_FORGET,M_WINDOW,M_MESSAGE_VIEW,M_MESSAGE_EDIT,M_FUN_HUB,M_GAME_HELP};\nstatic struct {int index;} ui,win;\n'
+scope_shim='enum {M_MAIN=1,M_SETTING,M_TOOLS,M_SLEEP_CONFIRM,M_WIFI_CONNECT,M_WIFI_FORGET,M_WINDOW,M_MESSAGE_VIEW,M_MESSAGE_EDIT,M_FUN_HUB,M_GAME_HELP,M_LEARN_HUB,M_MESSAGES_HUB,M_CHANNEL_HUB,M_FRIENDS,M_FRIEND_DETAIL,M_RECIPIENT_PICK,M_ABOUT,M_MESSAGE_COMPOSE,M_INBOX,M_QUICK_MSG,M_WIFI_NETWORKS,M_WIFI_PASSWORD};\nstatic struct {int index;} ui,win;\n'
 test=test.replace('static unsigned pixels;',scope_shim+scope+'\nstatic unsigned pixels;')
 test=test.replace(' u8g2_t d={0};',' ui.index=M_MESSAGE_VIEW;assert(!zh_scope());ui.index=M_MESSAGE_EDIT;assert(!zh_scope());ui.index=M_WINDOW;win.index=M_MESSAGE_VIEW;assert(!zh_scope());win.index=M_SETTING;assert(zh_scope());ui.index=M_MAIN;assert(zh_scope());\n u8g2_t d={0};')
 with tempfile.TemporaryDirectory(prefix='halfstep-zh-') as temp:

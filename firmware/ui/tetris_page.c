@@ -5,7 +5,10 @@
 #include "wououi.h"
 #include "esp_timer.h"
 #include "esp_random.h"
+#include "ui_zh.h"
+#include "ui_language.h"
 #include <stdio.h>
+#include <string.h>
 static tetris_t game;
 static bool paused;
 static unsigned selection;
@@ -30,6 +33,12 @@ static void text(int x,int y,const char *s){
         else if(*s>='0' && *s<='9')bits=digits[*s-'0'];
         for(int row=0;row<5;row++)for(int col=0;col<3;col++)if(bits&(1u<<(row*3+col)))box(x+col,y+row,1,1);
     }
+}
+static void menu_text(int x,int y,const char *s){
+    if(!ui_language_chinese()){text(x,y,!strcmp(s,"TETRIS PLAY")?"PLAY":s);return;}
+    u8g2_SetFontDirection(&u8g2,1);
+    ui_zh_draw_fit(&u8g2,128-y-10,x,s,32-x);
+    u8g2_SetFontDirection(&u8g2,0);
 }
 static void piece(int x,int y,unsigned p,unsigned r,bool ghost){
     uint16_t mask=tetris_shape(p,r);
@@ -102,8 +111,8 @@ void tetris_page_proc(void){
     }
     if(paused || game.over){
         u8g2_SetDrawColor(&u8g2,0);box(1,49,30,77);u8g2_SetDrawColor(&u8g2,1);
-        text(2,51,arcade_error(ARCADE_TETRIS)?"SAVEERR":(game.over?"OVER":"PAUSED"));
-        text(5,63,game.over?"NEW":(restored?"CONT":"PLAY"));text(5,75,"NEW");text(5,87,"EXIT");
+        menu_text(2,51,arcade_error(ARCADE_TETRIS)?"SAVEERR":(game.over?"OVER":"PAUSED"));
+        menu_text(5,63,game.over?"NEW":(restored?"CONT":"TETRIS PLAY"));menu_text(5,75,"NEW");menu_text(5,87,"EXIT");
         box(1,64+(int)selection*12,2,3);
         text(2,99,"TURN LR");text(2,107,"TAP ROT");text(2,115,"HOLD DN");
     }

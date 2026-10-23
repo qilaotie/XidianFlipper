@@ -41,6 +41,7 @@ static int u8g2,u8g2_font_5x7_tf;
 static void u8g2_SetDrawColor(int *p,int c){(void)p;(void)c;}
 static void u8g2_SetFont(int *p,int f){(void)p;(void)f;}
 static void u8g2_DrawStr(int *p,int x,int y,const char *s){(void)p;assert(x>=0 && y>=7 && y<=32 && x+strlen(s)*5<=128);}
+#define ui_zh_draw_fit(d,x,y,s,w) ((void)(w),u8g2_DrawStr(d,x,y,s))
 static void u8g2_DrawRFrame(int *p,int x,int y,int w,int h,int r){(void)p;(void)r;assert(x>=0&&y>=0&&x+w<=128&&y+h<=32);}
 static void u8g2_DrawPixel(int *p,int x,int y){u8g2_DrawRFrame(p,x,y,1,1,0);}
 static void u8g2_DrawHLine(int *p,int x,int y,int w){u8g2_DrawRFrame(p,x,y,w,1,0);}

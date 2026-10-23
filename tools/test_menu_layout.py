@@ -17,6 +17,15 @@ wireless=(root/'firmware/app/wireless_tools.c').read_text(encoding='utf-8')
 assert 'FUN_MENU_ITEMS(MENU_LABEL)' in local and 'FUN_MENU_ITEMS(MENU_PAGE)' in local
 assert 'TOOLS_MENU_ITEMS(MENU_LABEL)' in wireless and 'TOOLS_MENU_ITEMS(MENU_PAGE)' in wireless
 source=(root/'firmware/ui/wououi.c').read_text(encoding='utf-8')
+assets=(root/'firmware/ui/assets.c').read_text(encoding='utf-8').split('const uint8_t main_icon_pic',1)[1].split('};',1)[0]
+pixels=re.findall(r'0x[0-9A-Fa-f]{2}',assets)
+assert len(pixels)==8*112
+assert pixels[7*112:8*112]!=pixels[5*112:6*112]
+assert 'icon_pic[icons[i]]' in source and 'i < 7 ? i : 5' not in source
+routes=(root/'firmware/ui/menu_pages.c').read_text(encoding='utf-8')
+for i,page in [(5,'M_TOOLS'),(6,'M_SETTING'),(7,'M_ABOUT')]:
+    assert f'case {i}: ui_navigate_to({page});' in routes
+assert 'icons[] = {0,1,2,3,4,7,5,6}' in source
 start=source.index('static void tile_text(')
 end=source.index('/*===========================================================================',source.index('void tile_show(',start))
 shim=r'''
@@ -74,7 +83,7 @@ int main(void){
  ui.num[0]=8;ui.select[0]=4;ui.param[DARK_MODE]=1;g_config.long_text_scroll_enable=true;
  tile_show(icons);assert(text_x==37&&!strcmp(last_text,"Pet, arcade & party games"));
  clock_us+=1250000;tile_show(icons);assert(text_x==27&&!clipping);
- ui.select[0]=7;tile.icon_x_trg=-7;tile_show(icons);assert(text_x==37);
+ ui.select[0]=5;tile.icon_x_trg=-5;tile_show(icons);assert(text_x==37);
  clock_us+=1500000;tile_show(icons);assert(text_x<37);
  g_config.long_text_scroll_enable=false;tile_show(icons);assert(text_x==37&&!strcmp(last_text,"Remote / Wi-Fi"));
  ui.select[0]=4;ui.init=false;tile_show(icons);assert(!strcmp(last_text,"Pet & party games"));

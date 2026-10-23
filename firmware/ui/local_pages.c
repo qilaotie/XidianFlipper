@@ -25,6 +25,8 @@
 #include "rgb_led.h"
 #include "mcpwm_buzzer.h"
 #include "esp_timer.h"
+#include "ui_zh.h"
+#include "ui_language.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -70,11 +72,20 @@ static void text_line(int y,const char *text)
 {
     u8g2_SetDrawColor(&u8g2,1);
     u8g2_SetFont(&u8g2,u8g2_font_6x10_tf);
-    u8g2_DrawStr(&u8g2,2,y,text);
+    if(ui_language_chinese() && ui.index!=M_MESSAGE_VIEW && ui.index!=M_MESSAGE_COMPOSE){
+        ui_zh_draw_fit(&u8g2,2,y<=12?11:27,text,124);
+    }else u8g2_DrawStr(&u8g2,2,y,text);
 }
 
 static void footer(const char *text)
 {
+    if(ui_language_chinese() && ui.index!=M_MESSAGE_VIEW && ui.index!=M_MESSAGE_COMPOSE){
+        if((esp_timer_get_time()/3000000)%2){
+            u8g2_SetDrawColor(&u8g2,0);u8g2_DrawBox(&u8g2,0,15,128,17);u8g2_SetDrawColor(&u8g2,1);
+            ui_zh_draw_fit(&u8g2,2,27,text,124);
+        }
+        return;
+    }
     u8g2_SetDrawColor(&u8g2,0);
     u8g2_DrawBox(&u8g2,0,24,128,8);
     u8g2_SetDrawColor(&u8g2,1);
@@ -155,6 +166,7 @@ void local_pages_sync_page(void)
     if (s_last_page==M_FRIEND_PAIR) friend_mgr_exit_add_mode();
     s_last_page=page;
     menu_pages_on_enter(page);
+    { extern void game_help_page_enter(unsigned); game_help_page_enter(page); }
     tetris_page_enter(page);
     snake_page_enter(page);
     pet_page_enter(page);
@@ -214,9 +226,9 @@ static void learn_hub(void)
 
 static void messages_hub(void)
 {
-    static char inbox_label[28];
+    static char inbox_label[64];
     static M_SELECT rows[]={ {"- Quick phrases"},{inbox_label},{"- Last send / retry"},{"- Nearby room"},{"- Write message"},{"- ASCII faces"} };
-    snprintf(inbox_label,sizeof(inbox_label),"- Inbox (%u new)",message_service_unread_count());
+    snprintf(inbox_label,sizeof(inbox_label),ui_zh_lookup("- Inbox (%u new)"),message_service_unread_count());
     int selected=menu(rows,COUNT(rows));
     if (selected==0) ui_navigate_to(M_QUICK_MSG);
     if (selected==1) ui_navigate_to(M_INBOX);
@@ -306,7 +318,7 @@ static void channel_hub(void)
 {
     static char dest_label[32];
     static M_SELECT rows[]={ {"- Live Morse"},{dest_label},{"- Received messages"} };
-    snprintf(dest_label,sizeof(dest_label),"- Nearby room %02u",message_service_get_channel());
+    snprintf(dest_label,sizeof(dest_label),ui_zh_lookup("- Nearby room %02u"),message_service_get_channel());
     int selected=menu(rows,COUNT(rows));
     if (selected==0) ui_navigate_to(M_MORSE_INPUT);
     if (selected==1) ui_navigate_to(M_CHANNEL_SELECT);
@@ -369,7 +381,7 @@ static void recipient_page(void)
     static char labels[FRIEND_STORE_MAX+1][32];
     unsigned count=friend_mgr_friend_count();
     if (count>FRIEND_STORE_MAX) count=FRIEND_STORE_MAX;
-    snprintf(labels[0],sizeof(labels[0]),"- Nearby room %02u",message_service_get_channel());
+    snprintf(labels[0],sizeof(labels[0]),ui_zh_lookup("- Nearby room %02u"),message_service_get_channel());
     rows[0].m_select=labels[0];
     for(unsigned i=0;i<count;i++) {
         friend_record_t peer;
