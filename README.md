@@ -1,4 +1,4 @@
-# 半步小岛 · XidianFlipper
+# 半部小岛 · XidianFlipper
 
 网站：<https://qilaotie.github.io/XidianFlipper/>
 
