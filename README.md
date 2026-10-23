@@ -7,8 +7,9 @@
 ## 当前进度
 
 - GitHub Pages 静态网站：游戏排行榜、宠物展示柜、连接指南；真实空状态，不注入演示成绩。
-- Cloudflare Workers + D1：接收和查询数据；无付费订阅、无付费域名购买步骤。
-- **设备固件尚未接入同步，旧固件连接 Wi-Fi 不会自动上传。** 当前程序分区剩余 3296 字节。标准 HTTPS + 默认根证书包最小探针为 1,515,824 字节，超过现有 1,245,184 字节应用分区 270,640 字节（约 264.3 KiB）。探针已撤销，不烧录、不改分区、不删除游戏。完整同步还需额外代码。
+- Cloudflare Workers + D1 保存数据；免费 Pages API 入口通过内部 Service binding 调用同一后端，未购买域名或升级套餐。
+- **COM9 已实测设备直连同步、移除和重新分享。** 主程序槽经备份迁移至 2 MiB；云同步应用 1,525,280 字节，余量 571,872 字节（约 558.5 KiB），未删除游戏。旧固件仅连 Wi-Fi 不会上传；旧分区设备必须先迁移，不能直接刷入大应用。
+- 同步固件及完整迁移说明当前在本地 V1.0 工作区；远端 main/final-2026-10-22 仍是历史固件包，尚未自动替换，不要当成新同步版。
 - 网站插画为代码绘制示意，不是设备截图。
 
 ## 运行与验证
@@ -18,6 +19,14 @@ Node 24+：`npm test`；本地网页可运行 `python -m http.server 8080 --bind
 本机 npm 损坏时可使用独立 pnpm；不需要更改系统 Node 配置。工具版本固定在 `package.json`。
 
 后端：`npx wrangler@4.151.3 login`，`npx wrangler@4.151.3 d1 migrations apply xidianflipper-community --remote`，`npx wrangler@4.151.3 deploy`。不要在不确认目标的情况下另建重复数据库。
+
+备用 API 入口：进入 `api-gateway/`，运行 `npx wrangler@4.151.3 pages deploy public --project-name xidianflipper-api --branch main --no-bundle`。只发布明确的 public 目录，不发布仓库根目录。网关无依赖、仅转发 /health 与 /v1/* 到固定 COMMUNITY Service binding，不接受任意目标 URL；不新建第二份 D1。原 workers.dev 在实测网关 DNS/TCP 路径不可用，设备使用 `https://xidianflipper-api.pages.dev`，仍校验 HTTPS 证书和主机名。
+
+## 设备操作简表
+
+先在 `TOOLS > Wi-Fi connect` 连网，再进 `TOOLS > Cloud sync`。转动在四项中切换：第一项长按开/关分享（首次默认 OFF）；第二项短按立即同步；第三项长按关闭并撤下云端展示；第四项短按进入 Wi-Fi 设置。成功显示 SYNC OK / AUTO 15M。关闭只停止后续上传，不会自动撤下已经公开的内容；移除不删本地存档，离线移除意图重启保留。Wi-Fi 自动重连沿用用户原设置，未开启时重启后需手动 Connect saved。网页缓存约 30 秒。
+
+每台设备独立随机身份与凭证先保存再上传，所有者在 UI 线程生成快照，网络在后台串行运行；不上传密码、SSID、MAC、私信、好友或完整棋盘。未知/损坏身份记录不自动覆盖。失败退避，读取纪录不加载游戏或重新发金币。
 
 前端：完成测试后将本分支推送 `origin/gh-pages`。GitHub Pages 来源应为 `gh-pages /`。`node tools/github-pages.mjs` 只读检查；加 `--enable` 只在尚未启用 Pages 时创建配置，不覆盖已有不同来源。该脚本通过操作系统 Git 凭据助手在内存中鉴权，绝不输出密钥。
 
@@ -68,7 +77,7 @@ Node 24+：`npm test`；本地网页可运行 `python -m http.server 8080 --bind
 
 `tests/worker.test.mjs` 使用生产 Worker 和真实内存 SQLite，验证字段白名单、首次注册、错凭证拒绝、最高分不回退、限频、容量和隐藏删除；限频绑定、边缘缓存在该测试中为替身。
 
-页面和真实 Cloudflare API 可单独在线验证，但不等于 ESP32 上传已通过。设备端尚未部署同步固件，不能声称设备端已验收。
+页面/API 测试与设备实机测试分别记录；COM9 的真实同步、移除、同一身份重分享已验证，但没有实机坏证书、拔线或断电故障注入覆盖。
 
 ### 2026-10-23 验证记录
 
@@ -79,3 +88,12 @@ Node 24+：`npm test`；本地网页可运行 `python -m http.server 8080 --bind
 - 浏览器检查：安装 Playwright 后 `node tools/check-browser.mjs`；可用 `PLAYWRIGHT_MODULE` 指向已有模块路径，`PREVIEW_URL` 指向公网或本地预览。不把机器私有路径写入脚本。
 - 发布 Git 操作显式使用 `-c http.sslVerify=true`。机器已有的全局关闭证书校验设置未被本项目修改；请自行审查该既有设置。
 - 付费套餐没有开通或升级。OAuth 无订阅读权限，不能据此宣称已读取账单；用户可在 Cloudflare Billing 核对 Free 套餐。
+
+### 同日后续：设备接入验证
+
+- COM9 新布局正常开机，宠物与两游戏菜单可访问；应用更新前后两个 NVS 和分区表回读一致。
+- 真实 CHYI 宠物上传：公开随机 ID 前缀 644e3d；蛇最高 4 食物/长度 7，方块 2114 分/10 行，来自设备真实纪录，没有测试分数注入。
+- 正常菜单移除后展示柜为空；重新分享恢复同一随机 ID 和两个纪录，设备确认 SYNC OK / AUTO 15M。
+- 生产 JSON、云状态机、游戏只读摘要和菜单宿主回归通过；RTOS/HTTP 替身覆盖不冒充实机网络故障验收。
+- 网站 SQL/网关共 3 项 Node 测试通过；网关没有任意 URL 代理能力。
+- 免费入口与后端仍受账号额度限制，不应理解为无限容量或无限请求。CLI 默认额外生成的未使用 Worker 副本已清理，真正的 Pages 网关、原 Worker 和唯一 D1 保留。

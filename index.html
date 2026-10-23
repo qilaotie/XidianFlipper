@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#254d3b">
   <meta name="description" content="半步电台 XidianFlipper 设备社区：游戏排行榜、电子宠物展示柜与联网同步说明。">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://xidianflipper-community.xidianflipper-community.workers.dev; base-uri 'none'; object-src 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://xidianflipper-api.pages.dev; base-uri 'none'; object-src 'none'; form-action 'none'">
   <title>半步小岛 · XidianFlipper</title>
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="app.js"></script>
@@ -29,7 +29,7 @@
       <p class="fine">成绩由设备自报，仅作交流展示，非严格防作弊竞赛。同分时较早达成者优先；新数据可能延迟约 30 秒显示。</p>
     </section>
     <section class="pet-section" id="pets" aria-labelledby="pets-title"><div class="shell section"><div class="section-heading"><div><p class="eyebrow">02 / LITTLE COMPANIONS</p><h2 id="pets-title">小家伙展示柜</h2><p>从一颗蛋开始，把悉心照料的日子攒成成长。</p></div><span class="pill">最近更新的 100 位伙伴</span></div><div id="pet-grid" class="pet-grid"></div><div id="pet-state" class="empty" role="status">正在迎接小伙伴…</div><p class="fine">展示的是上次上传的状态，不代表宠物实时在线。插画为网站示意，形态以设备记录为准。</p></div></section>
-    <section class="section shell" id="connect" aria-labelledby="connect-title"><div class="section-heading"><div><p class="eyebrow">03 / COME ABOARD</p><h2 id="connect-title">下一站，联网见</h2><p>离线照常玩，想分享的时候再上岛。</p></div></div><div class="steps"><article><span class="step-number">01</span><h3>更新支持同步的固件</h3><p>旧版只有 Wi-Fi 连接能力，不会自动上传。设备端同步固件完成验证后，将在这里更新使用说明。</p></article><article><span class="step-number">02</span><h3>连上 2.4 GHz Wi-Fi</h3><p>在设备 Wi-Fi 功能中连接网络。Wi-Fi 密码只用于设备连接，不会上传到展示柜。</p></article><article><span class="step-number">03</span><h3>主动开启分享</h3><p>计划由设备上传昵称、宠物状态和游戏最高分。不分享也不影响本地存档与游戏。</p></article></div><aside class="notice"><strong>当前状态：网站与云端接口已上线，设备同步固件尚未开放。</strong><p>未接入的设备不会出现在排行榜里。这里不收集手机号、邮箱或地理位置，也不展示硬件 MAC 地址。</p></aside></section>
+    <section class="section shell" id="connect" aria-labelledby="connect-title"><div class="section-heading"><div><p class="eyebrow">03 / COME ABOARD</p><h2 id="connect-title">下一站，联网见</h2><p>离线照常玩，想分享的时候再上岛。</p></div></div><div class="steps"><article><span class="step-number">01</span><h3>更新支持同步的固件</h3><p>COM9 已实测。旧版设备需先备份、迁移到 2 MiB 程序槽，再更新配套固件；旧包不会自动上传。</p></article><article><span class="step-number">02</span><h3>连上 2.4 GHz Wi-Fi</h3><p>在设备 Wi-Fi 功能中连接网络。Wi-Fi 密码只用于设备连接，不会上传到展示柜。</p></article><article><span class="step-number">03</span><h3>主动开启分享</h3><p>TOOLS > Cloud sync 长按开启，每 15 分钟自动同步，也可手动同步。关闭只停止上传，撤下请选 REMOVE ONLINE。</p></article></div><aside class="notice"><strong>当前状态：COM9 实机同步已通过，支持宠物展示与游戏排行。</strong><p>首次分享默认关闭；网页显示上次上传快照，可能延迟约 30 秒。不上传 Wi-Fi 密码或硬件 MAC，离线仍照常游玩。</p></aside></section>
   </main>
   <footer class="shell"><div><strong>半步小岛</strong><p>给小小的设备，留一个相遇的地方。</p></div><div><a href="https://github.com/qilaotie/XidianFlipper" target="_blank" rel="noopener noreferrer">开源项目 ↗</a><p>GitHub Pages + Cloudflare Workers / D1</p></div></footer>
 </body>

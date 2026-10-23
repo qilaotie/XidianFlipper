@@ -1,0 +1,7 @@
+name = "xidianflipper-api"
+pages_build_output_dir = "./public"
+compatibility_date = "2026-10-01"
+
+[[services]]
+binding = "COMMUNITY"
+service = "xidianflipper-community"

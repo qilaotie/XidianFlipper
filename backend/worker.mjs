@@ -86,7 +86,8 @@ export default {
       if (device && device.token_hash!==hash) return reply({error:'unauthorized'},401);
       const now=Math.floor(Date.now()/1000);
       if (request.method==='DELETE') {
-        if (!device) return reply({error:'unauthorized'},401);
+        // Idempotent removal also covers a device that never completed its first upload.
+        if (!device) return reply({ok:true,hidden:true});
         await env.DB.batch([
           env.DB.prepare("UPDATE devices SET visible=0,nickname='Hidden',pet='{}' WHERE id=? AND token_hash=?").bind(data.id,hash),
           env.DB.prepare('DELETE FROM scores WHERE device_id=?').bind(data.id)

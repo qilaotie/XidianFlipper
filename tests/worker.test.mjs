@@ -16,6 +16,7 @@ test('production SQL: enrollment, ownership, best, privacy and limits',async()=>
   globalThis.caches={default:{match:async()=>null,put:async()=>{}}};const ctx={waitUntil:()=>{}};
   const call=(method,path,data,token='a'.repeat(64),headers={})=>worker.fetch(new Request('https://api.example'+path,{method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token,...headers},...(data===undefined?{}:{body:JSON.stringify(data)})}),env,ctx);
   const d=sample();
+  assert.equal((await call('DELETE','/v1/sync',{id:'9'.repeat(32)})).status,200);
   assert.equal((await call('POST','/v1/sync',d,'bad')).status,401);
   assert.equal((await call('POST','/v1/sync',d,'a'.repeat(64),{Origin:'https://evil.example'})).status,403);
   assert.equal((await call('POST','/v1/sync',{...d,nickname:'x'.repeat(2100)})).status,413);
