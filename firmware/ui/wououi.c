@@ -40,7 +40,7 @@
 #include <stdio.h>
 
 static bool zh_scope(void){
-    return ui.index==M_MAIN || ui.index==M_SETTING || ui.index==M_TOOLS || ui.index==M_FUN_HUB || ui.index==M_GAME_HELP ||
+    return ui.index==M_DRAFT_SLOT || ui.index==M_DRAFT_CONFIRM || ui.index==M_MAIN || ui.index==M_SETTING || ui.index==M_TOOLS || ui.index==M_FUN_HUB || ui.index==M_GAME_HELP ||
         ui.index==M_SLEEP_CONFIRM || ui.index==M_WIFI_CONNECT || ui.index==M_WIFI_FORGET ||
         ui.index==M_LEARN_HUB || ui.index==M_MESSAGES_HUB || ui.index==M_CHANNEL_HUB || ui.index==M_FRIENDS ||
         ui.index==M_FRIEND_DETAIL || ui.index==M_RECIPIENT_PICK || ui.index==M_ABOUT ||

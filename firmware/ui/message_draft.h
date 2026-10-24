@@ -6,19 +6,23 @@
 #define DRAFT_DELETE 95
 #define DRAFT_SEND 96
 #define DRAFT_EMOTE 97
+#define DRAFT_SAVE 98
+#define DRAFT_BOX 99
+#define DRAFT_NEW 100
 #define DRAFT_CHOICES 97
 enum { DRAFT_UPPER,DRAFT_LOWER,DRAFT_DIGITS,DRAFT_SYMBOLS,DRAFT_SPACE_GROUP,
-       DRAFT_DELETE_GROUP,DRAFT_SEND_GROUP,DRAFT_EMOTE_GROUP,DRAFT_GROUPS };
+       DRAFT_DELETE_GROUP,DRAFT_SEND_GROUP,DRAFT_EMOTE_GROUP,
+       DRAFT_SAVE_GROUP,DRAFT_BOX_GROUP,DRAFT_NEW_GROUP,DRAFT_GROUPS };
 typedef struct {
     unsigned group, position[DRAFT_GROUPS];
     bool selecting_group;
 } draft_selector_t;
 static inline const char *message_draft_group_name(unsigned group) {
-    static const char *const names[]={"ABC","abc","123","SYM","SPACE","DELETE","SEND","EMOTES"};
+    static const char *const names[]={"ABC","abc","123","SYM","SPACE","DELETE","SEND","EMOTES","SAVE","DRAFTS","NEW"};
     return names[group<DRAFT_GROUPS?group:0];
 }
 static inline unsigned message_draft_group_count(unsigned group) {
-    static const unsigned counts[]={26,26,10,32,1,1,1,1};
+    static const unsigned counts[]={26,26,10,32,1,1,1,1,1,1,1};
     return counts[group<DRAFT_GROUPS?group:0];
 }
 static inline void message_draft_group_rotate(draft_selector_t *selector,int step) {
@@ -38,6 +42,9 @@ static inline unsigned message_draft_group_choice(const draft_selector_t *select
     case DRAFT_SPACE_GROUP:return 0;
     case DRAFT_DELETE_GROUP:return DRAFT_DELETE;
     case DRAFT_SEND_GROUP:return DRAFT_SEND;
+    case DRAFT_SAVE_GROUP:return DRAFT_SAVE;
+    case DRAFT_BOX_GROUP:return DRAFT_BOX;
+    case DRAFT_NEW_GROUP:return DRAFT_NEW;
     default:return DRAFT_EMOTE;
     }
 }

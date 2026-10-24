@@ -35,6 +35,7 @@ idf_component_register(
         "ui/menu_pages.c"
         "ui/ui_task.c"
         "ui/local_pages.c"
+        "ui/draft_store.c"
         "ui/tetris_page.c"
         "app/tetris.c"
         "app/snake.c"

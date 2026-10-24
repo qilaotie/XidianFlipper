@@ -5,6 +5,7 @@
 #include "wireless_tools.h"
 #include "message_draft.h"
 #include "message_emotes.h"
+#include "draft_store.h"
 #include "nearby_games.h"
 #include "tetris_page.h"
 #include "snake_page.h"
@@ -50,6 +51,22 @@ static char s_send_text[MESSAGE_TEXT_MAX+1];
 static char s_draft[MESSAGE_TEXT_MAX+1];
 static draft_selector_t s_draft_selector={.selecting_group=true};
 static bool s_delete_pending;
+static bool s_draft_loaded,s_box_saving,s_draft_list_enter;
+static unsigned s_draft_slot;
+static unsigned s_emote_group;
+enum {DRAFT_CONFIRM_OVERWRITE,DRAFT_CONFIRM_DELETE,DRAFT_CONFIRM_NEW,DRAFT_CONFIRM_LOAD};
+static unsigned s_draft_confirm;
+
+static void load_draft(void){
+    if(!s_draft_loaded){snprintf(s_draft,sizeof(s_draft),"%s",draft_store_work());s_draft_loaded=true;}
+}
+static void open_draft_editor(void){
+    /* Reuse an existing composer ancestor instead of growing navigation depth. */
+    for(unsigned layer=ui.layer;layer>0;layer--)if(ui.parent_index[layer]==M_MESSAGE_COMPOSE){
+        ui.layer=layer;ui.index=M_MESSAGE_COMPOSE;ui.state=S_LAYER_OUT;return;
+    }
+    ui_navigate_to(M_MESSAGE_COMPOSE);
+}
 
 static void back(void)
 {
@@ -99,6 +116,10 @@ static int menu(M_SELECT *items,unsigned count)
     if (!count) return -1;
     ui.num[ui.index]=(uint8_t)count;
     if (ui.select[ui.layer]>=count) ui.select[ui.layer]=(uint8_t)(count-1);
+    if(s_draft_list_enter){
+        s_draft_list_enter=false;list_update_scroll_targets();list.y=list.y_trg;
+        list.box_y=list.box_y_trg[ui.layer];list.loop=false;ui.init=true;
+    }
     list_show(items,ui.index);
     if (!btn.pressed) return -1;
     if (btn.id==BTN_ID_CW || btn.id==BTN_ID_CC) {
@@ -165,6 +186,7 @@ void local_pages_sync_page(void)
     if (s_last_page==M_MESSAGE_VIEW || s_last_page==M_CHANNEL_HUB) morse_playback_stop();
     if (s_last_page==M_FRIEND_PAIR) friend_mgr_exit_add_mode();
     s_last_page=page;
+    s_draft_list_enter=page==M_DRAFT_BOX || page==M_DRAFT_SLOT || page==M_DRAFT_CONFIRM || page==M_MESSAGE_EMOTES || page==M_MESSAGE_EMOTE_LIST;
     menu_pages_on_enter(page);
     { extern void game_help_page_enter(unsigned); game_help_page_enter(page); }
     tetris_page_enter(page);
@@ -227,7 +249,7 @@ static void learn_hub(void)
 static void messages_hub(void)
 {
     static char inbox_label[64];
-    static M_SELECT rows[]={ {"- Quick phrases"},{inbox_label},{"- Last send / retry"},{"- Nearby room"},{"- Write message"},{"- ASCII faces"} };
+    static M_SELECT rows[]={ {"- Quick phrases"},{inbox_label},{"- Last send / retry"},{"- Nearby room"},{"- Write message"},{"- ASCII faces"},{"- Draft box"} };
     snprintf(inbox_label,sizeof(inbox_label),ui_zh_lookup("- Inbox (%u new)"),message_service_unread_count());
     int selected=menu(rows,COUNT(rows));
     if (selected==0) ui_navigate_to(M_QUICK_MSG);
@@ -235,6 +257,7 @@ static void messages_hub(void)
     if (selected==3) ui_navigate_to(M_CHANNEL_SELECT);
     if (selected==4) ui_navigate_to(M_MESSAGE_COMPOSE);
     if (selected==5) ui_navigate_to(M_MESSAGE_EMOTES);
+    if (selected==6) {s_box_saving=false;ui_navigate_to(M_DRAFT_BOX);}
     if (selected==2) {
         if (s_tx_id) ui_navigate_to(M_TX_STATUS);
         else notice("No previous send");
@@ -256,8 +279,11 @@ static void send_text(const char *text,message_kind_t kind)
 
 static void compose_page(void)
 {
-    if(btn.pressed && btn.id==BTN_ID_BACK && message_draft_group_back(&s_draft_selector))
-        btn.pressed=false;
+    load_draft();
+    if(btn.pressed && btn.id==BTN_ID_BACK){
+        if(message_draft_group_back(&s_draft_selector))btn.pressed=false;
+        else if(!draft_store_save_work(s_draft)){btn.pressed=false;notice("SAVE ERROR");}
+    }
     if(btn.pressed && btn.id!=BTN_ID_BACK) {
         uint8_t key=btn.id;
         btn.pressed=false;
@@ -270,8 +296,17 @@ static void compose_page(void)
             if(s_draft_selector.selecting_group && s_draft_selector.group<=DRAFT_SYMBOLS)
                 s_draft_selector.selecting_group=false;
             else if(choice==DRAFT_EMOTE) {ui_navigate_to(M_MESSAGE_EMOTES);return;}
+            else if(choice==DRAFT_SAVE || choice==DRAFT_BOX){
+                if(!draft_store_save_work(s_draft)){notice("SAVE ERROR");return;}
+                if(choice==DRAFT_SAVE && !s_draft[0]){notice("Draft is empty");return;}
+                s_box_saving=choice==DRAFT_SAVE;ui_navigate_to(M_DRAFT_BOX);return;
+            }
+            else if(choice==DRAFT_NEW){
+                s_draft_confirm=DRAFT_CONFIRM_NEW;ui_navigate_to(M_DRAFT_CONFIRM);return;
+            }
             else if(choice==DRAFT_SEND) {
                 if(!s_draft[0]) notice("Draft is empty");
+                else if(!draft_store_save_work(s_draft))notice("SAVE ERROR");
                 else {
                     snprintf(s_send_text,sizeof(s_send_text),"%s",s_draft);
                     s_send_kind=MESSAGE_KIND_QUICK;
@@ -301,17 +336,87 @@ static void compose_page(void)
 
 static void emotes_page(void)
 {
-    static M_SELECT rows[MESSAGE_EMOTE_COUNT];
-    static char labels[MESSAGE_EMOTE_COUNT][30];
-    for(unsigned i=0;i<MESSAGE_EMOTE_COUNT;i++) {
-        snprintf(labels[i],sizeof(labels[i]),"- %s %s",message_emotes[i].text,message_emotes[i].label);
-        rows[i].m_select=labels[i];
+    M_SELECT rows[EMOTE_GROUPS];
+    for(unsigned i=0;i<EMOTE_GROUPS;i++)rows[i].m_select=(char *)message_emote_group_name(i);
+    int selected=menu(rows,EMOTE_GROUPS);
+    if(selected>=0){s_emote_group=(unsigned)selected;ui_navigate_to(M_MESSAGE_EMOTE_LIST);}
+}
+static void emote_list_page(void)
+{
+    static M_SELECT rows[8];static char labels[8][30];
+    unsigned count=0;
+    for(;count<COUNT(rows);count++) {
+        unsigned i=message_emote_group_index(s_emote_group,count);
+        if(i>=MESSAGE_EMOTE_COUNT)break;
+        snprintf(labels[count],sizeof(labels[count]),"- %s %s",message_emotes[i].text,message_emotes[i].label);
+        rows[count].m_select=labels[count];
     }
-    int selected=menu(rows,MESSAGE_EMOTE_COUNT);
-    if(selected>=0 && message_emote_copy((unsigned)selected,s_send_text,sizeof(s_send_text))) {
+    int selected=menu(rows,count);
+    if(selected<0)return;
+    unsigned index=message_emote_group_index(s_emote_group,(unsigned)selected);
+    bool inserting=false;
+    for(unsigned layer=ui.layer;layer>0;layer--)if(ui.parent_index[layer]==M_MESSAGE_COMPOSE)inserting=true;
+    if(inserting){
+        if(message_emote_append(index,s_draft,sizeof(s_draft)))open_draft_editor();
+        else notice("Maximum 128 characters");
+        return;
+    }
+    if(message_emote_copy(index,s_send_text,sizeof(s_send_text))) {
         s_send_kind=MESSAGE_KIND_QUICK;
         ui_navigate_to(M_RECIPIENT_PICK);
     }
+}
+
+static void draft_box_page(void){
+    load_draft();
+    static M_SELECT rows[DRAFT_SLOTS];static char labels[DRAFT_SLOTS][32];
+    for(unsigned i=0;i<DRAFT_SLOTS;i++){
+        const char *text=draft_store_slot(i);
+        snprintf(labels[i],sizeof(labels[i]),"- %u %s%.20s",i+1,text[0]?"":"[EMPTY]",text);
+        rows[i].m_select=labels[i];
+    }
+    int selected=menu(rows,DRAFT_SLOTS);
+    if(selected<0)return;
+    s_draft_slot=(unsigned)selected;
+    if(!s_box_saving){ui_navigate_to(M_DRAFT_SLOT);return;}
+    if(draft_store_slot(s_draft_slot)[0]){
+        s_draft_confirm=DRAFT_CONFIRM_OVERWRITE;ui_navigate_to(M_DRAFT_CONFIRM);
+    }else if(draft_store_save_slot(s_draft_slot,s_draft)){s_box_saving=false;notice("Draft saved");back();}
+    else notice("SAVE ERROR");
+}
+static void draft_slot_page(void){
+    static M_SELECT rows[]={{"- Edit saved draft"},{"- Delete saved draft"}};
+    int selected=menu(rows,COUNT(rows));
+    if(selected==0){
+        const char *text=draft_store_slot(s_draft_slot);
+        if(s_draft[0] && strcmp(s_draft,text)){
+            s_draft_confirm=DRAFT_CONFIRM_LOAD;ui_navigate_to(M_DRAFT_CONFIRM);return;
+        }
+        /* Loading a copy must not destroy unsaved current text on a failed commit. */
+        if(!draft_store_save_work(text)){notice("SAVE ERROR");return;}
+        snprintf(s_draft,sizeof(s_draft),"%s",text);
+        s_draft_selector=(draft_selector_t){.selecting_group=true};open_draft_editor();
+    }
+    if(selected==1){s_draft_confirm=DRAFT_CONFIRM_DELETE;ui_navigate_to(M_DRAFT_CONFIRM);}
+}
+static void draft_confirm_page(void){
+    M_SELECT rows[]={{"- Cancel"},{s_draft_confirm==DRAFT_CONFIRM_LOAD?"- Confirm load draft":(s_draft_confirm==DRAFT_CONFIRM_NEW?"- Confirm clear editor":
+        (s_draft_confirm==DRAFT_CONFIRM_DELETE?"- Confirm delete draft":"- Confirm overwrite draft"))}};
+    int selected=menu(rows,COUNT(rows));
+    if(selected==0){back();return;}
+    if(selected!=1)return;
+    if(s_draft_confirm==DRAFT_CONFIRM_LOAD){
+        const char *text=draft_store_slot(s_draft_slot);
+        if(!draft_store_save_work(text)){notice("SAVE ERROR");return;}
+        snprintf(s_draft,sizeof(s_draft),"%s",text);
+        s_draft_selector=(draft_selector_t){.selecting_group=true};open_draft_editor();return;
+    }
+    bool ok=s_draft_confirm==DRAFT_CONFIRM_NEW?draft_store_save_work(""):
+        draft_store_save_slot(s_draft_slot,s_draft_confirm==DRAFT_CONFIRM_DELETE?"":s_draft);
+    if(!ok){notice("SAVE ERROR");return;}
+    if(s_draft_confirm==DRAFT_CONFIRM_NEW){s_draft[0]=0;s_draft_selector=(draft_selector_t){.selecting_group=true};}
+    if(s_draft_confirm==DRAFT_CONFIRM_OVERWRITE)s_box_saving=false;
+    notice(s_draft_confirm==DRAFT_CONFIRM_OVERWRITE?"Draft saved":"Draft cleared");back();
 }
 
 static void channel_hub(void)
@@ -595,6 +700,10 @@ void local_pages_proc(void)
     case M_MESSAGES_HUB:messages_hub();break;
     case M_MESSAGE_COMPOSE:compose_page();break;
     case M_MESSAGE_EMOTES:emotes_page();break;
+    case M_MESSAGE_EMOTE_LIST:emote_list_page();break;
+    case M_DRAFT_BOX:draft_box_page();break;
+    case M_DRAFT_SLOT:draft_slot_page();break;
+    case M_DRAFT_CONFIRM:draft_confirm_page();break;
     case M_TREASURE:case M_REACTION:case M_NUMBER_BOMB:case M_TIME_GUESS:nearby_games_proc();break;
     case M_CHANNEL_HUB:channel_hub();break;
     case M_LEARN_HUB:learn_hub();break;

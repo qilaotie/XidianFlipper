@@ -102,6 +102,10 @@ enum PAGE_INDEX {
     M_PET,
     M_CLOUD_SYNC,
     M_GAME_HELP,
+    M_DRAFT_BOX,
+    M_DRAFT_SLOT,
+    M_DRAFT_CONFIRM,
+    M_MESSAGE_EMOTE_LIST,
 };
 
 /*===========================================================================
