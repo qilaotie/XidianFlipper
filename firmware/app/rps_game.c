@@ -16,6 +16,7 @@
 #endif
 #include <string.h>
 #include <stdio.h>
+#include "../ui/game_pixels.h"
 
 enum { HELLO = 1, INVITE, ACCEPT, MOVE, RESULT, LEAVE };
 enum { SEARCH, LINKING, PLAY, DONE, LOST };
@@ -184,6 +185,12 @@ void rps_proc(void) {
         snprintf(bottom, sizeof(bottom), "%s", s_move ? "WAIT FOR PEER..." : "TURN:PICK SP:LOCK");
     }
     u8g2_SetDrawColor(&u8g2, 1); u8g2_SetFont(&u8g2, u8g2_font_5x7_tf);
+    if(ready && (s_state==PLAY || s_state==DONE)){
+        char name[26];snprintf(name,sizeof(name),"VS %.8s",s_peer.name[0]?s_peer.name:"PEER");u8g2_DrawStr(&u8g2,0,7,name);
+        if(s_state==DONE){game_hand(5,13,s_move);game_hand(40,13,s_remote);u8g2_DrawStr(&u8g2,25,23,"VS");ui_zh_draw_fit(&u8g2,70,18,s_move==s_remote?"DRAW":s_move%3+1==s_remote?"WIN":"LOSE",58);u8g2_DrawStr(&u8g2,70,30,s_confirmed?"TAP:NEXT":"SYNC...");}
+        else {for(unsigned i=1;i<=3;i++){int x=(i-1)*23;game_hand(x+2,13,i);if(i==(s_move?s_move:s_choice))u8g2_DrawFrame(&u8g2,x,10,21,22);}ui_zh_draw_fit(&u8g2,74,17,s_move?"LOCKED":"PICK",54);u8g2_DrawStr(&u8g2,74,30,s_move?"WAIT...":"TAP:LOCK");}
+        return;
+    }
     if (s_peer.token) {
         char opponent[26];
         if (s_peer.name[0]) snprintf(opponent, sizeof(opponent), "VS %s", s_peer.name);

@@ -135,6 +135,7 @@ void pet_link_proc(unsigned input){
                 settled=true;
                 unsigned outcome=!duel?0:(game.score>remote_score?3:(game.score==remote_score?2:1));
                 reward_gold=pet_service_social(outcome,seed,&reward_gift);pet_service_flush();
+                if(!duel)message_service_passport_visit(peer.mac,peer.name,seed);
             }
         }
     }

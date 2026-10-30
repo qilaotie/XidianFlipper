@@ -19,7 +19,13 @@ static uint16_t crc(const uint8_t *p, size_t n) {
 }
 static bool valid(const mesh_packet_t *p) {
     return p && p->magic == MESH_MAGIC && p->version == MESH_VERSION && p->type < MESH_TYPE_MAX &&
-           p->len <= MESH_PAYLOAD_MAX && !(p->flags & ~MESH_FLAG_ACK_REQUEST) &&
+           p->len <= MESH_PAYLOAD_MAX && !(p->flags & ~(MESH_FLAG_ACK_REQUEST|MESH_FLAG_ROUTED|MESH_HOP_MASK|MESH_FLAG_ANNOUNCEMENT|MESH_FLAG_CUSTODY)) &&
+           (!(p->flags&MESH_FLAG_CUSTODY) || (p->type==MESH_TYPE_QUICK_MSG && !p->channel && !mesh_packet_is_broadcast(p->dst_mac) && (p->flags&(MESH_FLAG_ROUTED|MESH_FLAG_ACK_REQUEST))==(MESH_FLAG_ROUTED|MESH_FLAG_ACK_REQUEST))) &&
+           (!(p->flags&MESH_FLAG_ANNOUNCEMENT) || ((p->flags&MESH_FLAG_ROUTED) && !(p->flags&MESH_FLAG_ACK_REQUEST) &&
+             p->type==MESH_TYPE_QUICK_MSG && p->channel==0 && mesh_packet_is_broadcast(p->dst_mac))) &&
+           (!(p->flags&MESH_HOP_MASK) || (p->flags&MESH_FLAG_ROUTED)) &&
+           (!(p->flags&MESH_FLAG_ROUTED) || ((p->flags&MESH_HOP_MASK)>>MESH_HOP_SHIFT)<MESH_TOTAL_HOPS_MAX) &&
+           (!(p->flags&MESH_FLAG_ROUTED) || p->type==MESH_TYPE_QUICK_MSG || p->type==MESH_TYPE_MORSE || p->type==MESH_TYPE_RECEIPT || p->type==MESH_TYPE_COLLAB || p->type==MESH_TYPE_SOCIAL || p->type==MESH_TYPE_CUSTODY_CANCEL) &&
            p->channel <= MESH_CHANNEL_MAX;
 }
 static size_t encode(const mesh_packet_t *p, uint8_t *b) {

@@ -31,7 +31,7 @@ static int64_t go_at;
 static bool active,stats;
 static int64_t effect_until;
 static const char *notice;
-static const char *const actions[]={"FEED","PLAY","CLEAN","SLEEP","SHOP","BAG","DEX","GROWTH","CALLS","CONNECT","HOW TO","NAME","ROOM"};
+static const char *const actions[]={"FEED","PLAY","CLEAN","SLEEP","SHOP","BAG","DEX","GROWTH","CALLS","CONNECT","HOW TO","NAME","ROOM","PASSPORT"};
 static const char *const rooms[]={"CLASSIC","STUDY","GARDEN","SPACE"};
 static const char *const items[]={"APPLE","SNACK","SOAP","BALL","PLANT","STARS","RUG","NO DECOR"};
 static const char *const species[]={"EGG","BABY","TEEN","SUNNY","SPORT","MELLOW"};
@@ -267,13 +267,14 @@ void pet_page_proc(void){
             if(key==BTN_ID_SP)game_result(now);
         }else{
             if(key==BTN_ID_LP && mode==HOME)stats=!stats;
-            unsigned count=mode==HOME?13:(mode==ROOM?PET_ROOMS:(mode==GUIDES?9:(mode==GAMES?7:(mode==SHOP?PET_ITEMS:(mode==BAG?PET_ITEMS+1:(mode==DEX?7:(mode==GROWTH?1:2)))))));
+            unsigned count=mode==HOME?14:(mode==ROOM?PET_ROOMS:(mode==GUIDES?9:(mode==GAMES?7:(mode==SHOP?PET_ITEMS:(mode==BAG?PET_ITEMS+1:(mode==DEX?7:(mode==GROWTH?1:2)))))));
             unsigned *position=mode==HOME?&selected:&cursor;
             if(key==BTN_ID_CW)*position=(*position+1)%count;
             if(key==BTN_ID_CC)*position=(*position+count-1)%count;
             if(key==BTN_ID_SP){
                 if(mode==HOME){
-                    if(selected==12){mode=ROOM;cursor=pet_room(pet_service_state());effect_until=0;}
+                    if(selected==13){ui_navigate_to(M_PASSPORT);return;}
+                    else if(selected==12){mode=ROOM;cursor=pet_room(pet_service_state());effect_until=0;}
                     else if(selected==11){edit_name();mode=NAME;effect_until=0;}
                     else if(selected==10){mode=GUIDES;cursor=0;effect_until=0;}
                     else if(selected==9){mode=CONNECT;cursor=0;effect_until=0;}

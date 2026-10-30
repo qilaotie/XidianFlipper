@@ -18,6 +18,7 @@
 #endif
 #include <string.h>
 #include <stdio.h>
+#include "../ui/game_pixels.h"
 
 enum { DISCOVER=1, STATE=2, EXIT=3 };
 #define NO_HIT 10002u
@@ -111,7 +112,6 @@ static int best_peer(uint32_t now) {
             (s_peers[i].rssi==s_peers[best].rssi && memcmp(s_peers[i].mac,s_peers[best].mac,6)<0)))best=(int)i;
     return best;
 }
-static void line(int y,const char *text) { ui_zh_three_line(&u8g2,2,y,text,124,ms()); }
 static void leave(void) {
     nearby_games_enter(0);btn.pressed=false;haptic_play(HAPTIC_BACK);
     if(ui.layer){ui.index=ui.parent_index[ui.layer];ui.state=S_LAYER_OUT;}
@@ -141,21 +141,24 @@ static void radar(uint32_t now) {
     }
     if(s_treasure) {
         if(now-s_tx>=700 && send(DISCOVER))s_tx=now;
-        line(8,"TREASURE: HIDING");line(19,"ONE HIDES, MANY HUNT");line(30,"TURN: HUNT  BACK: EXIT");return;
+        u8g2_DrawFrame(&u8g2,2,10,26,20);u8g2_DrawBox(&u8g2,3,16,24,2);u8g2_DrawBox(&u8g2,13,15,4,6);game_ring(15,6,4);
+        ui_zh_draw_fit(&u8g2,36,11,"TREASURE: HIDING",92);ui_zh_draw_fit(&u8g2,36,23,"ONE HIDES, MANY HUNT",92);return;
     }
     int best=best_peer(now);
     if(!s_locked && best>=0)s_peer=s_peers[best];
     if(s_locked)for(unsigned i=0;i<8;i++)
         if(s_peer.token==s_peers[i].token && !memcmp(s_peer.mac,s_peers[i].mac,6))s_peer=s_peers[i];
     if(!s_peer.token || now-s_peer.seen>3000) {
-        line(8,s_locked?"TARGET LOST":"RADAR: SEARCHING");line(19,"PEER: TURN TO HIDING");line(30,"TURN: HIDE SP:LOCK");return;
+        game_ring(15,16,14);game_ring(15,16,7);unsigned phase=(now/180)%4;u8g2_DrawBox(&u8g2,phase<2?15:2,phase%2?3:16,phase<2?1:14,phase<2?14:1);
+        ui_zh_draw_fit(&u8g2,35,11,s_locked?"TARGET LOST":"RADAR: SEARCHING",93);ui_zh_draw_fit(&u8g2,35,26,"PEER: TURN TO HIDING",93);return;
     }
     int level=(s_peer.rssi+95)/7;if(level<0)level=0;if(level>8)level=8;
-    char text[28];snprintf(text,sizeof(text),"%s %ddB%s",s_peer.name[0]?s_peer.name:"TREASURE",s_peer.rssi,s_locked?" *":"");
-    line(8,text);
-    for(int i=0;i<8;i++)u8g2_DrawFrame(&u8g2,2+i*11,12,8,ui_language_chinese()?3:8);
-    for(int i=0;i<level;i++)u8g2_DrawBox(&u8g2,3+i*11,13,6,ui_language_chinese()?1:6);
-    line(30,s_sound?"SP:LOCK LP:MUTE":"SP:LOCK LP:SOUND");
+    char text[28];snprintf(text,sizeof(text),"%.8s %ddB%s",s_peer.name[0]?s_peer.name:"TREASURE",s_peer.rssi,s_locked?" *":"");
+    game_ring(15,16,14);game_ring(15,16,9);game_ring(15,16,4);if(level)u8g2_DrawBox(&u8g2,14-level/2,15-level/2,2+level,2+level);
+    u8g2_DrawStr(&u8g2,35,7,text);
+    for(int i=0;i<8;i++)u8g2_DrawFrame(&u8g2,35+i*11,11,8,8);
+    for(int i=0;i<level;i++)u8g2_DrawBox(&u8g2,36+i*11,12,6,6);
+    ui_zh_draw_fit(&u8g2,35,31,s_sound?"SP:LOCK LP:MUTE":"SP:LOCK LP:SOUND",93);
     if(s_sound && now-s_beep>=radar_interval(s_peer.rssi)){haptic_play(HAPTIC_RADAR);s_beep=now;}
 }
 void nearby_games_proc(void) {

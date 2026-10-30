@@ -54,10 +54,15 @@ const char *pet_guide_line(unsigned item,unsigned page,unsigned row){
     if(!ui_language_chinese()){unsigned flat=page*2+row;return flat<pet_help_pages(item-4)*3?pet_help_line(item-4,flat/3,flat%3):"";}
     return ui_pet_help_line(item-4,page,row);
 }
-const char *game_guide_name(unsigned item){return item==10?"- Pet":(item<10?guides[item].name:"");}
+const char *game_guide_name(unsigned item){return item==11?"- Multiplayer tabletop":item==10?"- Pet":(item<10?guides[item].name:"");}
 unsigned game_guide_pages(unsigned item){return item<GAME_GUIDES?4:0;}
 const char *game_guide_line(unsigned item,unsigned page,unsigned row){
     if(item>=GAME_GUIDES || page>=4 || row>=2)return "";
     if(item==10)return ui_language_chinese()?pet_guides[0].zh[page][row]:pet_guides[0].en[page][row];
+    if(item==11){
+        static const char *const en[4][2]={{"FUN > TABLETOP","10 GAMES; PICK A TABLE"},{"SAME CHANNEL / ROOM","CREATE OR CHOOSE TABLE"},{"ALL READY; HOST START","PRIVATE INFO: HOLD"},{"TURN:PICK TAP:USE","INVITES / WATCH"}};
+        static const char *const zh[4][2]={{"趣玩进入多人桌游","十款玩法多桌并行"},{"同频道与队伍范围","打开自组网后选桌"},{"全员准备后桌主开始","秘密信息长按查看"},{"旋转选择短按操作","可接邀请或公开观战"}};
+        return ui_language_chinese()?zh[page][row]:en[page][row];
+    }
     return ui_language_chinese()?guides[item].zh[page][row]:guides[item].en[page][row];
 }

@@ -5,6 +5,7 @@
 #include "rmt_ws2812.h"
 #include "power_mgmt.h"
 #include "haptic_feedback.h"
+#include "message_service.h"
 #include "driver/usb_serial_jtag.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
@@ -37,7 +38,7 @@ static uint16_t crc16(const uint8_t *data, size_t len)
 }
 static void send_json(uint8_t type, const char *json)
 {
-    uint8_t data[384];
+    uint8_t data[768];
     size_t len = strlen(json);
     if (len > sizeof(data) - 2) return;
     memcpy(data, json, len);
@@ -171,18 +172,27 @@ void device_control_tick(void)
     if (now - s_telemetry_at >= 100000) {
         uint8_t r, g, b;
         rgb_get_output(&r, &g, &b);
-        char json[384];
+        /* Public tabletop status only: never serialize hand cards or secret roles. */
+        party_snapshot_t pg;message_service_party_snapshot(&pg);
+        char table[129],flags[17],details[17];
+        static const char hex[]="0123456789abcdef";
+        for(unsigned i=0;i<64;i++){table[i*2]=hex[pg.game.board[i]>>4];table[i*2+1]=hex[pg.game.board[i]&15];}table[128]=0;
+        for(unsigned i=0;i<8;i++){flags[i*2]=hex[pg.game.flags[i]>>4];flags[i*2+1]=hex[pg.game.flags[i]&15];details[i*2]=hex[pg.game.data[i]>>4];details[i*2+1]=hex[pg.game.data[i]&15];}flags[16]=details[16]=0;
+        char json[768];
         snprintf(json, sizeof(json),
             "{\"uptime_ms\":%llu,\"page\":%u,\"frame\":%lu,\"rgb\":[%u,%u,%u],"
             "\"encoder\":%s,\"back\":%s,\"remote_lease\":%s,"
             "\"ui_frames\":%lu,\"ui_fps_x10\":%lu,\"render_us\":%lu,\"display_us\":%lu,"
-            "\"screen_off\":%s,\"auto_standby\":%s}",
+            "\"screen_off\":%s,\"auto_standby\":%s,"
+            "\"party\":[%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%lu,%u],"
+            "\"ptable\":\"%s\",\"pflags\":\"%s\",\"pdata\":\"%s\"}",
             (unsigned long long)(now / 1000), s_page, (unsigned long)oled_mirror_frame_count(),
             r, g, b, ec06_encoder_is_held() ? "true" : "false",
             ec06_is_key_held() ? "true" : "false", s_leased ? "true" : "false",
             (unsigned long)s_ui_frames, (unsigned long)s_fps_x10,
             (unsigned long)s_render_us, (unsigned long)s_display_us,
-            s_power_flags&1 ? "true":"false", "false");
+            s_power_flags&1 ? "true":"false", "false",
+            pg.active,pg.local,pg.enabled,pg.ready,pg.pending,pg.result,pg.game.kind,pg.game.phase,pg.game.n,pg.game.turn,pg.game.me,pg.game.winner,(unsigned long)pg.revision,pg.game.round,table,flags,details);
         send_json(OLED_MIRROR_FRAME_TELEMETRY, json);
         s_telemetry_at = now;
     }

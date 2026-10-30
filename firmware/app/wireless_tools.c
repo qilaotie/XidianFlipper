@@ -416,14 +416,24 @@ static void remote_page(int key) {
 void wireless_tools_proc(void) {
     memset(s_rows,0,sizeof(s_rows));
     u8g2_SetDrawColor(&u8g2,1); u8g2_SetFont(&u8g2,u8g2_font_5x7_tf);
-    if (ui.index == M_TOOLS) {
-        static M_SELECT rows[]={TOOLS_MENU_ITEMS(MENU_LABEL)};
-        ui.num[M_TOOLS] = sizeof(rows)/sizeof(rows[0]); list_show(rows,M_TOOLS);
+    if (ui.index == M_TOOLS || ui.index==M_TOOLS_ACTIVITIES || ui.index==M_SETTINGS_NETWORK || (ui.index>=M_TOOLS_REMOTE && ui.index<=M_TOOLS_SOCIAL)) {
+        static M_SELECT root[]={TOOLS_MENU_ITEMS(MENU_LABEL)},remote[]={TOOLS_REMOTE_ITEMS(MENU_LABEL)},connect[]={TOOLS_CONNECT_ITEMS(MENU_LABEL)},diagnostic[]={TOOLS_DIAGNOSTIC_ITEMS(MENU_LABEL)},social[]={TOOLS_SOCIAL_ITEMS(MENU_LABEL)};
+        static const uint8_t root_pages[]={TOOLS_MENU_ITEMS(MENU_PAGE)},remote_pages[]={TOOLS_REMOTE_ITEMS(MENU_PAGE)},connect_pages[]={TOOLS_CONNECT_ITEMS(MENU_PAGE)},diagnostic_pages[]={TOOLS_DIAGNOSTIC_ITEMS(MENU_PAGE)},social_pages[]={TOOLS_SOCIAL_ITEMS(MENU_PAGE)};
+        M_SELECT *rows=root;const uint8_t *pages=root_pages;unsigned count=sizeof(root_pages);
+        static M_SELECT activities[]={TOOLS_ACTIVITIES_ITEMS(MENU_LABEL)},network[]={SETTINGS_NETWORK_ITEMS(MENU_LABEL)};
+        static const uint8_t activities_pages[]={TOOLS_ACTIVITIES_ITEMS(MENU_PAGE)},network_pages[]={SETTINGS_NETWORK_ITEMS(MENU_PAGE)};
+        if(ui.index==M_TOOLS_ACTIVITIES){rows=activities;pages=activities_pages;count=sizeof(activities_pages);}
+        if(ui.index==M_SETTINGS_NETWORK){rows=network;pages=network_pages;count=sizeof(network_pages);}
+        if(ui.index==M_TOOLS_REMOTE){rows=remote;pages=remote_pages;count=sizeof(remote_pages);}
+        if(ui.index==M_TOOLS_CONNECT){rows=connect;pages=connect_pages;count=sizeof(connect_pages);}
+        if(ui.index==M_TOOLS_DIAGNOSTIC){rows=diagnostic;pages=diagnostic_pages;count=sizeof(diagnostic_pages);}
+        if(ui.index==M_TOOLS_SOCIAL){rows=social;pages=social_pages;count=sizeof(social_pages);}
+        ui.num[ui.index]=count;list_show(rows,ui.index);
         if(btn.pressed) {
             int key=btn.id; btn.pressed=false;
             if(key==BTN_ID_CW || key==BTN_ID_CC) list_rotate_switch();
             if(key==BTN_ID_BACK) back();
-            if(key==BTN_ID_SP) { static const uint8_t pages[]={TOOLS_MENU_ITEMS(MENU_PAGE)}; ui_navigate_to(pages[ui.select[ui.layer]]); }
+            if(key==BTN_ID_SP && ui.select[ui.layer]<count)ui_navigate_to(pages[ui.select[ui.layer]]);
         }
         return;
     }

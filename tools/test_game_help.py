@@ -29,7 +29,7 @@ static void ui_zh_draw(int *d,int x,int y,const char *s){u8g2_DrawStr(d,x,y,s);}
 tests=r'''
 static void key(int k){btn.id=k;btn.pressed=true;game_help_page_proc();}
 int main(void){
- ui.layer=2;ui.index=63;ui.parent_index[2]=23;game_help_page_proc();assert(ui.num[63]==11);
+ ui.layer=2;ui.index=63;ui.parent_index[2]=23;game_help_page_proc();assert(ui.num[63]==GAME_GUIDES);
  ui.select[2]=10;list.y=-160;list.y_trg=-160;list.loop=true;key(BTN_ID_SP);assert(pets&&!reading);
  assert(ui.init&&list.y==0&&list.y_trg==0&&!list.loop);game_help_page_proc();assert(ui.num[63]==PET_GUIDES);
  for(unsigned lang=0;lang<2;lang++){

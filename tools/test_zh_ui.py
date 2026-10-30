@@ -85,7 +85,7 @@ int main(void){
 }
 '''
 scope=core[core.index('static bool zh_scope(void)'):core.index('/* Restrict localization')]
-scope_shim='enum {M_MAIN=1,M_SETTING,M_TOOLS,M_SLEEP_CONFIRM,M_WIFI_CONNECT,M_WIFI_FORGET,M_WINDOW,M_MESSAGE_VIEW,M_MESSAGE_EDIT,M_FUN_HUB,M_GAME_HELP,M_LEARN_HUB,M_MESSAGES_HUB,M_CHANNEL_HUB,M_FRIENDS,M_FRIEND_DETAIL,M_RECIPIENT_PICK,M_ABOUT,M_MESSAGE_COMPOSE,M_INBOX,M_QUICK_MSG,M_WIFI_NETWORKS,M_WIFI_PASSWORD,M_DRAFT_SLOT,M_DRAFT_CONFIRM};\nstatic struct {int index;} ui,win;\n'
+scope_shim='enum {M_MAIN=1,M_SETTING,M_TOOLS,M_SLEEP_CONFIRM,M_WIFI_CONNECT,M_WIFI_FORGET,M_WINDOW,M_MESSAGE_VIEW,M_MESSAGE_EDIT,M_FUN_HUB,M_GAME_HELP,M_LEARN_HUB,M_MESSAGES_HUB,M_CHANNEL_HUB,M_FRIENDS,M_FRIEND_DETAIL,M_RECIPIENT_PICK,M_ABOUT,M_MESSAGE_COMPOSE,M_INBOX,M_QUICK_MSG,M_WIFI_NETWORKS,M_WIFI_PASSWORD,M_DRAFT_SLOT,M_DRAFT_CONFIRM,M_NETWORK_STATUS=68,M_ACTIVITY_DETAIL=94,M_ENSEMBLE=99,M_TOOLS_REMOTE=101,M_SETTINGS_DISPLAY=105,M_SETTINGS_SYSTEM=108,M_PARTY_HUB=109,M_PARTY_LEAVE=115,M_FUN_PET=116,M_SETTINGS_NETWORK=120,M_NETWORK_TOPOLOGY=121,M_NETWORK_LAB=122,M_PET_GIFTS=123};\nstatic struct {int index;} ui,win;\n'
 test=test.replace('static unsigned pixels;',scope_shim+scope+'\nstatic unsigned pixels;')
 test=test.replace(' u8g2_t d={0};',' ui.index=M_MESSAGE_VIEW;assert(!zh_scope());ui.index=M_MESSAGE_EDIT;assert(!zh_scope());ui.index=M_WINDOW;win.index=M_MESSAGE_VIEW;assert(!zh_scope());win.index=M_SETTING;assert(zh_scope());ui.index=M_MAIN;assert(zh_scope());\n u8g2_t d={0};')
 with tempfile.TemporaryDirectory(prefix='halfstep-zh-') as temp:

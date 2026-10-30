@@ -17,8 +17,15 @@ static bool name_valid(const char *s){
 }
 typedef struct {uint8_t version,views[9],reserved[2];uint32_t seconds,next_visit;} extra_t;
 static extra_t extra;
-_Static_assert(sizeof(extra_t)==20,"Pet extra layout");
+/* Once created this SINGLE blob is authoritative: pet + care gates + ledger.
+ * No multi-key atomicity assumption. Legacy state_v2/extra_v1 stay untouched. */
+typedef struct {uint32_t version;pet_t pet;extra_t extra;gift_book_t book;} gift_wallet_t;
+static gift_wallet_t wallet;
+static bool wallet_active;
 static bool initialized, writable, dirty, pending, error;
+static bool extra_valid(const extra_t *e){bool ok=e->version==1 && !e->reserved[0] && !e->reserved[1] && e->seconds<=0xffffff00u && e->next_visit<=e->seconds+180;for(unsigned i=0;i<9;i++)if(e->views[i]>3)ok=false;return ok;}
+static bool wallet_write(const gift_wallet_t *next){nvs_handle_t h;esp_err_t rc=nvs_open("pet_user",NVS_READWRITE,&h);if(rc==ESP_OK){rc=nvs_set_blob(h,"wallet_v1",next,sizeof(*next));if(rc==ESP_OK)rc=nvs_commit(h);nvs_close(h);}if(rc!=ESP_OK){error=true;writable=false;return false;}wallet=*next;wallet_active=true;error=false;return true;}
+_Static_assert(sizeof(extra_t)==20,"Pet extra layout");
 static int64_t last_second,last_save,last_action=-2000000;
 static unsigned reward_progress[PET_REWARD_COUNT];
 static bool reward_trained[PET_REWARD_COUNT];
@@ -57,11 +64,18 @@ static void init(void){
         nvs_close(h);
     }else if(rc==ESP_ERR_NVS_NOT_FOUND)dirty=pending=true;
     else {writable=false;error=true;}
+    wallet_active=false;memset(&wallet,0,sizeof(wallet));
+    rc=nvs_open("pet_user",NVS_READONLY,&h);
+    if(rc==ESP_OK){static gift_wallet_t saved_wallet;size_t n=sizeof(saved_wallet);rc=nvs_get_blob(h,"wallet_v1",&saved_wallet,&n);nvs_close(h);
+        if(rc==ESP_OK){if(n==sizeof(saved_wallet) && saved_wallet.version==1 && pet_valid(&saved_wallet.pet) && extra_valid(&saved_wallet.extra) && gift_book_valid(&saved_wallet.book)){wallet=saved_wallet;wallet_active=true;state=wallet.pet;extra=wallet.extra;writable=true;dirty=pending=error=false;}else{writable=false;error=true;}}
+        else if(rc!=ESP_ERR_NVS_NOT_FOUND){writable=false;error=true;}
+    }else if(rc!=ESP_ERR_NVS_NOT_FOUND){writable=false;error=true;}
     initialized=true;last_second=last_save=esp_timer_get_time();
 }
 static bool save(void){
     if(!writable)return false;
     if(!dirty)return true;
+    if(wallet_active){static gift_wallet_t next;next=wallet;next.pet=state;next.extra=extra;bool ok=wallet_write(&next);last_save=esp_timer_get_time();if(ok)dirty=pending=false;return ok;}
     nvs_handle_t h;esp_err_t rc=nvs_open("pet_user",NVS_READWRITE,&h);
     if(rc==ESP_OK){rc=nvs_set_blob(h,"extra_v1",&extra,sizeof(extra));if(rc==ESP_OK)rc=nvs_set_blob(h,"state_v2",&state,sizeof(state));if(rc==ESP_OK)rc=nvs_commit(h);nvs_close(h);}
     last_save=esp_timer_get_time();error=rc!=ESP_OK;
@@ -116,6 +130,7 @@ bool pet_service_complete_game(bool won){
 bool pet_service_new_egg(void){return change(4,0);}
 bool pet_service_room(unsigned room){return change(5,room);}
 static bool save_extra(void){
+    if(wallet_active){dirty=true;return save();}
     nvs_handle_t h;esp_err_t rc=nvs_open("pet_user",NVS_READWRITE,&h);
     if(rc==ESP_OK){rc=nvs_set_blob(h,"extra_v1",&extra,sizeof(extra));if(rc==ESP_OK)rc=nvs_commit(h);nvs_close(h);}
     if(rc!=ESP_OK)error=true;
@@ -166,3 +181,14 @@ unsigned pet_service_reward(unsigned source,unsigned progress){
 bool pet_service_flush(void){pet_service_tick();return writable?save():!dirty;}
 bool pet_service_error(void){return error;}
 bool pet_service_pending(void){return pending;}
+
+/* UI owner only. Wallet and replay ledger commit in ONE NVS blob. */
+bool pet_service_gift_book(gift_book_t *out){if(!initialized)init();if(!out)return false;*out=wallet_active?wallet.book:(gift_book_t){0};return writable;}
+bool pet_service_gift_commit(const gift_book_t *book,unsigned asset,int delta){
+    pet_service_tick();if(!writable || !book || !gift_book_valid(book) || asset>3 || delta < -50 || delta>50)return false;
+    static gift_wallet_t next;memset(&next,0,sizeof(next));next.version=1;next.pet=state;next.extra=extra;next.book=*book;
+    int value=asset?next.pet.items[asset-1]:next.pet.coins;value+=delta;if(value<0 || value>(asset?9:9999))return false;
+    if(asset)next.pet.items[asset-1]=(uint8_t)value;else next.pet.coins=(uint16_t)value;
+    if(!wallet_write(&next))return false;
+    state=next.pet;dirty=pending=false;last_save=esp_timer_get_time();return true;
+}

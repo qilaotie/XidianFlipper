@@ -6,13 +6,30 @@ import tempfile
 from menu_layout import menu_index
 root=Path(__file__).resolve().parents[1]
 layout=(root/'firmware/ui/menu_layout.h').read_text(encoding='utf-8')
-fun=['M_PET','M_TETRIS','M_SNAKE','M_ANSWER_BOOK','M_DICE','M_CRAPS','M_RPS','M_TREASURE','M_REACTION','M_NUMBER_BOMB','M_TIME_GUESS','M_GAME_HELP']
-tools=['M_HID_SLIDES','M_HID_MEDIA','M_HID_CAMERA','M_WIFI_CONNECT','M_CLOUD_SYNC','M_WIFI_SCAN','M_BLE_SCAN','M_TOOL_MEMORY']
+fun=['M_FUN_PET','M_FUN_SOLO','M_FUN_NEARBY','M_PARTY_HUB','M_ENSEMBLE','M_GAME_HELP']
+tools=['M_TOOLS_REMOTE','M_TOOLS_SOCIAL','M_TOOLS_ACTIVITIES','M_TOOLS_CONNECT','M_TOOLS_DIAGNOSTIC']
+categories={
+ 'REMOTE':['M_HID_SLIDES','M_HID_MEDIA','M_HID_CAMERA'],
+ 'CONNECT':['M_CLOUD_SYNC','M_SETTINGS_NETWORK'],
+ 'DIAGNOSTIC':['M_WIFI_SCAN','M_BLE_SCAN','M_NETWORK_DIAGNOSTICS','M_NETWORK_LAB','M_NETWORK_TOPOLOGY','M_TOOL_MEMORY'],
+ 'SOCIAL':['M_SOCIAL_HUB','M_CONTACT_STATUS','M_ACTIVITY_HISTORY'],
+ 'ACTIVITIES':['M_CHECKIN','M_POLL','M_TASK_BOARD','M_QUIZ_BUZZER']}
+for category,pages in categories.items():
+ body=layout.split('#define TOOLS_'+category+'_ITEMS(X)',1)[1].split('#define',1)[0]
+ assert re.findall(r'X\("[^"\n]+",(M_\w+)\)',body)==pages
 for group,pages in [('FUN',fun),('TOOLS',tools)]:
     for i,page in enumerate(pages):assert menu_index(group,page)==i
     body=layout.split('#define '+group+'_MENU_ITEMS(X)',1)[1].split('#define',1)[0]
     assert len(re.findall(r'X\(',body))==len(pages)
 local=(root/'firmware/ui/local_pages.c').read_text(encoding='utf-8')
+leaves=[]
+for group in ('PET','SOLO','NEARBY'):
+    body=layout.split('#define FUN_'+group+'_ITEMS(X)',1)[1].split('#define',1)[0]
+    leaves+=re.findall(r'X\("[^"\n]+",(M_\w+)\)',body)
+assert len(leaves)==len(set(leaves))==13
+assert set(leaves)=={'M_PET','M_PET_GIFTS','M_PASSPORT','M_TETRIS','M_SNAKE','M_ANSWER_BOOK','M_DICE','M_CRAPS','M_RPS','M_TREASURE','M_REACTION','M_NUMBER_BOMB','M_TIME_GUESS'}
+assert 'SETTINGS_NETWORK_ITEMS(MENU_PAGE)' in (root/'firmware/app/wireless_tools.c').read_text(encoding='utf8')
+assert 'M_SETTINGS_NETWORK,M_SETTINGS_DISPLAY' in (root/'firmware/ui/menu_pages.c').read_text(encoding='utf8')
 wireless=(root/'firmware/app/wireless_tools.c').read_text(encoding='utf-8')
 assert 'FUN_MENU_ITEMS(MENU_LABEL)' in local and 'FUN_MENU_ITEMS(MENU_PAGE)' in local
 assert 'TOOLS_MENU_ITEMS(MENU_LABEL)' in wireless and 'TOOLS_MENU_ITEMS(MENU_PAGE)' in wireless

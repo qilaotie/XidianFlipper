@@ -52,7 +52,7 @@ def main():
     ap.add_argument("--game", choices=["reaction","bomb","time"], default="reaction")
     args = ap.parse_args()
     page = {"reaction":49,"bomb":51,"time":52}[args.game]
-    tile = menu_index('FUN',{'reaction':'M_REACTION','bomb':'M_NUMBER_BOMB','time':'M_TIME_GUESS'}[args.game])
+    tile = menu_index('FUN_NEARBY',{'reaction':'M_REACTION','bomb':'M_NUMBER_BOMB','time':'M_TIME_GUESS'}[args.game])
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     devices = [Device(args.host), Device(args.join)]
     evidence = []
@@ -87,7 +87,7 @@ def main():
         for d in devices:
             d.send(9, 0)
             for _ in range(5): back(d)
-            click(d); rotate(d, 4); click(d); rotate(d, tile); click(d)
+            click(d); rotate(d, 4); click(d); rotate(d, menu_index('FUN','M_FUN_NEARBY'));click(d);rotate(d, tile); click(d)
         capture("role_menu", page)
         click(devices[0]); rotate(devices[1], 1); click(devices[1]); pump(4)
         capture("lobby", page)
@@ -109,7 +109,7 @@ def main():
         for d in devices: click(d)
         pump(3); capture("next_lobby", page)
         for d in devices: back(d)
-        capture("fun_after", 23)
+        capture("fun_after", 118)
     finally:
         for d in devices:
             (out / f"{d.port}-serial.log").write_bytes(d.log)

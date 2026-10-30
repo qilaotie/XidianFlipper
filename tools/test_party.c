@@ -27,6 +27,8 @@ bool message_service_send_control(uint8_t type,const uint8_t *dst,const void *da
     return true;
 }
 void haptic_play(int effect){(void)effect;}
+void u8g2_DrawBox(void *d,int x,int y,int w,int h){(void)d;assert(x>=0 && y>=0 && x+w<=128 && y+h<=32);}
+void u8g2_DrawFrame(void *d,int x,int y,int w,int h){u8g2_DrawBox(d,x,y,w,h);}
 void u8g2_SetDrawColor(void *d,int c){(void)d;(void)c;}
 void u8g2_SetFont(void *d,const void *f){(void)d;(void)f;}
 void u8g2_DrawStr(void *d,int x,int y,const char *s){(void)d;(void)x;(void)y;(void)s;}

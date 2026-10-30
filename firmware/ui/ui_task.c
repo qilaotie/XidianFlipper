@@ -3,6 +3,7 @@
 #include "wououi.h"
 #include "local_pages.h"
 #include "pet_service.h"
+#include "gift_runtime.h"
 #include "cloud_sync.h"
 #include "pet_notice.h"
 #include "ec06.h"
@@ -32,6 +33,7 @@ static void ui_task_fn(void *arg)
         device_control_set_ui_state(ui.index);
         device_control_tick();
         pet_service_tick();
+        gift_runtime_tick(ui.index==M_PET_GIFTS);
         power_mgmt_tick();
         if (g_power_off_in_progress) { vTaskDelay(pdMS_TO_TICKS(10)); continue; }
         cloud_sync_tick();

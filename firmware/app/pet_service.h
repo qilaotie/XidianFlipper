@@ -1,6 +1,9 @@
 #ifndef PET_SERVICE_H
 #define PET_SERVICE_H
 #include "pet.h"
+#include "pet_gifts.h"
+bool pet_service_gift_book(gift_book_t *);
+bool pet_service_gift_commit(const gift_book_t *,unsigned asset,int delta);
 /* All calls belong to the UI owner, including manual sleep and page cleanup. */
 void pet_service_tick(void);
 const pet_t *pet_service_state(void);

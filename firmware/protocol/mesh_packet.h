@@ -21,6 +21,12 @@ extern "C" {
 #define MESH_CHANNEL_MAX 16
 #define MESH_CHANNEL_DEFAULT 1
 #define MESH_FLAG_ACK_REQUEST 0x01
+#define MESH_FLAG_ROUTED 0x02
+#define MESH_FLAG_ANNOUNCEMENT 0x10
+#define MESH_FLAG_CUSTODY 0x20
+#define MESH_HOP_MASK 0x0c
+#define MESH_HOP_SHIFT 2
+#define MESH_TOTAL_HOPS_MAX 3
 typedef enum {
     MESH_TYPE_QUICK_MSG = 0,
     MESH_TYPE_MORSE = 1,
@@ -36,6 +42,10 @@ typedef enum {
     MESH_TYPE_NUMBER_BOMB = 11,
     MESH_TYPE_TIME_GUESS = 12,
     MESH_TYPE_PET = 13,
+    MESH_TYPE_NET_BEACON = 14,
+    MESH_TYPE_COLLAB = 15,
+    MESH_TYPE_SOCIAL = 16,
+    MESH_TYPE_CUSTODY_CANCEL = 17,
     MESH_TYPE_MAX
 } mesh_msg_type_t;
 typedef struct {

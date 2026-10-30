@@ -14,14 +14,17 @@ ui=r'''
 #include "message_emotes.h"
 #define COUNT(a) (sizeof(a)/sizeof((a)[0]))
 #define MESSAGE_TEXT_MAX 128
-enum{M_MESSAGE_COMPOSE=47,M_MESSAGE_EMOTES=50,M_DRAFT_BOX=64,M_DRAFT_SLOT,M_DRAFT_CONFIRM,M_MESSAGE_EMOTE_LIST,M_RECIPIENT_PICK=29};
+enum{M_MESSAGE_COMPOSE=47,M_MESSAGE_EMOTES=50,M_DRAFT_BOX=64,M_DRAFT_SLOT,M_DRAFT_CONFIRM,M_MESSAGE_EMOTE_LIST,M_RECIPIENT_PICK=29,M_REPLY_CONFIRM=86,M_CONTENT_EDIT=100};
 enum{BTN_ID_CW=1,BTN_ID_CC,BTN_ID_SP,BTN_ID_BACK,BTN_ID_LP,S_LAYER_OUT,MESSAGE_KIND_QUICK};
 static struct{bool pressed;unsigned id;}btn;
 static struct{unsigned index,layer,state,parent_index[20];}ui;
 typedef struct{const char *m_select;}M_SELECT;
 static char s_draft[129],s_send_text[129],last_notice[64];
+static char s_field_edit[129],*s_field_target;
+static size_t s_field_capacity;
+static draft_selector_t s_field_selector;
 static unsigned s_send_kind,s_draft_slot,s_draft_confirm,s_emote_group;
-static bool s_draft_loaded,s_box_saving;
+static bool s_draft_loaded,s_box_saving,s_reply;
 enum{DRAFT_CONFIRM_OVERWRITE,DRAFT_CONFIRM_DELETE,DRAFT_CONFIRM_NEW,DRAFT_CONFIRM_LOAD};
 static draft_selector_t s_draft_selector={.selecting_group=true};
 static int selected=-1;
@@ -32,11 +35,26 @@ static void text_line(int y,const char *s){assert(y>=0&&y<=31&&s);}
 static void footer(const char *s){assert(s);}
 static int menu(M_SELECT *rows,unsigned count){assert(rows&&count);int result=selected;selected=-1;return result;}
 '''
-production=''.join(function(n) for n in ['load_draft','open_draft_editor','compose_page','emotes_page','emote_list_page','draft_box_page','draft_slot_page','draft_confirm_page'])
+production=''.join(function(n) for n in ['load_draft','open_draft_editor','open_content_editor','compose_page','content_edit_page','emotes_page','emote_list_page','draft_box_page','draft_slot_page','draft_confirm_page'])
 tests=r'''
 static void settle(void){if(ui.state==S_LAYER_OUT){assert(ui.layer);ui.layer--;ui.state=0;}}
 static void action(unsigned group){s_draft_selector.group=group;s_draft_selector.selecting_group=true;btn.pressed=true;btn.id=BTN_ID_SP;compose_page();settle();}
 int main(void){
+ char field[13]="Pet";
+ ui.index=96;ui.layer=3;strcpy(s_draft,"Keep my message");strcpy(s_send_text,"No TX");
+ open_content_editor(field,sizeof(field));assert(ui.index==100);
+ strcpy(s_field_edit,"New name");btn.pressed=true;btn.id=BTN_ID_LP;content_edit_page();assert(ui.index==100&&!strcmp(field,"Pet"));
+ btn.pressed=true;btn.id=BTN_ID_SP;content_edit_page();settle();
+ assert(ui.index==96&&!strcmp(field,"New name")&&!strcmp(s_draft,"Keep my message")&&!strcmp(s_send_text,"No TX"));
+ open_content_editor(field,sizeof(field));strcpy(s_field_edit,"Cancel");btn.pressed=true;btn.id=BTN_ID_BACK;content_edit_page();assert(btn.pressed);back();settle();assert(!strcmp(field,"New name"));
+ open_content_editor(s_draft,sizeof(s_draft));strcpy(s_field_edit,"Edited group");fail_commit=true;btn.pressed=true;btn.id=BTN_ID_LP;content_edit_page();btn.pressed=true;btn.id=BTN_ID_SP;content_edit_page();assert(ui.index==100&&!strcmp(s_draft,"Keep my message"));
+ fail_commit=false;btn.pressed=true;btn.id=BTN_ID_SP;content_edit_page();settle();assert(ui.index==96&&!strcmp(s_draft,"Edited group")&&!strcmp(s_send_text,"No TX"));
+ ui.index=69;open_content_editor(s_draft,sizeof(s_draft));
+ s_field_selector.group=DRAFT_EMOTE_GROUP;btn.pressed=true;btn.id=BTN_ID_SP;content_edit_page();assert(ui.index==50);
+ selected=0;emotes_page();selected=0;emote_list_page();settle();
+ assert(ui.index==100&&!strcmp(s_field_edit,"Edited group(^_^)")&&!strcmp(s_draft,"Edited group")&&!strcmp(s_send_text,"No TX"));
+ btn.pressed=true;btn.id=BTN_ID_LP;content_edit_page();btn.pressed=true;btn.id=BTN_ID_SP;content_edit_page();settle();assert(ui.index==69&&!strcmp(s_draft,"Edited group(^_^)")&&!strcmp(s_send_text,"No TX"));
+ s_draft[0]=0;s_send_text[0]=0;assert(draft_store_save_work(""));
  ui.index=47;ui.layer=4;ui.parent_index[4]=19;compose_page();assert(!s_draft[0]);
  strcpy(s_draft,"Hi ");action(DRAFT_EMOTE_GROUP);assert(ui.index==50);
  selected=0;emotes_page();assert(ui.index==67);selected=0;emote_list_page();settle();assert(ui.index==47&&!strcmp(s_draft,"Hi (^_^)")&&!s_send_text[0]);

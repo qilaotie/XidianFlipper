@@ -42,6 +42,7 @@ static int nvs_open(const char *name,int mode,nvs_handle_t *h){
 }
 static int nvs_get_blob(nvs_handle_t h,const char *key,void *data,size_t *size){
  (void)h;
+ if(!strcmp(key,"wallet_v1"))return ESP_ERR_NVS_NOT_FOUND;
  if(!strcmp(key,"name_v1")){if(!exists_name)return ESP_ERR_NVS_NOT_FOUND;assert(*size==14);memcpy(data,stored_name,14);return ESP_OK;}
  if(!strcmp(key,"extra_v1")){if(!exists_extra)return ESP_ERR_NVS_NOT_FOUND;assert(*size==20);memcpy(data,stored_extra,20);return ESP_OK;}
  if(!strcmp(key,"state")){if(!has_legacy)return ESP_ERR_NVS_NOT_FOUND;assert(*size>=sizeof(legacy));memcpy(data,&legacy,sizeof(legacy));*size=sizeof(legacy);return ESP_OK;}
@@ -60,9 +61,10 @@ static int nvs_commit(nvs_handle_t h){(void)h;if(commit_fail)return 9;
  if(stage_name){memcpy(stored_name,staged_name,14);exists_name=true;stage_name=false;}
  writes++;return ESP_OK;}
 static void nvs_close(nvs_handle_t h){(void)h;}
-enum {M_PET=61,BTN_ID_BACK=1,BTN_ID_CW,BTN_ID_CC,BTN_ID_SP,BTN_ID_LP,S_LAYER_OUT,U8G2_DRAW_ALL=15};
+enum {M_PASSPORT=98,M_PET=61,BTN_ID_BACK=1,BTN_ID_CW,BTN_ID_CC,BTN_ID_SP,BTN_ID_LP,S_LAYER_OUT,U8G2_DRAW_ALL=15};
 static struct {bool pressed;int id;}btn;
 static struct {int index,layer,state,parent_index[20];}ui;
+static void ui_navigate_to(unsigned page){ui.index=page;}
 static int u8g2,u8g2_font_5x7_tf;
 static uint32_t esp_random(void){return 123;}
 static void pet_link_enter(bool duel){(void)duel;}
@@ -269,6 +271,6 @@ int main(void){
 '''
 with tempfile.TemporaryDirectory(prefix='halfstep-pet-') as temp:
     path=Path(temp);(path/'test.c').write_text(shim+source('firmware/app/pet_service.c')+source('firmware/ui/pet_page.c')+tests,encoding='utf-8')
-    subprocess.run(['gcc','-std=c11','-Wall','-Wextra','-Werror','-fno-stack-protector','-I',str(root/'firmware/app'),'-I',str(root/'firmware/ui'),
-                    str(path/'test.c'),str(root/'firmware/app/pet.c'),str(root/'firmware/app/pet_games.c'),str(root/'firmware/app/pet_help.c'),str(root/'firmware/ui/help_text.c'),'-o',str(path/'test.exe')],check=True)
+    subprocess.run(['gcc','-std=c11','-Wall','-Wextra','-Werror','-fno-stack-protector','-I',str(root/'firmware/app'),'-I',str(root/'firmware/ui'),'-I',str(root/'firmware/protocol'),
+                    str(path/'test.c'),str(root/'firmware/app/pet_gifts.c'),str(root/'build/mesh-packet-host.o'),str(root/'firmware/app/pet.c'),str(root/'firmware/app/pet_games.c'),str(root/'firmware/app/pet_help.c'),str(root/'firmware/ui/help_text.c'),'-o',str(path/'test.exe')],check=True)
     subprocess.run([str(path/'test.exe')],check=True)

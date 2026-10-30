@@ -21,6 +21,10 @@ def generate():
     translations=(ROOT/'firmware/ui/ui_zh.c').read_text(encoding='utf8')
     values=re.findall(r'\{"[^"\n]*","([^"\n]*)"\}',translations)
     wanted={ord(c) for value in values for c in value if ord(c)>255}
+    party=ROOT/'firmware/ui/party_pages.c'
+    if party.exists():wanted.update(ord(c) for c in party.read_text(encoding='utf8') if '\u4e00'<=c<='\u9fff')
+    for name in ('party_graphics.inc','party_adapt.inc'):
+        wanted.update(ord(c) for c in (ROOT/'firmware/ui'/name).read_text(encoding='utf8') if '\u4e00'<=c<='\u9fff')
     help_text=(ROOT/'firmware/ui/help_text.c').read_text(encoding='utf8')
     wanted.update(ord(c) for value in re.findall(r'"([^"\n]*)"',help_text) for c in value if ord(c)>255)
     def word(offset):return int.from_bytes(data[offset:offset+2],'big')

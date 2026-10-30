@@ -19,6 +19,7 @@
 #endif
 #include <string.h>
 #include <stdio.h>
+#include "../ui/game_pixels.h"
 
 #define PARTY_MAX 4
 #define PARTY_SNAP 128
@@ -427,18 +428,16 @@ static unsigned party_rank(unsigned index){
 }
 static void party_line(int y,const char *text){ui_zh_three_line(&u8g2,2,y,text,124,party_ms());}
 static void party_bomb_draw(void){
-    char text[30];
-    if(s_party.phase==P_RESULTS){
-        snprintf(text,sizeof(text),ui_zh_lookup("BOMB NUMBER: %u"),s_party.bomb_secret);party_line(8,text);
-        snprintf(text,sizeof(text),ui_zh_lookup("OUT: %s"),s_party.players[s_party.bomb_turn].name);party_line(19,text);
-        party_line(30,s_party.local_flags&P_NEXT?"NEXT READY / WAITING":"PRESS:NEXT BACK:EXIT");return;
-    }
-    snprintf(text,sizeof(text),ui_zh_lookup("RANGE %u..%u"),s_party.bomb_low,s_party.bomb_high);party_line(8,text);
-    snprintf(text,sizeof(text),ui_zh_lookup("TURN: %s"),s_party.players[s_party.bomb_turn].name);party_line(19,text);
-    if(party_self()==s_party.bomb_turn){
-        if(s_party.guess_pending)party_line(30,"SUBMITTING...");
-        else {snprintf(text,sizeof(text),ui_zh_lookup("< %u > PRESS:GUESS"),s_party.guess);party_line(30,text);}
-    }else party_line(30,"WAIT FOR YOUR TURN");
+    char s[40];game_ring(15,20,9);u8g2_DrawBox(&u8g2,12,7,7,5);u8g2_DrawBox(&u8g2,18,3,6,2);u8g2_DrawBox(&u8g2,24,1,2,4);
+    bool done=s_party.phase==P_RESULTS;unsigned value=done?s_party.bomb_secret:s_party.guess;
+    if(done)snprintf(s,sizeof(s),"OUT: %.8s",s_party.players[s_party.bomb_turn].name);
+    else snprintf(s,sizeof(s),"%.6s %u-%u",s_party.players[s_party.bomb_turn].name,s_party.bomb_low,s_party.bomb_high);
+    u8g2_DrawStr(&u8g2,35,7,s);
+    game_number(39,10,value);
+    if(done){game_ascii_fit(&u8g2,35,31,s_party.local_flags&P_NEXT?"NEXT READY / WAITING":"PRESS:NEXT BACK:EXIT",93);return;}
+    bool me=party_self()==s_party.bomb_turn;u8g2_DrawStr(&u8g2,88,20,me?(s_party.guess_pending?"SYNC":"TAP!"):"WAIT");
+    u8g2_DrawFrame(&u8g2,35,29,90,3);unsigned low=(s_party.bomb_low-1)*88/99,high=(s_party.bomb_high-1)*88/99;
+    u8g2_DrawBox(&u8g2,36+low,30,1+high-low,1);unsigned mark=(value-1)*88/99;u8g2_DrawBox(&u8g2,35+mark,26,3,2);
 }
 static void party_draw(void){
     char top[30],middle[30];
@@ -450,6 +449,27 @@ static void party_draw(void){
     if(!s_party.room){party_line(8,"SEARCHING FOR ROOM");party_line(20,"HOST: CREATE ROOM");party_line(30,"BACK: EXIT");return;}
     if(!s_party.joined){party_line(8,s_party.count>=PARTY_MAX?"ROOM FULL":"JOINING ROOM...");party_line(20,"WAIT FOR HOST");return;}
     if(s_party.game==PARTY_GAME_BOMB && (s_party.phase==P_RUN || s_party.phase==P_RESULTS)){party_bomb_draw();return;}
+    if(s_party.phase==P_RUN){
+        game_ring(15,17,13);game_ring(15,17,9);
+        if(s_party.local_score){
+            u8g2_DrawBox(&u8g2,12,14,7,7);snprintf(top,sizeof(top),"%s",party_failed(s_party.local_score)?"FALSE START":"LOCKED");u8g2_DrawStr(&u8g2,38,7,top);
+            unsigned elapsed=party_failed(s_party.local_score)?0:s_party.local_score-1;snprintf(middle,sizeof(middle),"%u.%03u %s",elapsed/1000,elapsed%1000,"s");u8g2_DrawStr(&u8g2,38,21,middle);game_ascii_fit(&u8g2,35,31,"WAIT FOR ALL RESULTS",93);
+        }else if(s_party.game==PARTY_GAME_TIME){
+            u8g2_DrawBox(&u8g2,15,9,2,9);u8g2_DrawBox(&u8g2,15,16,7,2);game_number(42,9,s_party.target);u8g2_DrawStr(&u8g2,79,20,"s");
+            game_ascii_fit(&u8g2,35,31,s_party.go_shown?"PRESS TO STOP":"DON'T PRESS YET",93);u8g2_DrawStr(&u8g2,38,7,s_party.go_shown?"COUNT...":"WAIT...");
+        }else{
+            if(s_party.go_shown){u8g2_DrawBox(&u8g2,10,12,11,11);game_go(45,9);}else{u8g2_DrawFrame(&u8g2,10,11,11,13);u8g2_DrawBox(&u8g2,13,16,5,3);}
+            game_ascii_fit(&u8g2,35,31,s_party.go_shown?"PRESS TO STOP":"DON'T PRESS YET",93);u8g2_DrawStr(&u8g2,38,7,s_party.go_shown?"TAP!":"WAIT...");
+        }return;
+    }
+    if(s_party.phase==P_RESULTS){
+        if(s_party.view>=s_party.count){s_party.view=0;}
+        party_player_t *p=&s_party.players[s_party.view];unsigned rank=party_rank(s_party.view);
+        u8g2_DrawFrame(&u8g2,5,6,20,15);u8g2_DrawBox(&u8g2,13,21,4,6);u8g2_DrawBox(&u8g2,6,28,18,3);if(rank)game_number(37,9,rank);
+        snprintf(top,sizeof(top),"%.12s",p->name);u8g2_DrawStr(&u8g2,36,7,top);
+        if(party_failed(p->score))snprintf(middle,sizeof(middle),"DNF");else if(s_party.game==PARTY_GAME_TIME)snprintf(middle,sizeof(middle),"E%lums",(unsigned long)party_metric(p->score));else snprintf(middle,sizeof(middle),"%ums",(unsigned)(p->score-1));
+        u8g2_DrawStr(&u8g2,60,20,middle);game_ascii_fit(&u8g2,36,31,"TURN:RANK TAP:NEXT",92);return;
+    }
     if(s_party.view>=s_party.count)s_party.view=0;
     party_player_t *p=&s_party.players[s_party.view];
     if(s_party.phase==P_RESULTS){
@@ -477,6 +497,13 @@ static void party_draw(void){
             party_line(30,s_party.go_shown?"PRESS TO STOP":"DON'T PRESS YET");
         }else party_line(21,s_party.go_shown?"*** GO! PRESS NOW ***":"WAIT... DON'T PRESS");
         return;
+    }
+    if(s_party.phase==P_LOBBY || s_party.phase==P_LOCK){
+        snprintf(top,sizeof(top),"%s %u/4",s_party.host?"HOST":"ROOM",s_party.count);u8g2_DrawStr(&u8g2,0,7,top);
+        for(unsigned i=0;i<4;i++){int x=2+i*24;u8g2_DrawFrame(&u8g2,x,9,21,15);if(i<s_party.count){u8g2_DrawBox(&u8g2,x+8,11,5,4);u8g2_DrawFrame(&u8g2,x+5,16,11,5);if(s_party.players[i].flags&P_READY)u8g2_DrawBox(&u8g2,x+16,10,3,3);if((int)i==party_self())u8g2_DrawBox(&u8g2,x,24,21,1);}}
+        if(s_party.host && s_party.quiet){uint32_t elapsed=party_ms()-s_party.quiet_at;game_number(108,9,elapsed>=5000?0:(5000-elapsed+999)/1000);}
+        else if(!s_party.host && s_party.quiet_remaining)game_number(108,9,s_party.quiet_remaining);
+        game_ascii_fit(&u8g2,0,31,s_party.local_flags&P_READY?"READY / WAIT FOR HOST":"PRESS & RELEASE:READY",128);return;
     }
     unsigned ready=0;for(unsigned i=0;i<s_party.count;i++)if(s_party.players[i].flags&P_READY)++ready;
     snprintf(top,sizeof(top),ui_zh_lookup("%s %u/4 READY %u"),ui_zh_lookup(s_party.host?"HOST":"ROOM"),s_party.count,ready);

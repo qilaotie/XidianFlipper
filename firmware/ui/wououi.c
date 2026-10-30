@@ -40,11 +40,12 @@
 #include <stdio.h>
 
 static bool zh_scope(void){
-    return ui.index==M_DRAFT_SLOT || ui.index==M_DRAFT_CONFIRM || ui.index==M_MAIN || ui.index==M_SETTING || ui.index==M_TOOLS || ui.index==M_FUN_HUB || ui.index==M_GAME_HELP ||
+    if(ui.index>=M_FUN_PET && ui.index<=M_PET_GIFTS)return true;
+    return (ui.index>=M_PARTY_HUB && ui.index<=M_PARTY_LEAVE) || (ui.index>=M_TOOLS_REMOTE && ui.index<=M_SETTINGS_SYSTEM) || (ui.index>=M_NETWORK_STATUS && ui.index<=M_ENSEMBLE) || ui.index==M_DRAFT_SLOT || ui.index==M_DRAFT_CONFIRM || ui.index==M_MAIN || ui.index==M_SETTING || ui.index==M_TOOLS || ui.index==M_FUN_HUB || ui.index==M_GAME_HELP ||
         ui.index==M_SLEEP_CONFIRM || ui.index==M_WIFI_CONNECT || ui.index==M_WIFI_FORGET ||
         ui.index==M_LEARN_HUB || ui.index==M_MESSAGES_HUB || ui.index==M_CHANNEL_HUB || ui.index==M_FRIENDS ||
         ui.index==M_FRIEND_DETAIL || ui.index==M_RECIPIENT_PICK || ui.index==M_ABOUT ||
-        (ui.index==M_WINDOW && win.index==M_SETTING);
+        (ui.index==M_WINDOW && win.index==M_SETTING) || (ui.index==M_WINDOW && win.index>=M_SETTINGS_DISPLAY && win.index<=M_SETTINGS_SYSTEM);
 }
 /* Restrict localization to system UI, never user messages or text editors. */
 #define u8g2_DrawStr(d,x,y,s) (zh_scope()?ui_zh_draw(d,x,y,s):(void)u8g2_DrawStr(d,x,y,s))
@@ -1301,7 +1302,7 @@ void ui_proc(void)
     switch (ui.index) {
         case M_HOME:    home_proc();    break;
         case M_MAIN:    main_proc();    break;
-        case M_SETTING: settings_proc(); break;
+        case M_SETTING: case M_SETTINGS_DISPLAY: case M_SETTINGS_FEEDBACK: case M_SETTINGS_INPUT: case M_SETTINGS_SYSTEM: settings_proc(); break;
         case M_ABOUT:   about_new_proc(); break;
         /* ── 二级功能页 (V6.13) ── */
         case M_QUICK_MSG:       local_pages_proc();   break;

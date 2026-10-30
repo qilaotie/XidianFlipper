@@ -33,6 +33,8 @@ static bool pet_service_action(unsigned a){assert(a==PET_PLAY);if(can_pay)paymen
 static unsigned outcomes[4];
 static unsigned pet_service_social(unsigned outcome,unsigned seed,int *gift){(void)seed;outcomes[outcome]++;rewards++;*gift=outcome==0?1:-1;return outcome==3?20:(outcome==2?10:(outcome==1?6:5));}
 static bool pet_service_flush(void){flushes++;return true;}
+static unsigned passport_calls;
+static bool message_service_passport_visit(const uint8_t mac[6],const char *name,uint32_t token){assert(mac&&name&&token);passport_calls++;return true;}
 static uint8_t sent[40];static unsigned sends;
 static bool message_service_send_control(unsigned type,const uint8_t *dst,const void *b,unsigned n){
  assert(type==MESH_TYPE_PET && n==40);(void)dst;memcpy(sent,b,40);sends++;return radio;
@@ -76,7 +78,8 @@ int main(void){
  packet(INVITE,0,false,false);assert(state==OFFER);pet_link_proc(PG_TAP);assert(state==SYNC);
  packet(START,0,false,false);assert(state==RUN && !host && payments==1);
  clock_ms+=11001;pet_link_proc(PG_NONE);assert(game.done);
- packet(STATE,0,true,true);assert(state==DONE && rewards==2 && outcomes[0]==1 && outcomes[3]==1);
+ packet(STATE,0,true,true);assert(state==DONE && rewards==2 && outcomes[0]==1 && outcomes[3]==1 && passport_calls==1);
+ for(unsigned i=0;i<20;i++)packet(STATE,0,true,true);assert(passport_calls==1);
  pet_link_enter(true);pet_link_proc(PG_NONE);packet(INVITE,0,false,false);assert(state==OFFER);
  can_pay=false;pet_link_proc(PG_TAP);assert(state==LOST && payments==1);
  can_pay=true;pet_link_enter(true);pet_link_proc(PG_NONE);packet(INVITE,0,false,false);pet_link_proc(PG_TAP);
@@ -89,6 +92,7 @@ int main(void){
   unsigned claims=rewards;for(unsigned repeat=0;repeat<50;repeat++)packet(STATE,2,true,true);assert(rewards==claims);
  }
  radio=false;pet_link_enter(false);pet_link_proc(PG_NONE);assert(state==SEARCH);
+ assert(passport_calls==1); /* Duels, failures and duplicate visit results never add stamps. */
  puts("PASS pet link: consent, host/guest, visit, timeout, rest guard, mutual result ACK, exactly-once reward, stale/invalid scores");
 }
 '''

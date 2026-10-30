@@ -93,6 +93,7 @@ def main():
             raise RuntimeError('Device identity mismatch')
         if esp.get_secure_boot_enabled() or esp.get_flash_encryption_enabled():
             raise RuntimeError('Secure Boot/encrypted Flash requires a different migration procedure')
+        esp._port.timeout=5
         esp=esp.run_stub();esp.flash_spi_attach(0);esp.change_baud(230400)
         if (esp.flash_id()>>16)&255!=0x16:
             raise RuntimeError('Expected 4 MiB Flash')

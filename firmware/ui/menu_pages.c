@@ -214,9 +214,25 @@ static uint8_t s_reset_sel_sentinel = 0xFF;
 void settings_proc(void)
 {
     extern nvs_config_t g_config;
+    if(ui.index==M_SETTING){
+        static M_SELECT categories[]={{"- Network and connections"},{"- Display and language"},{"- Sound and lights"},{"- Buttons and Morse"},{"- Power and system"}};
+        static const uint8_t pages[]={M_SETTINGS_NETWORK,M_SETTINGS_DISPLAY,M_SETTINGS_FEEDBACK,M_SETTINGS_INPUT,M_SETTINGS_SYSTEM};
+        ui.num[M_SETTING]=5;list_show(categories,M_SETTING);
+        if(btn.pressed && (btn.id==BTN_ID_CW || btn.id==BTN_ID_CC)){btn.pressed=false;list_rotate_switch();}
+        else if(btn.pressed && btn.id==BTN_ID_SP){btn.pressed=false;ui_navigate_to(pages[ui.select[ui.layer]%5]);}
+        return;
+    }
+    static const uint8_t display[]={0,6,9,10,11},feedback[]={3,4},input[]={1,2,5},system[]={8,7};
+    const uint8_t *map=display;unsigned count=sizeof(display);
+    if(ui.index==M_SETTINGS_FEEDBACK){map=feedback;count=sizeof(feedback);}
+    if(ui.index==M_SETTINGS_INPUT){map=input;count=sizeof(input);}
+    if(ui.index==M_SETTINGS_SYSTEM){map=system;count=sizeof(system);}
+    static M_SELECT rows[5];
+    static uint8_t toggles[6],values[6];
+    uint8_t page=ui.index;
 
     /* V6.19: �ӻָ���������ȷ�ϵ�����??*/
-    if (s_reset_popup_pending && ui.index == M_SETTING && ui.state == S_NONE) {
+    if (s_reset_popup_pending && ui.index == page && ui.state == S_NONE) {
         s_reset_popup_pending = false;
         if (s_reset_sel_sentinel == 1) {
             /* �û�ѡ��??"Confirm Reset" */
@@ -227,7 +243,7 @@ void settings_proc(void)
     }
 
     /* V6.14: ����ֵ�������غ󣬽��༭ֵд??g_config */
-    if (ui.index == M_SETTING && ui.state == S_NONE) {
+    if (ui.index == page && ui.state == S_NONE) {
         if (s_popup_pending_dotms && win.value_confirmed) {
             g_config.morse_wpm = s_dot_ms_val;
             g_config.morse_dot_ms = (uint16_t)(1200u / s_dot_ms_val);
@@ -279,7 +295,14 @@ void settings_proc(void)
     check_box.v = s_settings_values + 1;
     settings_menu[10].m_select=(char *)ui_style_skin_label();
     settings_menu[11].m_select=(char *)ui_style_widget_label();
-    list_show(settings_menu, M_SETTING);
+    for(unsigned i=0;i<count;i++){
+        rows[i]=settings_menu[map[i]];
+        toggles[i]=map[i]?s_settings_toggles[map[i]-1]:0;
+        values[i]=s_settings_values[map[i]];
+    }
+    /* A leading dummy cell permits the renderer's row-minus-one convention. */
+    check_box.m=toggles+1;check_box.v=values+1;
+    ui.num[page]=count;list_show(rows,page);
 
     if (btn.pressed) {
         switch (btn.id) {
@@ -292,19 +315,20 @@ void settings_proc(void)
             case BTN_ID_SP: {
                 btn.pressed = false;
                 uint8_t sel = ui.select[ui.layer];
-                switch (sel) {
+                if(sel>=count)break;
+                switch (map[sel]) {
                     /* ~ ��ֵ��??*/
                     case 0: /* Disp Bri */
                         window_value_init("Disp Bri", sel,
-                            &ui.param[DISP_BRI], 255, 0, 5, settings_menu, M_SETTING);
+                            &ui.param[DISP_BRI], 255, 0, 5, rows, page);
                         break;
                     case 1: /* Btn SPT */
                         window_value_init("Btn SPT", sel,
-                            &ui.param[BTN_SPT], 255, 0, 5, settings_menu, M_SETTING);
+                            &ui.param[BTN_SPT], 255, 0, 5, rows, page);
                         break;
                     case 2: /* Btn LPT */
                         window_value_init("Btn LPT", sel,
-                            &ui.param[BTN_LPT], 255, 0, 5, settings_menu, M_SETTING);
+                            &ui.param[BTN_LPT], 255, 0, 5, rows, page);
                         break;
                     /* + 开关项 (直接映射到 s_settings_toggles[]) */
                     case 3: /* LED Enable */
@@ -320,7 +344,7 @@ void settings_proc(void)
                     case 5: /* Morse Speed (×10ms) */
                         s_dot_ms_val = (uint8_t)(1200u / (g_config.morse_dot_ms ? g_config.morse_dot_ms : 200));
                         window_value_init("Speed (WPM)", sel,
-                            &s_dot_ms_val, 30, 4, 1, settings_menu, M_SETTING);
+                            &s_dot_ms_val, 30, 4, 1, rows, page);
                         s_popup_pending_dotms = true;   /* V6.14: 延迟保存，等弹窗关闭 */
                         break;
                     case 6: /* Text Scroll */
@@ -339,7 +363,7 @@ void settings_proc(void)
                             s_reset_sel_sentinel = 0xFF;
                             s_reset_popup_pending = true;
                             window_list_init("Factory Reset?", reset_items, 2,
-                                            &s_reset_sel_sentinel, settings_menu, M_SETTING);
+                                            &s_reset_sel_sentinel, rows, page);
                         }
                         break;
                     case 8:

@@ -1,6 +1,7 @@
 """App-only update that refuses a legacy/unknown device partition table."""
 import argparse
 import json
+import time
 from pathlib import Path
 from datetime import datetime, timezone
 import esptool
@@ -9,13 +10,24 @@ from flash_layout import profile
 from flash_migrate import save_verified,sha,write_payload
 from verify import verify
 
+def receive_buffer(esp):
+    # Loader.command restores the pre-command timeout. None would make a lost
+    # SLIP delimiter wait forever during the following bulk data/digest read.
+    esp._port.timeout=5
+    # PySerial's Windows default is 4 KiB; a single stub data packet is 4 KiB
+    # plus framing. The driver may ignore this recommendation, so exact checks stay.
+    if hasattr(esp._port,'set_buffer_size'):
+        esp._port.set_buffer_size(rx_size=1024*1024,tx_size=65536)
 
 def read_range(esp,address,size):
     chunks=[]
-    for offset in range(0,size,0x10000):
-        count=min(0x10000,size-offset);chunk=esp.read_flash(address+offset,count)
+    # Short bursts avoid USB/JTAG SLIP overruns; every byte is still read twice
+    # for the backup and compared in full before any write is permitted.
+    for offset in range(0,size,0x800):
+        count=min(0x800,size-offset);chunk=esp.read_flash(address+offset,count)
         if len(chunk)!=count:raise RuntimeError('Short Flash read')
         chunks.append(chunk)
+        time.sleep(.002)
     return b''.join(chunks)
 
 
@@ -33,11 +45,12 @@ def main():
         mac=':'.join(f'{b:02x}' for b in esp.read_mac())
         if esp.CHIP_NAME!='ESP32-C6' or mac.lower()!=args.expect_mac.lower():raise RuntimeError('Wrong device')
         if esp.get_secure_boot_enabled() or esp.get_flash_encryption_enabled():raise RuntimeError('Unsupported security configuration')
+        receive_buffer(esp)
         esp=esp.run_stub();esp.flash_spi_attach(0);esp.change_baud(230400)
         if (esp.flash_id()>>16)&255!=0x16:raise RuntimeError('Expected 4 MiB Flash')
         table=esp.read_flash(0x8000,0x1000)
         if profile(table)[0]!='factory-2m-usb-v1':raise RuntimeError('Legacy device: migrate before app-only update')
-        out=ROOT/'build/migration-private'/('app-update-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ'))
+        out=ROOT/'build/migration-private'/('app-update-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')+'-'+args.port.upper())
         out.mkdir(parents=True,exist_ok=False);save_verified(out/'partition-table.bin',table)
         persistent={address:esp.read_flash(address,0x6000) for address in (0x9000,0x3b0000)}
         for address,data in persistent.items():save_verified(out/f'nvs-{address:x}.bin',data)
