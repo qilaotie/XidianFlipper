@@ -59,7 +59,7 @@ void party_link_tick(party_link_t *s,uint8_t ch,uint32_t scope,bool enabled,uint
 }
 bool party_link_create(party_link_t *s,unsigned kind,uint32_t seed,const char *name){
     if(!s->enabled || !party_game_available(kind) || !can_switch(s))return false;
-    party_rules_lobby(&s->rules,kind,seed);s->rules.n=1;s->n=1;s->active=s->local=s->ready=true;s->have_public=s->watching=false;s->ready_mask=1;s->invite_nonce=0;s->invite_sent_once=false;s->id=++s->sequence;if(!s->id)s->id=++s->sequence;s->host_boot=s->boot;memcpy(s->host,s->self,6);memcpy(s->members[0],s->self,6);memset(s->member_nonce,0,sizeof(s->member_nonce));name_copy(s->names[0],name);refresh(s);return true;
+    party_rules_lobby(&s->rules,kind,seed);s->rules.n=1;s->n=1;s->active=s->local=s->ready=true;s->have_public=s->watching=false;s->ready_mask=1;s->invite_nonce=0;s->invite_sent_once=false;s->id=++s->sequence;if(!s->id)s->id=++s->sequence;s->epoch_revision=0;s->host_boot=s->boot;memcpy(s->host,s->self,6);memcpy(s->members[0],s->self,6);memset(s->member_nonce,0,sizeof(s->member_nonce));name_copy(s->names[0],name);refresh(s);return true;
 }
 bool party_link_join_table(party_link_t *s,const uint8_t host[6],uint32_t boot,uint32_t id,const char *name){
     if(!s->enabled || !host || s->pending.active)return false;
@@ -84,11 +84,20 @@ bool party_link_watch_table(party_link_t *s,const uint8_t host[6],uint32_t boot,
 bool party_link_stop_watching(party_link_t *s){if(!s->watching)return false;s->active=s->watching=s->ready=s->have_public=false;s->view.me=255;s->ready_mask=0;return true;}
 static bool apply(party_link_t *s,unsigned seat,unsigned op,unsigned act,unsigned a,unsigned b,unsigned c){
     bool ok=false;
-    if(op==PARTY_START && seat==0 && s->ready_mask==((1u<<s->n)-1))ok=party_rules_start(&s->rules,s->n);
-    if(op==PARTY_READY && s->rules.phase==PG_LOBBY && seat<s->n && a<=1){if(a)s->ready_mask|=1u<<seat;else s->ready_mask&=(uint8_t)~(1u<<seat);ok=true;}
+    unsigned previous=s->rules.phase;
+    if(op==PARTY_START && seat==0 && s->n>=party_min(s->rules.kind) && s->n<=party_max(s->rules.kind) && s->ready_mask==((1u<<s->n)-1)){
+        if(previous==PG_FINISHED){unsigned kind=s->rules.kind;uint32_t seed=s->rules.rng+s->revision*2654435761u;party_rules_lobby(&s->rules,kind,seed);s->rules.n=s->n;}
+        ok=party_rules_start(&s->rules,s->n);
+    }
+    if(op==PARTY_READY && (s->rules.phase==PG_LOBBY || s->rules.phase==PG_FINISHED) && seat<s->n && a<=1){if(a)s->ready_mask|=1u<<seat;else s->ready_mask&=(uint8_t)~(1u<<seat);ok=true;}
     if(op==PARTY_MOVE)ok=party_rules_move(&s->rules,seat,act,a,b,c);
     if((op==PARTY_LEAVE || (op==PARTY_CLOSE&&seat==0)) && seat<s->n){s->rules.phase=PG_FINISHED;s->rules.winner=0;s->rules.event=250;ok=true;}
-    if(ok)refresh(s);
+    if(ok){
+        bool finished=previous!=PG_FINISHED && s->rules.phase==PG_FINISHED;
+        if(finished)s->ready_mask=0;
+        refresh(s);
+        if(finished || (op==PARTY_START && previous==PG_FINISHED))s->epoch_revision=s->revision;
+    }
     return ok;
 }
 bool party_link_request(party_link_t *s,unsigned op,unsigned action,unsigned a,unsigned b,unsigned c,const char *name){
@@ -159,7 +168,7 @@ void party_link_receive(party_link_t *s,const mesh_packet_t *p){
             bool duplicate=s->member_boot[seat]==p->session_id && s->member_nonce[seat]==get32(b+28);
             bool old=s->member_boot[seat]==p->session_id && s->member_nonce[seat]>get32(b+28);
             if(duplicate)result=s->member_result[seat];
-            else if(!old){bool concurrent=(b[22]==PARTY_READY && b[27]==PG_LOBBY && s->rules.phase==PG_LOBBY) || (b[22]==PARTY_MOVE && b[27]==s->rules.phase && b[39]==s->rules.round && (b[23]==PG_VOTE || (s->rules.phase>=PG_NIGHT_WOLF&&s->rules.phase<=PG_NIGHT_WITCH)));bool ok=b[22]==PARTY_JOIN || ((rev==s->revision||concurrent)&&apply(s,seat,b[22],b[23],b[24],b[25],b[26]));result=ok?TEAM_OK:TEAM_REJECTED;s->member_boot[seat]=p->session_id;s->member_nonce[seat]=get32(b+28);s->member_result[seat]=result;}
+            else if(!old){bool concurrent=(b[22]==PARTY_READY && b[27]==s->rules.phase && (s->rules.phase==PG_LOBBY || s->rules.phase==PG_FINISHED)) || (b[22]==PARTY_MOVE && b[27]==s->rules.phase && b[39]==s->rules.round && (b[23]==PG_VOTE || (s->rules.phase>=PG_NIGHT_WOLF&&s->rules.phase<=PG_NIGHT_WITCH)));bool ok=b[22]==PARTY_JOIN || ((rev>=s->epoch_revision && (rev==s->revision||concurrent))&&apply(s,seat,b[22],b[23],b[24],b[25],b[26]));result=ok?TEAM_OK:TEAM_REJECTED;s->member_boot[seat]=p->session_id;s->member_nonce[seat]=get32(b+28);s->member_result[seat]=result;}
         }
         uint8_t ack[128];header(s,ack,ACK);memcpy(ack+22,p->src_mac,6);put32(ack+28,p->session_id);put32(ack+32,get32(b+28));ack[36]=result;s->send(s->ctx,ack,37);return;
     }

@@ -28,6 +28,7 @@ typedef struct {
     uint8_t self[6],host[6],members[8][6],channel,n,stage_slot,publish_cycle,result;
     char names[8][7],name[7];
     uint32_t boot,host_boot,id,revision,sequence,now,seen,scope,publish_at,private_rev,roster_rev;
+    uint32_t epoch_revision; /* Reject delayed requests across finish/rematch boundaries. */
     bool active,local,enabled,ready,have_public,joined,watching;
     uint8_t ready_mask;
     uint32_t invite_nonce,invite_sent;

@@ -82,7 +82,31 @@ static void lobby_features(void){
     assert(party_link_stop_watching(&s[3]));assert(!s[3].active && s[0].rules.phase==PG_PLAYING && s[0].n==3);
     puts("PASS lobby: invitation rate/expiry/replay, no auto-join, all-ready gate, ready cancel/retry dedup, new-member invalidation/late ready rejection, spectator public sync/private isolation/read-only/exit");
 }
+static void rematch(void){
+ setup(3);assert(party_link_create(&s[0],PG_TIC,123,"host"));pump(5000);join(1);assert(start(0));pump(7000);
+ unsigned moves[]={0,3,1,4,2};mesh_packet_t old_move={0};
+ for(unsigned i=0;i<5;i++){unsigned p=s[0].rules.turn;assert(party_link_request(&s[p],PARTY_MOVE,PG_CARD,moves[i],0,0,""));pump(7000);if(p==1)old_move=last_request;}
+ assert(s[0].rules.phase==PG_FINISHED && s[0].ready_mask==0 && s[1].ready_mask==0);uint32_t id=s[0].id;
+ assert(!party_link_request(&s[0],PARTY_START,0,0,0,0,""));
+ assert(party_link_request(&s[0],PARTY_READY,0,1,0,0,""));
+ assert(party_link_request(&s[1],PARTY_READY,0,1,0,0,""));pump(7000);assert(s[0].ready_mask==3);
+ mesh_packet_t old_ready=last_request;assert(party_link_request(&s[0],PARTY_START,0,0,0,0,""));pump(7000);
+ assert(s[0].id==id && s[1].id==id && s[0].n==2 && s[1].view.me==1 && s[0].rules.phase==PG_PLAYING && s[1].view.phase==PG_PLAYING);
+ assert(!s[0].rules.winner);for(unsigned i=0;i<9;i++)assert(!s[0].rules.board[i] && !s[1].view.board[i]);
+ unsigned revision=s[0].revision;party_link_receive(&s[0],&old_move);party_link_receive(&s[0],&old_ready);drain();assert(s[0].revision==revision);
+ // Reboot-like nonce does not allow a delayed previous-match concurrent action.
+ old_move.session_id++;old_move.payload[23]=PG_VOTE;old_move.payload[27]=PG_PLAYING;party_link_receive(&s[0],&old_move);drain();assert(s[0].revision==revision);
+ assert(party_link_request(&s[0],PARTY_MOVE,PG_CARD,0,0,0,""));pump(7000);assert(s[1].view.board[0]==1);
+ // Each ruleset starts fresh; only membership is retained.
+ for(unsigned k=0;k<TABLETOP_GAMES;k++)if(party_game_available(k)){
+  setup(2);assert(party_link_create(&s[0],k,10,"host"));s[0].n=party_min(k);s[0].rules.n=s[0].n;s[0].ready_mask=(1u<<s[0].n)-1;assert(party_link_request(&s[0],PARTY_START,0,0,0,0,""));
+  assert(party_link_request(&s[0],PARTY_LEAVE,0,0,0,0,""));assert(!s[0].ready_mask);s[0].ready_mask=(1u<<s[0].n)-1;
+  assert(party_link_request(&s[0],PARTY_START,0,0,0,0,""));assert(s[0].rules.phase!=PG_FINISHED && !s[0].rules.winner);
+ }
+ puts("PASS rematch: readiness cleared, same room and seats, fresh rules/board, delayed old operations rejected, all ten games restart");
+}
 int main(void){
+    rematch();
     lobby_features();
     multitable();
     for(unsigned kind=0;kind<TABLETOP_GAMES;kind++){

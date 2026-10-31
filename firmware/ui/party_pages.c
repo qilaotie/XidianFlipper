@@ -13,6 +13,10 @@ static party_snapshot_t v;
 static unsigned selected_game,action_at,param_a,param_b,param_c,view_mode,help_page,cell,liar_mask;
 static bool private_open,list_enter,initial_a_set;
 static bool board_opened;
+static unsigned lobby_pick,lobby_players;
+static unsigned code_public_cell,code_own_cell;
+static bool lobby_enter;
+static void lobby(void);
 static uint32_t board_revision;
 static void graphic_reset(void);
 static void graphic_hide(void);
@@ -28,6 +32,7 @@ static party_table_t table_choice;
 static unsigned table_return_row;
 static uint8_t seen_result;
 static uint8_t seen_round;
+static uint8_t previous_phase=255;
 static unsigned edit_param;
 static unsigned help_total,help_offsets[20];
 static unsigned help_render_page=~0u;
@@ -79,7 +84,8 @@ static const char *const words_en[24][2]={{"Apple","Pear"},{"Milk","Soy milk"},{
 void party_pages_enter(uint8_t page){
     if(page<M_PARTY_HUB || page>M_PARTY_LEAVE)return;
     list_enter=true;
-    if(page==M_PARTY_VIEW){graphic_hide();adapt_reset();private_open=false;if(v.game.kind!=PG_TIC)cell=0;}
+    if(page==M_PARTY_ROOM)lobby_enter=true;
+    if(page==M_PARTY_VIEW){code_public_cell=code_own_cell=0;graphic_hide();adapt_reset();private_open=false;if(v.game.kind!=PG_TIC)cell=0;}
     if(page==M_PARTY_ACTION){action_at=0;param_a=initial_a_set?initial_a:0;param_b=initial_a_set?initial_b:0;initial_a_set=false;initial_b=0;param_c=v.game.kind==PG_CODE?0:2;edit_param=0;}
     if(page==M_PARTY_HELP){help_page=0;help_total=0;help_render_page=~0u;}
 }
@@ -137,7 +143,8 @@ static void create(void){
 }
 static void room(void){
     if(!v.active){line(11,T("No room / scope changed","房间已失效或范围变化"));line(27,T("BACK to choose a game","返回选择游戏"));return;}
-    if(party_game_graphical(v.game.kind) && v.game.phase==PG_PLAYING && (v.game.me<v.game.n || v.watching) && !board_opened){btn.pressed=false;board_opened=true;view_mode=1;ui_navigate_to(M_PARTY_VIEW);return;}
+    if(v.game.phase==PG_LOBBY || v.game.phase==PG_FINISHED){lobby();return;}
+    if(v.ready && (v.game.me<v.game.n || v.watching) && !board_opened){btn.pressed=false;board_opened=true;view_mode=!v.watching && (v.game.kind==PG_LOVE || v.game.kind==PG_LIAR)?0:1;ui_navigate_to(M_PARTY_VIEW);return;}
     char title[96],state[96];snprintf(title,sizeof(title),"- %s %u/%u",game_name(v.game.kind),v.game.n,party_max(v.game.kind));
     snprintf(state,sizeof(state),"- %s P%u R%u%s",phase_name(v.game.phase),v.game.turn+1,v.game.round,v.stale?T(" STALE"," 主机离线"):"");
     bool member=v.local || v.game.me<v.game.n;
@@ -180,15 +187,79 @@ static void board(void){
 }
 #include "party_graphics.inc"
 #include "party_adapt.inc"
+
+/* The waiting room is the default destination, not a list of game subpages. */
+static void lobby(void){
+    unsigned n=v.game.n>8?8:v.game.n,ready=0;
+    bool member=!v.watching && v.game.me<n;
+    unsigned actions=v.watching?2:v.local?5:v.game.phase==PG_FINISHED?4:3,total=n+actions;
+    if(lobby_enter){lobby_enter=false;lobby_pick=n;lobby_players=n;}
+    if(lobby_players!=n){if(lobby_pick>=lobby_players)lobby_pick=n+lobby_pick-lobby_players;lobby_players=n;}
+    if(lobby_pick>=total)lobby_pick=n;
+    for(unsigned i=0;i<n;i++)ready+=(v.ready_mask>>i)&1;
+    unsigned key=btn.pressed?btn.id:~0u;
+    if(key==BTN_ID_CW || key==BTN_ID_CC){btn.pressed=false;lobby_pick=(lobby_pick+total+(key==BTN_ID_CW?1:-1))%total;}
+    char title[64];if(v.game.phase==PG_FINISHED)snprintf(title,sizeof(title),T(v.game.me<8 && (v.game.winner&(1u<<v.game.me))?"You win %u/%u":"Finished %u/%u",v.game.me<8 && (v.game.winner&(1u<<v.game.me))?"你赢了 %u/%u":"本局结束 %u/%u"),ready,n);else snprintf(title,sizeof(title),"%s %u/%u",game_name(v.game.kind),ready,n);ui_zh_draw_fit(&u8g2,0,11,title,128);
+    for(unsigned i=0;i<n;i++){
+        int x=i*16;graphic_frame(x,13,14,11);char seat[3];snprintf(seat,sizeof(seat),"%u",i+1);graphic_text(x+2,21,seat);
+        if(v.ready_mask&(1u<<i))u8g2_DrawBox(&u8g2,x+9,15,3,7);
+        if(i==v.game.me)u8g2_DrawHLine(&u8g2,x,24,14);
+        if(lobby_pick==i)u8g2_DrawHLine(&u8g2,x,12,14);
+    }
+    const char *label;
+    unsigned a=lobby_pick>=n?lobby_pick-n:99;
+    if(lobby_pick<n){snprintf(title,sizeof(title),"P%u %.6s %s",lobby_pick+1,v.names[lobby_pick],v.ready_mask&(1u<<lobby_pick)?T("READY","已准备"):T("WAIT","未准备"));label=title;}
+    else if(v.watching)label=a==0?T("Watching / wait for start","观战 等待开局"):T("Tap: stop watching","短按退出观战");
+    else if(a==0)label=member?T(v.ready_mask&(1u<<v.game.me)?"Tap: cancel ready":"Tap: ready",v.ready_mask&(1u<<v.game.me)?"短按取消准备":"短按准备"):T("Joining / synchronizing","加入同步中");
+    else if(!v.local && v.game.phase==PG_FINISHED && a==1)label=T("Tap: results","短按查看结果");
+    else if(v.local && a==1)label=T("Tap: start (all ready)","短按开局 需全部准备");
+    else if(v.local && a==2)label=v.game.phase==PG_FINISHED?T("Tap: results","短按查看结果"):T("Tap: invite players","短按邀请玩家");
+    else if(a==actions-2)label=T("Tap: rules","短按查看规则");
+    else label=T("Tap: leave / end match","短按离开或结束游戏");
+    ui_zh_draw_fit(&u8g2,0,31,label,128);
+    if(key!=BTN_ID_SP)return;
+    btn.pressed=false;
+    if(lobby_pick<n)return;
+    if(v.watching){if(a==1){message_service_party_stop_watching();back();}return;}
+    if(v.game.phase==PG_FINISHED && a==(v.local?2u:1u)){view_mode=2;if(ui.index!=M_PARTY_VIEW)ui_navigate_to(M_PARTY_VIEW);return;}
+    if(a==actions-1){ui_navigate_to(M_PARTY_LEAVE);return;}
+    if(a==actions-2){selected_game=v.game.kind;ui_navigate_to(M_PARTY_HELP);return;}
+    if(!member || !v.enabled || !v.ready || v.pending || v.stale){notice(T("Join / wait for fresh state","先加入并等待同步"));return;}
+    if(a==0)request(PARTY_READY,0,!(v.ready_mask&(1u<<v.game.me)),0,0);
+    else if(v.local && a==1){if(n<party_min(v.game.kind) || v.ready_mask!=((1u<<n)-1))notice(T("Wait until all players ready","请等待所有玩家准备"));else request(PARTY_START,0,0,0,0);}
+    else if(v.local && a==2){if(v.game.phase==PG_FINISHED){view_mode=2;ui_navigate_to(M_PARTY_VIEW);}else request(PARTY_INVITE,0,0,0,0);}
+}
 static void view(void){
     if(v.watching && view_mode==0)view_mode=1;
     if(!v.active){line(20,T("No room","没有房间"));return;}
+    if(v.game.phase==PG_FINISHED && view_mode==2 && btn.pressed && btn.id==BTN_ID_BACK){btn.pressed=false;view_mode=1;lobby_enter=true;return;}
+    if(v.game.phase==PG_FINISHED && view_mode!=2){lobby();return;}
     if(view_mode!=2 && party_game_graphical(v.game.kind)){graphic_game();return;}
     if(view_mode==0 && v.game.phase==PG_LOBBY){line(11,T("Wait for host to start","等待主机开始"));return;}
     if(view_mode==0 && (!v.ready || v.game.me>=v.game.n)){line(11,T("Join / synchronizing","请加入或等待同步"));return;}
+    if(v.game.kind==PG_CODE && view_mode!=2){
+        if(v.watching){view_mode=1;private_open=false;adapt_code();return;}
+        if(btn.pressed && ((btn.id==BTN_ID_LP) || (view_mode==0 && btn.id==BTN_ID_BACK))){
+            bool reveal=btn.id==BTN_ID_LP && (view_mode!=0 || !private_open);
+            btn.pressed=false;adapt_reset();
+            if(reveal){code_public_cell=cell;view_mode=0;private_open=true;cell=code_own_cell;}
+            else {code_own_cell=cell;view_mode=1;private_open=false;cell=code_public_cell;}
+            return;
+        }
+        if(view_mode==0){adapt_hand();code_own_cell=cell;}
+        else {adapt_code();code_public_cell=cell;}
+        return;
+    }
+    if(view_mode==0 && (v.game.kind==PG_CODE || v.game.kind==PG_LIAR || v.game.kind==PG_LOVE)){
+        if(btn.pressed && btn.id==BTN_ID_LP){btn.pressed=false;private_open=!private_open;adapt_reset();}
+        adapt_hand();return;
+    }
     if(view_mode==0 && !private_open){
         line(11,T("Private: shield your screen","私密页面 请遮挡屏幕"));line(27,T("HOLD to reveal; BACK exits","长按查看 返回退出"));
         if(btn.pressed && btn.id==BTN_ID_LP){private_open=true;btn.pressed=false;list_enter=true;}return;
+    }
+    if(btn.pressed && btn.id==BTN_ID_LP && !v.watching && (v.game.kind==PG_CODE || v.game.kind==PG_UNDERCOVER || v.game.kind==PG_AVALON || v.game.kind==PG_NIGHT || v.game.kind==PG_WOLF)){
+        btn.pressed=false;view_mode=view_mode==0?1:0;private_open=view_mode==0;list_enter=true;return;
     }
     if(view_mode==1 && v.game.kind==PG_TIC){board();return;}
     if(view_mode==0 && (v.game.kind==PG_CODE || v.game.kind==PG_LIAR || v.game.kind==PG_LOVE)){adapt_hand();return;}
@@ -196,7 +267,7 @@ static void view(void){
     if(view_mode==1 && (v.game.kind==PG_UNDERCOVER || v.game.kind==PG_AVALON || v.game.kind==PG_NIGHT || v.game.kind==PG_WOLF)){adapt_players();return;}
     static M_SELECT rows[40];static char labels[40][96];unsigned count=0;
 #define ROW(...) do{snprintf(labels[count],96,__VA_ARGS__);rows[count].m_select=labels[count];count++;}while(0)
-    if(view_mode==2){for(unsigned p=0;p<v.game.n;p++){char name[32];seat_name(p,name);if(v.game.phase==PG_LOBBY)ROW("- %s %s",name,T(v.ready_mask&(1u<<p)?"READY":"WAIT",v.ready_mask&(1u<<p)?"已准备":"未准备"));else ROW("- %s %u %s%s",name,v.game.score[p],v.game.flags[p]&PG_ALIVE?"":"OUT ",v.game.winner&(1u<<p)?"WIN":"");if(v.game.phase==PG_FINISHED && (v.game.kind==PG_UNDERCOVER || v.game.kind==PG_AVALON || v.game.kind==PG_NIGHT || v.game.kind==PG_WOLF))ROW("- %s",role_name(v.game.board[p],v.game.kind));}if(v.game.phase==PG_FINISHED)ROW("- %s",T("Match complete; create another","本局结束 可创建新局"));}
+    if(view_mode==2){for(unsigned p=0;p<v.game.n;p++){char name[32];seat_name(p,name);if(v.game.phase==PG_LOBBY)ROW("- %s %s",name,T(v.ready_mask&(1u<<p)?"READY":"WAIT",v.ready_mask&(1u<<p)?"已准备":"未准备"));else ROW("- %s %u %s%s",name,v.game.score[p],v.game.flags[p]&PG_ALIVE?"":"OUT ",v.game.winner&(1u<<p)?"WIN":"");if(v.game.phase==PG_FINISHED && (v.game.kind==PG_UNDERCOVER || v.game.kind==PG_AVALON || v.game.kind==PG_NIGHT || v.game.kind==PG_WOLF))ROW("- %s",role_name(v.game.board[p],v.game.kind));}if(v.game.phase==PG_FINISHED)ROW("- %s",T("Back: ready for next match","返回准备下一局"));}
     else if(view_mode==0){
         if(v.game.kind==PG_UNDERCOVER){unsigned i=v.game.extra[0]%24,which=v.game.extra[1]&1;ROW("- %s",ui_language_chinese()?words[i][which]:words_en[i][which]);ROW("- %s",T("Describe aloud; do not show word","轮流描述 不要展示词语"));}
         else if(v.game.kind==PG_AVALON || v.game.kind==PG_NIGHT || v.game.kind==PG_WOLF){
@@ -374,6 +445,13 @@ void party_pages_proc(void){
     bool new_table=v.id!=seen_id || v.host_boot!=seen_boot || memcmp(v.host,seen_host,6);
     if(!v.active || new_table || v.revision!=adapt_revision){adapt_reset();adapt_revision=v.revision;}
     if(!v.active || new_table){graphic_reset();private_open=false;liar_mask=0;board_opened=false;board_revision=~0u;cell=0;seen_id=v.id;seen_boot=v.host_boot;memcpy(seen_host,v.host,6);seen_result=v.result;}
+    if(v.active && !new_table && previous_phase!=v.game.phase){
+        if(v.game.phase==PG_FINISHED || previous_phase==PG_FINISHED){
+            graphic_reset();adapt_reset();private_open=false;liar_mask=0;cell=0;code_public_cell=code_own_cell=0;board_opened=false;board_revision=~0u;lobby_enter=true;
+            view_mode=!v.watching && (v.game.kind==PG_LOVE || v.game.kind==PG_LIAR)?0:1;
+        }
+    }
+    previous_phase=v.game.phase;
     if(v.game.round!=seen_round){liar_mask=0;seen_round=v.game.round;}
     if(v.result!=seen_result){if(v.result==TEAM_OK)notice(T("Host confirmed","主机已确认"));if(v.result==TEAM_REJECTED)notice(T("Rejected: refresh your choice","操作被拒 请重新选择"));if(v.result==TEAM_TIMEOUT)notice(T("No ACK: check connection","未收到确认 请检查连接"));seen_result=v.result;}
     switch(ui.index){case M_PARTY_HUB:hub();break;case M_PARTY_CREATE:create();break;case M_PARTY_ROOM:room();break;case M_PARTY_VIEW:view();break;case M_PARTY_ACTION:action();break;case M_PARTY_HELP:help();break;case M_PARTY_LEAVE:{M_SELECT rows[]={{(char *)T("- Cancel","- 取消")},{(char *)T("- End match for everyone","- 确认结束整局游戏")}};int n=menu(rows,2);if(n==0)back();if(n==1 && request(PARTY_LEAVE,0,0,0,0))back();break;}default:break;}

@@ -2,6 +2,11 @@
 from pathlib import Path
 import subprocess,tempfile,re
 root=Path(__file__).resolve().parents[1]
+# Match the real firmware IDs: CC is zero, so idle must never use zero as a key.
+header=(root/'firmware/ui/wououi.h').read_text(encoding='utf8')
+for key,value in [('CC',0),('CW',1),('SP',2),('LP',3),('BACK',4)]:
+    assert re.search(r'#define\s+BTN_ID_'+key+r'\s+'+str(value)+r'\b',header)
+
 graphics=(root/'firmware/ui/party_graphics.inc').read_text(encoding='utf8')
 adapt=(root/'firmware/ui/party_adapt.inc').read_text(encoding='utf8')
 source=re.sub(r'^#include[^\n]*\n','',(root/'firmware/ui/party_pages.c').read_text(encoding='utf8').replace('#include "party_graphics.inc"',graphics).replace('#include "party_adapt.inc"',adapt),flags=re.M)
@@ -11,7 +16,7 @@ shim=r'''
 #include <stdio.h>
 #include <string.h>
 enum{M_PARTY_HUB=109,M_PARTY_ROOM,M_PARTY_VIEW,M_PARTY_ACTION,M_PARTY_HELP,M_PARTY_CREATE,M_PARTY_LEAVE};
-enum{BTN_ID_CW=1,BTN_ID_CC,BTN_ID_SP,BTN_ID_BACK,BTN_ID_LP,S_LAYER_OUT};
+enum{BTN_ID_CC=0,BTN_ID_CW=1,BTN_ID_SP=2,BTN_ID_LP=3,BTN_ID_BACK=4,S_LAYER_OUT=10};
 static struct{unsigned index,layer,state,num[120],select[20],parent_index[20];bool init;}ui;
 static struct{float y,y_trg,box_y,box_y_trg[20];bool loop;}list;
 static struct{bool pressed;unsigned id;}btn;
@@ -62,7 +67,7 @@ int main(void){
   enter(M_PARTY_HUB);assert(rendered==14);
   for(unsigned kind=0;kind<TABLETOP_GAMES;kind++)if(party_game_available(kind)){
    fixture.game.kind=kind;fixture.id++;fixture.game.phase=PG_PLAYING;fixture.game.me=0;
-   table_browser=false;selected_game=kind;enter(M_PARTY_CREATE);assert(rendered==4);enter(M_PARTY_ROOM);assert(ui.index==(party_game_graphical(kind)?M_PARTY_VIEW:M_PARTY_ROOM));
+   table_browser=false;selected_game=kind;enter(M_PARTY_CREATE);assert(rendered==4);enter(M_PARTY_ROOM);assert(ui.index==M_PARTY_VIEW);
    selected_game=kind;enter(M_PARTY_HELP);unsigned calls=width_calls;for(unsigned i=0;i<50;i++)party_pages_proc();assert(width_calls==calls);for(unsigned i=0;i<28;i++)key(BTN_ID_CW);
   }
  }
@@ -71,22 +76,27 @@ int main(void){
  graphic_pick=6;key(BTN_ID_CW);key(BTN_ID_SP);assert(last_action==PG_DRAW);key(BTN_ID_CW);key(BTN_ID_SP);assert(last_action==PG_PASS);key(BTN_ID_CW);key(BTN_ID_SP);assert(last_action==PG_UNO_CALL);
  graphic_pick=0;fixture.game.hand[0]=52;key(BTN_ID_SP);assert(graphic_wild);prior=sends;key(BTN_ID_CW);key(BTN_ID_SP);assert(sends==prior+1&&last_b==1&&!graphic_wild);
  fixture.game.turn=1;prior=sends;key(BTN_ID_SP);assert(sends==prior);fixture.game.turn=0;fixture.pending=true;key(BTN_ID_SP);assert(sends==prior);fixture.pending=false;
- enter(M_PARTY_VIEW);assert(!graphic_reveal);key(BTN_ID_LP);fixture.game.phase=PG_FINISHED;key(BTN_ID_SP);assert(sends==prior);
+ enter(M_PARTY_VIEW);assert(!graphic_reveal);key(BTN_ID_LP);fixture.game.phase=PG_FINISHED;key(BTN_ID_SP);assert(sends==prior+1);prior=sends;
  fixture.game=(party_view_t){.kind=PG_YACHT,.phase=PG_PLAYING,.n=2,.me=0,.turn=0};memset(fixture.game.extra,255,16);fixture.id++;enter(M_PARTY_VIEW);graphic_pick=5;key(BTN_ID_SP);assert(last_action==PG_ROLL);graphic_pick=2;key(BTN_ID_SP);assert(last_action==PG_KEEP&&last_a==2);
  graphic_pick=6;key(BTN_ID_SP);assert(graphic_scores);key(BTN_ID_CW);key(BTN_ID_SP);assert(last_action==PG_SCORE&&last_a==1&&!graphic_scores);graphic_pick=6;key(BTN_ID_SP);fixture.game.extra[0]=0;prior=sends;key(BTN_ID_SP);assert(sends==prior);key(BTN_ID_BACK);assert(!graphic_scores&&!btn.pressed);
  fixture.game=(party_view_t){.kind=PG_TIC,.phase=PG_PLAYING,.n=2,.me=0,.turn=0};fixture.game.board[0]=1;fixture.game.board[4]=2;fixture.id++;view_mode=1;enter(M_PARTY_VIEW);cell=0;board_revision=~0u;grid_lines=cross_lines=circles=0;party_pages_proc();assert(cell==1&&grid_lines==8&&cross_lines==2&&circles==1);
  prior=sends;fixture.game.turn=1;key(BTN_ID_SP);assert(sends==prior);fixture.game.turn=0;fixture.pending=true;key(BTN_ID_SP);assert(sends==prior);fixture.pending=false;key(BTN_ID_SP);assert(sends==prior+1&&last_a==1);
- fixture.game.phase=PG_FINISHED;key(BTN_ID_SP);assert(sends==prior+1);
+ prior=sends;fixture.game.phase=PG_FINISHED;key(BTN_ID_SP);assert(sends==prior+1);
 
 
  fixture.game=(party_view_t){.kind=PG_CODE,.phase=PG_PLAYING,.n=3,.me=0,.turn=0,.nh=4};fixture.game.data[0]=4;fixture.game.data[1]=7;fixture.game.data[2]=5;memset(fixture.game.board,253,64);fixture.id++;view_mode=1;enter(M_PARTY_VIEW);for(unsigned i=0;i<5;i++)key(BTN_ID_CW);prior=sends;key(BTN_ID_SP);assert(ui.index==M_PARTY_VIEW&&adapt_stage==2&&adapt_card==1&&adapt_target==5);key(BTN_ID_CW);key(BTN_ID_SP);assert(sends==prior&&adapt_stage==3);key(BTN_ID_SP);assert(sends==prior+1&&last_action==PG_GUESS&&last_a==1&&last_b==5&&last_c==1&&!adapt_stage);
  key(BTN_ID_SP);key(BTN_ID_BACK);assert(!adapt_stage&&!btn.pressed);key(BTN_ID_SP);fixture.revision++;party_pages_proc();assert(!adapt_stage);key(BTN_ID_SP);fixture.pending=true;prior=sends;key(BTN_ID_SP);assert(sends==prior&&!adapt_stage);fixture.pending=false;
  cell=12;key(BTN_ID_SP);assert(last_action==PG_PASS);
+ // Quick private/public switch stays on the same page and preserves separate cursors.
+ fixture.game=(party_view_t){.kind=PG_CODE,.phase=PG_PLAYING,.n=3,.me=0,.turn=0,.nh=4};fixture.game.data[1]=7;fixture.game.data[2]=5;memset(fixture.game.board,253,64);fixture.id++;view_mode=1;enter(M_PARTY_VIEW);for(unsigned i=0;i<5;i++)key(BTN_ID_CW);
+ prior=sends;unsigned old_nav=navigations;key(BTN_ID_LP);assert(view_mode==0&&private_open&&cell==0&&ui.index==M_PARTY_VIEW);key(BTN_ID_CW);assert(cell==1);key(BTN_ID_LP);assert(view_mode==1&&!private_open&&cell==5&&navigations==old_nav&&sends==prior);
+ key(BTN_ID_LP);assert(cell==1&&private_open);key(BTN_ID_BACK);assert(view_mode==1&&cell==5&&!btn.pressed&&ui.index==M_PARTY_VIEW&&sends==prior);
+ key(BTN_ID_SP);assert(adapt_stage==2);key(BTN_ID_LP);assert(!adapt_stage&&private_open&&view_mode==0&&sends==prior);key(BTN_ID_LP);assert(cell==5&&view_mode==1);fixture.game.turn=1;key(BTN_ID_LP);key(BTN_ID_LP);assert(sends==prior);
  fixture.game=(party_view_t){.kind=PG_LIAR,.phase=PG_PLAYING,.n=3,.me=0,.turn=0,.nh=5};fixture.id++;view_mode=0;enter(M_PARTY_VIEW);prior=sends;key(BTN_ID_SP);assert(!private_open&&sends==prior);key(BTN_ID_LP);key(BTN_ID_SP);assert(liar_mask==1);key(BTN_ID_CW);key(BTN_ID_CW);key(BTN_ID_SP);assert(liar_mask==5);for(unsigned i=0;i<3;i++)key(BTN_ID_CW);key(BTN_ID_SP);assert(ui.index==M_PARTY_VIEW&&adapt_stage==3&&sends==prior);key(BTN_ID_SP);assert(last_action==PG_CARD&&last_a==5&&!liar_mask);
  cell=6;key(BTN_ID_SP);key(BTN_ID_SP);assert(last_action==PG_CHALLENGE);cell=7;key(BTN_ID_SP);key(BTN_ID_SP);assert(last_action==PG_PASS);
  cell=0;liar_mask=7;cell=3;key(BTN_ID_SP);assert(liar_mask==7);fixture.game.nh=0;cell=0;prior=sends;key(BTN_ID_SP);assert(sends==prior);adapt_reset();liar_mask=0;
  fixture.game=(party_view_t){.kind=PG_LOVE,.phase=PG_PLAYING,.n=2,.me=0,.turn=0,.nh=2};memset(fixture.game.flags,PG_ALIVE,2);fixture.game.hand[0]=1;fixture.game.hand[1]=5;fixture.id++;view_mode=0;enter(M_PARTY_VIEW);key(BTN_ID_LP);key(BTN_ID_CW);prior=sends;key(BTN_ID_SP);assert(ui.index==M_PARTY_VIEW&&adapt_stage==1);key(BTN_ID_CW);key(BTN_ID_SP);assert(adapt_stage==3&&adapt_target==1);key(BTN_ID_SP);assert(sends==prior+1&&last_action==PG_CARD&&last_a==1&&last_b==1);
- cell=0;key(BTN_ID_SP);assert(adapt_stage==1&&adapt_target==1);key(BTN_ID_SP);assert(adapt_stage==2);key(BTN_ID_CC);assert(adapt_guess==8);key(BTN_ID_SP);key(BTN_ID_SP);assert(last_a==0&&last_b==1&&last_c==8);
+ cell=0;key(BTN_ID_SP);assert(adapt_stage==1&&adapt_target==1);key(BTN_ID_SP);assert(adapt_stage==2);unsigned stable_guess=adapt_guess;for(unsigned idle=0;idle<50;idle++)party_pages_proc();assert(adapt_guess==stable_guess);key(BTN_ID_CC);assert(adapt_guess==8);key(BTN_ID_SP);key(BTN_ID_SP);assert(last_a==0&&last_b==1&&last_c==8);
  fixture.game.hand[0]=4;cell=0;key(BTN_ID_SP);assert(adapt_stage==3);prior=sends;key(BTN_ID_CW);key(BTN_ID_SP);assert(!adapt_stage&&sends==prior);
  fixture.game.hand[0]=5;fixture.game.hand[1]=7;key(BTN_ID_SP);assert(!adapt_stage);fixture.game.hand[0]=1;fixture.game.hand[1]=2;fixture.game.flags[1]|=PG_PROTECTED;key(BTN_ID_SP);assert(adapt_stage==2);adapt_reset();
  fixture.game.flags[1]=PG_ALIVE;fixture.game.turn=1;prior=sends;key(BTN_ID_SP);assert(sends==prior&&!adapt_stage);fixture.game.turn=0;key(BTN_ID_SP);enter(M_PARTY_VIEW);assert(!adapt_stage&&!private_open);
@@ -102,16 +112,24 @@ int main(void){
  ui.select[ui.layer]=2;key(BTN_ID_SP);assert(table_detail);fixture.tables[0].active=false;prior=sends;ui.select[ui.layer]=4;key(BTN_ID_SP);assert(sends==prior);key(BTN_ID_BACK);assert(!table_detail);ui.select[ui.layer]=0;key(BTN_ID_SP);assert(!table_count);key(BTN_ID_BACK);assert(!table_browser&&ui.index==M_PARTY_CREATE&&!btn.pressed);
  fixture.active=true;fixture.ready=true;fixture.id=1;fixture.host_boot=100;fixture.game=(party_view_t){.kind=PG_LOVE,.phase=PG_PLAYING,.n=2,.me=0,.nh=2};fixture.host[5]=1;view_mode=0;enter(M_PARTY_VIEW);key(BTN_ID_LP);assert(private_open);fixture.host[5]=2;party_pages_proc();assert(!private_open&&!adapt_stage);
 
- ui.layer=0;fixture=(party_snapshot_t){.active=true,.local=true,.enabled=true,.ready=true,.id=9,.host_boot=1,.ready_mask=1,.game={.kind=PG_UNO,.n=2,.me=0,.phase=PG_LOBBY}};enter(M_PARTY_ROOM);prior=sends;ui.select[ui.layer]=2;key(BTN_ID_SP);assert(sends==prior);ui.select[ui.layer]=8;key(BTN_ID_SP);assert(last_action==0&&last_a==0);ui.select[ui.layer]=9;key(BTN_ID_SP);assert(sends==prior+2);
- fixture.ready_mask=3;ui.select[ui.layer]=2;key(BTN_ID_SP);assert(sends==prior+3);
+ ui.layer=0;fixture=(party_snapshot_t){.active=true,.local=true,.enabled=true,.ready=true,.id=9,.host_boot=1,.ready_mask=1,.game={.kind=PG_UNO,.n=2,.me=0,.phase=PG_LOBBY}};enter(M_PARTY_ROOM);prior=sends;assert(lobby_pick==2);for(unsigned idle=0;idle<50;idle++)party_pages_proc();assert(lobby_pick==2);lobby_pick=3;key(BTN_ID_SP);assert(sends==prior);lobby_pick=2;key(BTN_ID_SP);assert(last_action==0&&last_a==0);lobby_pick=4;key(BTN_ID_SP);assert(sends==prior+2);
+ fixture.ready_mask=3;lobby_pick=3;key(BTN_ID_SP);assert(sends==prior+3);
  fixture.tables[0]=(party_table_t){.active=true,.invited=true,.kind=PG_UNO,.phase=PG_LOBBY,.id=9,.host_boot=1};fixture.tables[1]=(party_table_t){.active=true,.kind=PG_LOVE,.phase=PG_LOBBY,.id=2,.host_boot=2};enter(M_PARTY_HUB);ui.select[ui.layer]=13;key(BTN_ID_SP);assert(table_browser&&table_count==1&&table_filter==TABLETOP_GAMES+1);
  ui.layer=0;fixture.watching=true;fixture.local=false;fixture.game.me=255;fixture.game.phase=PG_PLAYING;fixture.game.nh=0;view_mode=0;enter(M_PARTY_VIEW);assert(view_mode==1&&!private_open);prior=sends;key(BTN_ID_SP);key(BTN_ID_LP);key(BTN_ID_SP);assert(sends==prior);
  fixture.game.kind=PG_LOVE;view_mode=0;enter(M_PARTY_VIEW);key(BTN_ID_LP);assert(view_mode==1&&!private_open&&sends==prior);
  for(unsigned k=0;k<TABLETOP_GAMES;k++)if(party_game_available(k)){fixture.game.kind=k;fixture.game.phase=PG_PLAYING;view_mode=1;enter(M_PARTY_VIEW);key(BTN_ID_SP);assert(sends==prior);}
- fixture.game.kind=PG_LOVE;enter(M_PARTY_ROOM);ui.select[ui.layer]=7;key(BTN_ID_SP);assert(!fixture.watching&&sends==prior);
+ fixture.game.kind=PG_LOVE;fixture.game.phase=PG_PLAYING;board_opened=true;enter(M_PARTY_ROOM);ui.select[ui.layer]=7;key(BTN_ID_SP);assert(!fixture.watching&&sends==prior);
+ // Ready screen defaults to own-ready, never sends on entry, and blocks stale input.
+ ui.layer=0;fixture=(party_snapshot_t){.active=true,.enabled=true,.ready=true,.id=333,.host_boot=1,.game={.kind=PG_LOVE,.phase=PG_LOBBY,.n=8,.me=7}};
+ prior=sends;enter(M_PARTY_ROOM);assert(ui.index==M_PARTY_ROOM&&lobby_pick==8&&sends==prior);fixture.pending=true;key(BTN_ID_SP);assert(sends==prior);fixture.pending=false;fixture.stale=true;key(BTN_ID_SP);assert(sends==prior);fixture.stale=false;key(BTN_ID_SP);assert(sends==prior+1);
+ // Phase changes move everyone, including discussion/night games, into the actual board once.
+ for(unsigned k=0;k<TABLETOP_GAMES;k++)if(party_game_available(k)){
+  ui.layer=0;fixture.id++;fixture.game.kind=k;fixture.game.phase=PG_LOBBY;enter(M_PARTY_ROOM);fixture.game.phase=(k==PG_UNDERCOVER?PG_DISCUSS:k==PG_AVALON?PG_NOMINATE:k==PG_NIGHT?PG_NIGHT_WOLF:PG_PLAYING);party_pages_proc();assert(ui.index==M_PARTY_VIEW);party_pages_enter(M_PARTY_VIEW);assert(!private_open);ui.index=M_PARTY_ROOM;party_pages_proc();assert(ui.index==M_PARTY_ROOM);
+ }
+ ui.layer=0;fixture=(party_snapshot_t){.active=true,.local=true,.enabled=true,.ready=true,.id=555,.host_boot=1,.game={.kind=PG_LOVE,.phase=PG_PLAYING,.n=2,.me=0,.nh=2}};view_mode=0;enter(M_PARTY_VIEW);key(BTN_ID_LP);fixture.game.phase=PG_FINISHED;btn.pressed=false;party_pages_proc();assert(!private_open&&lobby_pick==2);prior=sends;key(BTN_ID_SP);assert(sends==prior+1);lobby_pick=4;key(BTN_ID_SP);assert(view_mode==2&&ui.index==M_PARTY_VIEW);key(BTN_ID_BACK);assert(view_mode==1&&!btn.pressed);party_pages_proc();fixture.game.phase=PG_PLAYING;party_pages_proc();assert(view_mode==0&&!private_open&&!adapt_stage&&ui.index==M_PARTY_VIEW);
  puts("PASS lobby UI: all-ready start guard, own-ready/invite actions, invitation filter, ten-game readonly spectators, private reveal blocked, local spectator exit");
  puts("PASS table browser: all/filter/refresh/back, selected host identity, no automatic JOIN, cross-host private view reset");
- puts("PASS graphical UI: card privacy/wild suit/actions, five dice/keep/roll/score, full tic board; wrong turn/pending/finished never submits");
+ puts("PASS graphical UI: card privacy/wild suit/actions, five dice/keep/roll/score, full tic board; wrong turn/pending never moves; finished offers rematch");
 }
 '''
 with tempfile.TemporaryDirectory(prefix='halfstep-party-ui-') as temp:

@@ -28,7 +28,7 @@ static bool adapt_target_ok(unsigned p){
 static bool adapt_picker(void){
     if(!adapt_stage)return false;
     if(!adapt_ready() || v.game.me!=v.game.turn){adapt_reset();graphic_status();return true;}
-    unsigned key=btn.pressed?btn.id:0;
+    unsigned key=btn.pressed?btn.id:~0u;
     if(key==BTN_ID_BACK){btn.pressed=false;adapt_reset();return true;}
     if(key==BTN_ID_CW || key==BTN_ID_CC){
         int step=key==BTN_ID_CW?1:-1;btn.pressed=false;
@@ -66,6 +66,13 @@ static bool adapt_picker(void){
     return true;
 }
 static void adapt_hand(void){
+    if(!private_open){
+        unsigned count=v.game.nh>5?5:v.game.nh;
+        for(unsigned i=0;i<count;i++)graphic_card(i*20,0,true,false);
+        ui_zh_draw_fit(&u8g2,0,31,T("HOLD: reveal my cards","长按查看我的手牌"),128);
+        if(btn.pressed && btn.id==BTN_ID_SP)btn.pressed=false;
+        return;
+    }
     if(adapt_picker())return;
     unsigned nh=v.game.nh>32?32:v.game.nh,total=nh+(v.game.kind==PG_LIAR?3:0);adapt_turn(total);
     if(!nh && v.game.kind!=PG_LIAR){line(18,T("No cards yet","暂时没有手牌"));return;}
@@ -81,7 +88,7 @@ static void adapt_hand(void){
     if(v.game.kind==PG_CODE && v.game.extra[0]!=255){unsigned held=v.game.extra[0];snprintf(label,sizeof(label),"H%c%u",held&1?'W':'B',held/2);graphic_text(103,22,label);}
     if(v.game.kind==PG_LOVE){char name[48];card_name(PG_LOVE,v.game.hand[cell%nh],name);ui_zh_draw_fit(&u8g2,46,21,name,81);if(v.game.extra[1]){snprintf(label,sizeof(label),"P%u=%u TAP:PLAY",v.game.extra[0]+1,v.game.extra[1]);graphic_text(0,31,label);}else graphic_text(0,31,"TAP:PLAY BACK:ROOM");}
     else if(v.game.kind==PG_LIAR){snprintf(label,sizeof(label),"R%u PICK/PLAY/CALL/OK",v.game.extra[14]);graphic_text(0,31,label);}
-    else graphic_text(0,31,"TURN:VIEW BACK:ROOM");
+    else graphic_text(0,31,v.game.kind==PG_CODE?"HOLD/BACK:TABLE":"TURN:VIEW BACK:ROOM");
     adapt_status();
     if(btn.pressed && btn.id==BTN_ID_SP){btn.pressed=false;
         if(v.game.kind==PG_LIAR){if(cell<nh){unsigned bits=0;for(unsigned i=0;i<nh;i++)bits+=(liar_mask>>i)&1;if((liar_mask&(1u<<cell)) || bits<3)liar_mask^=1u<<cell;}else if(adapt_ready() && v.game.me==v.game.turn && (cell!=nh || liar_mask))adapt_begin(cell-nh,0,3);}
@@ -97,7 +104,7 @@ static void adapt_code(void){
     unsigned total=0,players[64],tiles[64],stride=v.game.n?64/v.game.n:0;
     for(unsigned p=0;p<v.game.n;p++)if(p!=v.game.me)for(unsigned j=0;j<v.game.data[p] && j<stride && total<64;j++){players[total]=p;tiles[total++]=j;}
     unsigned count=total;adapt_turn(total+1);if(!total){line(18,T("No cards yet","暂时没有手牌"));return;}
-    if(cell==count){graphic_text(0,8,"END GUESSING");graphic_frame(43,10,40,14);graphic_text(49,21,"PASS");graphic_text(0,31,"TAP:PASS BACK:ROOM");if(btn.pressed && btn.id==BTN_ID_SP){btn.pressed=false;adapt_commit(PG_PASS,0,0,0);}return;}
+    if(cell==count){graphic_text(0,8,"END GUESSING");graphic_frame(43,10,40,14);graphic_text(49,21,"PASS");graphic_text(0,31,"TAP:PASS HOLD:HAND");if(btn.pressed && btn.id==BTN_ID_SP){btn.pressed=false;adapt_commit(PG_PASS,0,0,0);}return;}
     unsigned p=players[cell],target=tiles[cell],first=(target/4)*4;char label[40];snprintf(label,sizeof(label),"P%u %.6s %u/%u",p+1,v.names[p],target+1,v.game.data[p]);graphic_text(0,7,label);
     for(unsigned i=0;i<4 && first+i<v.game.data[p] && first+i<stride;i++){
         unsigned value=v.game.board[p*stride+first+i];int x=i*21;graphic_frame(x,9,18,15);
@@ -105,7 +112,7 @@ static void adapt_code(void){
         if(value>=253)snprintf(label,sizeof(label),"?");else snprintf(label,sizeof(label),"%u",(value&127)/2);
         graphic_text(x+7,22,label);if(first+i==target)u8g2_DrawHLine(&u8g2,x,24,18);
     }
-    graphic_text(90,19,"GUESS");graphic_text(0,31,v.game.me==v.game.turn?"TURN:PICK TAP:GUESS":"WAIT / TURN:VIEW");
+    graphic_text(90,19,"GUESS");graphic_text(0,31,v.game.me==v.game.turn?"TAP:GUESS HOLD:HAND":"TURN:VIEW HOLD:HAND");
     adapt_status();
     if(btn.pressed && btn.id==BTN_ID_SP){btn.pressed=false;if(adapt_ready() && v.game.me==v.game.turn && v.game.board[p*stride+target]>=253)adapt_begin(p,target,2);}
 }
